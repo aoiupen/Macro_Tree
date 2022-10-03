@@ -3,11 +3,14 @@ import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+import pandas as pd
 
 import pyautogui as pag
 from openpyxl import load_workbook
 
 import itertools
+
+from requests import delete
 #id관리
 class resource_cl():
     newid = itertools.count()
@@ -126,12 +129,33 @@ class MyWindow(QMainWindow):
         self.ctr_lay = QHBoxLayout(self.ctr_wid)
         self.setCentralWidget(self.ctr_wid)
         
+        saveAction = QAction('Save', self)
+        saveAction.setShortcut('Ctrl+S')
+        saveAction.setStatusTip('Save application')
+        loadAction = QAction('Load', self)
+        loadAction.setShortcut('Ctrl+O')
+        loadAction.setStatusTip('Load application')
+        exitAction = QAction('Exit', self)
+        exitAction.setShortcut('Ctrl+Q')
+        exitAction.setStatusTip('Exit application')
+
+        menubar = self.menuBar()
+        menubar.setNativeMenuBar(False)
+        filemenu = menubar.addMenu('&File')
+        filemenu.addAction(loadAction)
+        filemenu.addAction(saveAction)
+        filemenu.addAction(exitAction)
+        
+        loadAction.triggered.connect(self.load)
+        saveAction.triggered.connect(self.save)
+        exitAction.triggered.connect(self.self_close)
+        
         self.tw = TreeWidget()
         self.tw.setColumnCount(5)
         self.tw.setHeaderLabels(["Name","Type","Act","Pos","Content"])
                 
         self.ctr_lay.addWidget(self.tw)
-        
+    
         self.tw2 = TreeWidget()
         self.tw2.setColumnCount(2)
         self.tw2.setHeaderLabels(["Name","List"])
@@ -164,7 +188,7 @@ class MyWindow(QMainWindow):
         self.insts = []
         self.load()
         self.tw.itemChanged.connect(self.get_item)
-        
+       
     def check_child(self,cur,col):
         if col == 0:
             ch_num = cur.childCount()
@@ -224,7 +248,7 @@ class MyWindow(QMainWindow):
                 for i in range(top_cnt):
                     top_it = self.tw.topLevelItem(i)
                     if top_it:
-                        writer.writerow(["top",top_it.text(0)])
+                        writer.writerow(["top",top_it.text(0),"","","",""])
                         if top_it.childCount():
                             self.recur_child(writer,top_it)
         
@@ -242,9 +266,11 @@ class MyWindow(QMainWindow):
          
     def load(self):
         self.tw.disconnect()
+        self.tw.clear()
         with open('ex.csv', 'rt') as f:
             reader = csv.reader(f)
-            for row in reader:
+            self.insts=[]
+            for idx,row in enumerate(reader):
                 parent = ""
 
                 parent_str = row[0]
@@ -254,13 +280,16 @@ class MyWindow(QMainWindow):
                     tw_item = TreeWidgetItem(parent,parent_str)
                     tw_item.setText(0,name)
                 else:
+                    new_top = True
                     for inst in self.insts:
                         if inst.text(0) == parent_str:   
                             parent = inst                        
                             tw_item = TreeWidgetItem(parent,parent_str)
                             tw_item.setText(0,name)
+                            new_top = False
+                            break
+                    
                 #parent에 string이 들어가면 안되고,이 이름을 가지는 widget을 불러와야한다
-                
                 if len(row) >2:
                     typ = row[2]
                     act = row[3]
@@ -272,7 +301,10 @@ class MyWindow(QMainWindow):
                     tw_item.setText(3,pos)
                     tw_item.setText(4,content)    
                 self.insts.append(tw_item)
+        self.tw.itemChanged.connect(self.get_item)
 
+    def self_close(self):
+        self.close() 
 
                 
 if __name__ == "__main__":
