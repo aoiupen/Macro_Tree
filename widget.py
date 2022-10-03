@@ -12,16 +12,31 @@ import itertools
 
 from requests import delete
 #id관리
+
+class TypComBo(QComboBox):
+    def __init__(self,typ):
+        QComboBox.__init__(self)
+        self.addItem("Mouse")
+        self.addItem("Key")
+        idx = lambda x :0 if x == "Mouse" else 1
+        self.setCurrentIndex(idx(typ))
+        self.setStyleSheet("background-color: rgb(250,250,250);")
+
 class resource_cl():
     newid = itertools.count()
     def __init__(self):
         self.id = resource_cl.newid()
 
 class TreeWidgetItem(QTreeWidgetItem):
-    def __init__(self,parent,name=""):
+    def __init__(self,tw,parent,row=""):
         QTreeWidgetItem.__init__(self,parent)
         self.prnt = parent
-        self.name = name
+        if len(row)>2:#우측 treewidget 없앨 때 같이 지울 조건
+            if row[2]:
+                typ = row[2]
+                if typ:
+                    self.cbx = TypComBo(typ)
+                    tw.setItemWidget(self, 1, self.cbx)
         self.setFlags(self.flags()|Qt.ItemIsEditable) #editable
         self.setCheckState(0,Qt.Checked)#col,state
         self.setExpanded(True)
@@ -64,6 +79,7 @@ class TreeWidget(QTreeWidget):
                 parent = self.itemAt(event.pos())
                 items = self.decodeData(encoded, event.source())
                 for it in items:
+                    #QTree->TreeWidgetItem?
                     item = QTreeWidgetItem(parent)
                     self.fillItem(it, item)
                     self.fillItems(it, item)
@@ -118,8 +134,7 @@ class TreeWidget(QTreeWidget):
     @pyqtSlot(TreeWidgetItem, int)
     def onItemClicked(self, it, col):
         print(it, col, it.text(col))
-
-
+    
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -159,17 +174,17 @@ class MyWindow(QMainWindow):
         self.tw2 = TreeWidget()
         self.tw2.setColumnCount(2)
         self.tw2.setHeaderLabels(["Name","List"])
-        val_1 = TreeWidgetItem(self.tw2)
+        val_1 = TreeWidgetItem(self.tw2,self.tw2)
         val_1.setText(0,"val_a")
         val_1.setText(1,"a,b,c,d,e,f,g,h,i,j,k")
         val_1.setFlags(val_1.flags()|Qt.ItemIsEditable) #editable
         
-        val_2 = TreeWidgetItem(self.tw2)
+        val_2 = TreeWidgetItem(self.tw2,self.tw2)
         val_2.setText(0,"val_a")
         val_2.setText(1,"a,b,c,d,e,f,g,h,i,j,k")
         val_2.setFlags(val_2.flags()|Qt.ItemIsEditable) #editable
         
-        val_3 = TreeWidgetItem(self.tw2)
+        val_3 = TreeWidgetItem(self.tw2,self.tw2)
         val_3.setText(0,"val_a")
         val_3.setText(1,"a,b,c,d,e,f,g,h,i,j,k")
         val_3.setFlags(val_3.flags()|Qt.ItemIsEditable) #editable
@@ -277,16 +292,14 @@ class MyWindow(QMainWindow):
                 name = row[1]
                 if parent_str == 'top':
                     parent = self.tw
-                    tw_item = TreeWidgetItem(parent,parent_str)
+                    tw_item = TreeWidgetItem(self.tw,parent,row)
                     tw_item.setText(0,name)
                 else:
-                    new_top = True
                     for inst in self.insts:
                         if inst.text(0) == parent_str:   
                             parent = inst                        
-                            tw_item = TreeWidgetItem(parent,parent_str)
+                            tw_item = TreeWidgetItem(self.tw,parent,row)
                             tw_item.setText(0,name)
-                            new_top = False
                             break
                     
                 #parent에 string이 들어가면 안되고,이 이름을 가지는 widget을 불러와야한다
@@ -295,7 +308,6 @@ class MyWindow(QMainWindow):
                     act = row[3]
                     pos = row[4]
                     content = row[5]
-
                     tw_item.setText(1,typ)
                     tw_item.setText(2,act)
                     tw_item.setText(3,pos)
