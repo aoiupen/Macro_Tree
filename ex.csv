@@ -1,11 +1,11 @@
 top,Group,,,,
-Group,SaveImg,Mouse,Click,"259,12",
+Group,SaveImg22,Key,Copy,"259,1",
 Group,FileName,Mouse,Click,"318,15",
-Group,Content,Key,Typing,,C:\abc\abcd
+Group,Content,Mouse,Click,,C:\abc\abcd
 top,GroupB,,,,
 GroupB,gr_b1,,,,
-gr_b1,SaveImg,Mouse,Click,"259,12",
+gr_b1,SaveImg,Key,Copy,"259,12",
 GroupB,gr_b2,,,,
-gr_b2,SaveImg,Mouse,Click,"259,12",
+gr_b2,SaveImg,Key,Copy,"259,12",
 gr_b2,SaveImg,Mouse,Click,"259,12",
 top,GroupC,,,,

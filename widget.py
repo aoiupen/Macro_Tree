@@ -11,17 +11,62 @@ from openpyxl import load_workbook
 import itertools
 
 from requests import delete
-#id관리
+#to do
+#typcombo 변경시 checkbox 풀리는 문제, pyqtslot으로 해결해보기
+#pos를 lineedit->button으로 : 더블클릭시 변경, 클릭시 getpos
+#content도 
+#all 선택
 
-class TypComBo(QComboBox):
-    def __init__(self,typ):
+class PosBtn(QPushButton):
+    double_signal = pyqtSignal()
+    def __init__(self):
+        super().__init__()
+        self.clicked.connect(self.run)
+        
+    def run(self):
+        self.double_signal.emit()
+    
+class ActCombo(QComboBox):
+    def __init__(self,typ,act):
         QComboBox.__init__(self)
-        self.addItem("Mouse")
-        self.addItem("Key")
-        idx = lambda x :0 if x == "Mouse" else 1
-        self.setCurrentIndex(idx(typ))
+        if typ == "Mouse":
+            self.addItem("Click")
+            self.addItem("Double")
+            self.addItem("Right")
+            if act == "Click":
+                self.setCurrentIndex(0)
+            elif act == "Double":
+                self.setCurrentIndex(1)
+            else:
+                self.setCurrentIndex(2)
+        elif typ == "Key":
+            self.addItem("Copy")
+            self.addItem("Paste")
+            self.addItem("Delete")
+            if act == "Copy":
+                self.setCurrentIndex(0)
+            elif act == "Paste":
+                self.setCurrentIndex(1)
+            else:
+                self.setCurrentIndex(2)    
         self.setStyleSheet("background-color: rgb(250,250,250);")
 
+class TypCombo(QComboBox):
+    typ_signal = pyqtSignal()
+    def __init__(self,parent,typ):
+        QComboBox.__init__(self)
+        
+        self.prnt = parent
+        self.addItem("Mouse")
+        self.addItem("Key")
+        idx = lambda x : 0 if x == "Mouse" else 1
+        self.setCurrentIndex(idx(typ))
+        self.setStyleSheet("background-color: rgb(250,250,250);")
+        self.currentIndexChanged.connect(self.run)
+        
+    def run(self):
+        self.typ_signal.emit()
+    
 class resource_cl():
     newid = itertools.count()
     def __init__(self):
@@ -29,18 +74,63 @@ class resource_cl():
 
 class TreeWidgetItem(QTreeWidgetItem):
     def __init__(self,tw,parent,row=""):
+        self.tw = tw
         QTreeWidgetItem.__init__(self,parent)
         self.prnt = parent
         if len(row)>2:#우측 treewidget 없앨 때 같이 지울 조건
             if row[2]:
                 typ = row[2]
-                if typ:
-                    self.cbx = TypComBo(typ)
-                    tw.setItemWidget(self, 1, self.cbx)
+                self.typ_cbx = TypCombo(self,typ)
+                self.tw.setItemWidget(self, 1, self.typ_cbx)
+                #row[2]가 있으면 row[3]도 있으므로 if문 생략
+                act = row[3]
+                self.act_cbx = ActCombo(typ,act)
+                self.tw.setItemWidget(self, 2, self.act_cbx)
+                self.typ_cbx.typ_signal.connect(lambda:self.change_act(self.typ_cbx,self.act_cbx))
+                pos = row[4]
+                
+                if row[2] == "Mouse":
+                    self.widget = QWidget()
+                    self.widget.minimumSize().height()
+                    self.widget_lay = QHBoxLayout(self.widget)
+                    self.widget_lay.setContentsMargins(0,0,0,0)
+                    self.widget_lay.setSpacing(0)
+                    self.pos_le = QLineEdit(pos)
+                    self.pos_le.setFixedWidth(80)
+                    self.pos_btn = QPushButton("pos")
+                    self.pos_btn.setFixedWidth(50)
+                    self.widget_lay.addWidget(self.pos_le)
+                    self.widget_lay.addWidget(self.pos_btn)
+                    self.tw.setItemWidget(self, 3, self.widget)
+                    
         self.setFlags(self.flags()|Qt.ItemIsEditable) #editable
         self.setCheckState(0,Qt.Checked)#col,state
         self.setExpanded(True)
-
+     
+    #signal의 class가 qobject를 상속할 때만 @pyqtSlot()을 달아주고, 아니면 달지 않는다
+    #https://stackoverflow.com/questions/40325953/why-do-i-need-to-decorate-connected-slots-with-pyqtslot/40330912#40330912       
+    def change_act(self,typ_cbx,act_cbx):
+        self.tw.disconnect()
+        if typ_cbx.currentText() == "Mouse":
+            act_cbx.clear()
+            act_cbx.addItem("Click")
+            act_cbx.addItem("Double")
+            act_cbx.addItem("Right")
+            act_cbx.setCurrentIndex(0)
+            self.setText(1,"Mouse")
+            self.setText(2,"Click")
+        elif typ_cbx.currentText() == "Key":
+            act_cbx.clear()
+            act_cbx.addItem("Copy")
+            act_cbx.addItem("Paste")
+            act_cbx.addItem("Delete")
+            self.setText(1,"Key")
+            self.setText(2,"Copy")
+            act_cbx.setCurrentIndex(0)
+        ctr_widget = self.tw.parent()
+        wid = ctr_widget.parent()
+        self.tw.itemChanged.connect(wid.get_item)
+        
 class TreeWidget(QTreeWidget):
     customMimeType = "application/x-customTreeWidgetdata"
     def __init__(self):
@@ -133,13 +223,14 @@ class TreeWidget(QTreeWidget):
 
     @pyqtSlot(TreeWidgetItem, int)
     def onItemClicked(self, it, col):
-        print(it, col, it.text(col))
+        pass
+        #print(it, col, it.text(col))
     
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("window title")
-        self.setGeometry(100,100,1300,700)
+        self.setGeometry(100,100,2000,700)
         self.ctr_wid = QWidget()
         self.ctr_lay = QHBoxLayout(self.ctr_wid)
         self.setCentralWidget(self.ctr_wid)
@@ -303,6 +394,7 @@ class MyWindow(QMainWindow):
                             break
                     
                 #parent에 string이 들어가면 안되고,이 이름을 가지는 widget을 불러와야한다
+                #column에 widget이 들어가면 이 코드가 의미가 없을 듯
                 if len(row) >2:
                     typ = row[2]
                     act = row[3]
@@ -310,7 +402,7 @@ class MyWindow(QMainWindow):
                     content = row[5]
                     tw_item.setText(1,typ)
                     tw_item.setText(2,act)
-                    tw_item.setText(3,pos)
+                    #tw_item.setText(3,pos)
                     tw_item.setText(4,content)    
                 self.insts.append(tw_item)
         self.tw.itemChanged.connect(self.get_item)
