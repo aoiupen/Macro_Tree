@@ -25,6 +25,8 @@ from requests import delete
 #all 선택
 #getpos 영역 확대하기 + 멀티모니터 사용 고려
 #image 검색을 사용할 경우 region 영역 버튼도 활성화하기 default는 전체영역
+#Ctrl+left click시 복사붙여넣기 되도록
+#group 이동 불가문제 해결해야함
 
 class Second(QWidget):
     def __init__(self,MainUi,btn):
@@ -363,7 +365,7 @@ class TreeWidget(QTreeWidget):
         if event != None:
             event.setDropAction(Qt.MoveAction)
             QTreeWidget.dropEvent(self, event)
-        # *drop event로 Data를 먼저 옮기고, if문 이하에서 item setting
+        # *drop event로 Data를 먼저 옮기고, if문 이하에서 item setting        
         if drag_item.text(1):
             drag_item.typ_cbx = TypCombo(self,drag_item.text(1))
             drag_item.act_cbx = ActCombo(drag_item.text(1),drag_item.text(2))
@@ -377,12 +379,13 @@ class TreeWidget(QTreeWidget):
                 drag_item.pos_wdg.pos_btn.clicked.connect(lambda ignore,f=drag_item.pos_wdg.get_pos:f())                  
                 self.setItemWidget(drag_item, 3, drag_item.pos_wdg)
             drag_item.typ_cbx.typ_signal.connect(lambda:drag_item.change_act(drag_item.typ_cbx,drag_item.act_cbx))
-            child_cnt = drag_item.childCount()
-            if child_cnt:
-                for idx in range(child_cnt):
-                    child = drag_item.child(idx)
-                    #event를 param으로 넘겨도 되는지
-                    self.tw.move_itemwidget(self.tw,child,event)
+        child_cnt = drag_item.childCount()
+        # 단,group이어도 group 자신만 dropevent만하고, 자식들은 move_itemwidget 거치도록
+        if child_cnt:
+            for idx in range(child_cnt):
+                child = drag_item.child(idx)
+                #event를 param으로 넘겨도 되는지
+                self.tw.move_itemwidget(self.tw,child,event)
             
     #group간 종속기능 추가해야함
     #pos 따라가도록
@@ -390,7 +393,7 @@ class TreeWidget(QTreeWidget):
         # 현 treewidget으로 drop
         if event.source() == self:
             drag_item = self.currentItem()
-            if drag_item.text(1):
+            if drag_item.text(0): # group도 이동 가능
                 self.move_itemwidget(self,drag_item,event)
                 #child도 같은 처리해줘야함
             
