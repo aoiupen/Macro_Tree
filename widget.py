@@ -28,7 +28,7 @@ from requests import delete
 #Ctrl+left click시 복사붙여넣기 되도록
 #inst아래 inst가 종속되면 안됨
 #우클릭 context에 복수 선택 후 group 기능 추가
-#복수 선택 후 한 단계 올릴 때 선택된 item 중 2번째부터는 widget이 풀림
+
 class Second(QWidget):
     def __init__(self,MainUi,btn):
         super().__init__()
@@ -217,6 +217,8 @@ class TreeWidgetItem(QTreeWidgetItem):
 
         if len(self.row)>2:#우측 treewidget 없앨 때 같이 지울 조건
             if self.row[2]:
+                #~ ^ 차이
+                self.setFlags(self.flags() ^ Qt.ItemIsDropEnabled) #inst에는 inst를 drop할 수 없음
                 typ = self.row[2]
                 self.typ_cbx = TypCombo(self,typ)
                 self.tw.setItemWidget(self, 1, self.typ_cbx)
@@ -365,6 +367,7 @@ class TreeWidget(QTreeWidget):
         self.tw = tw
         if event != None:
             event.setDropAction(Qt.MoveAction)
+            # drag item이 inst이고, drop하려는 위치가 inst이면 return 시키기
             QTreeWidget.dropEvent(self, event)
         # *drop event로 Data를 먼저 옮기고, if문 이하에서 item setting        
         if drag_item.text(1):
@@ -401,6 +404,7 @@ class TreeWidget(QTreeWidget):
                 
         # 타 widget으로 drop     
         elif isinstance(event.source(), QTreeWidget):
+            print(1)
             if event.mimeData().hasFormat(TreeWidget.customMimeType):
                 encoded = event.mimeData().data(TreeWidget.customMimeType)
                 parent = self.itemAt(event.pos())
