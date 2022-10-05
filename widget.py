@@ -10,14 +10,19 @@ import pyautogui as pag
 from openpyxl import load_workbook
 
 import itertools
-
+#####icon log flexble
 from requests import delete
+
+#group과 inst 앞에 서로 다른 아이콘
+#group은 대문자 G
+#inst는 문서그림
+#Group으로 묶이거나, 하위
 #content도 
 #all 선택
 #group해제는 우클릭해서 메뉴 팝업후 삭제 가능하도록
-#widgetitem 클릭 후 delet 누르면 삭제되도록
 #getpos 영역 확대하기 + 멀티모니터 사용 고려
 #image 검색을 사용할 경우 region 영역 버튼도 활성화하기 default는 전체영역
+
 class Second(QWidget):
     def __init__(self,MainUi,btn):
         super().__init__()
@@ -259,11 +264,47 @@ class TreeWidget(QTreeWidget):
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.dropEvent = self.treeDropEvent
-                
         self.setEditTriggers(QAbstractItemView.DoubleClicked)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        #self.setContextMenuPolicy(Qt.CustomContextMenu) #비활성화시키면 contextmenuevent 동작됨
+        self.customContextMenuRequested.connect(self.context_menu)
 
-        #self.itemClicked.connect(self.onItemClicked)
+    def contextMenuEvent(self,event):
+        self.menu = QMenu(self)
+        delete_act = QAction('Delete',self)
+        delete_act.triggered.connect(lambda:self.recur_delete(event))
+        self.menu.addAction(delete_act)
+        self.menu.popup(QCursor.pos())
+        
+    #나중에 sip 시도해보기
+    def recur_delete(self,event):
+        root = self.invisibleRootItem()
+        for item in self.selectedItems():
+            (item.parent() or root).removeChild(item)
+
+    # custom일경우(나중에 공부). 옆에는 적용되던데 왜지...
+    def context_menu(self, pos):
+        index = self.indexAt(pos)
+        
+        if not index.isValid():
+            return
+
+        item = self.itemAt(pos)
+        name = item.text(0)
+
+        menu = QMenu()
+        #quitAction = menu.addAction("Quit")
+        #action = menu.exec_(self.mapToGlobal(pos))
+        #if action == quitAction:
+        #    qApp.quit()
+        action = menu.addAction("action")
+        action = menu.addAction(name)
+        menu.addSeparator()
+        action_1 = menu.addAction("Choix 1") # 뒤에 함수 param
+        action_2 = menu.addAction("Choix 2")
+        menu.addSeparator()
+        action_3 = menu.addAction("Choix 3")
+        menu.exec_(self.mapToGlobal(pos))
     
     def mimeTypes(self):
         mimetypes = QTreeWidget.mimeTypes(self)
@@ -512,7 +553,8 @@ class MyWindow(QMainWindow):
                         writer.writerow(["top",top_it.text(0),"","","",""])
                         if top_it.childCount():
                             self.recur_child(writer,top_it)
-        
+                            
+    # 순수 recur만 분리하기. 지금은 write와 섞여있음   
     def recur_child(self,writer,parent):
         if parent.childCount():
             #써주는 상황 : top은 써주고 recursive, 막내는 recursive 마지막에, 중간은 써줄 기회가 없다
@@ -520,7 +562,6 @@ class MyWindow(QMainWindow):
             #recursive 가기 전에 해주는게 맞아 보인다
             for ch_num in range(parent.childCount()):
                 ch_item = parent.child(ch_num)
-                print(ch_item)
                 lst = [ch_item.text(i) for i in range(self.tw.columnCount())]
                 if ch_item.text(1) == "Mouse":
                     lst[3] = ch_item.pos_wdg.pos_le.text()
