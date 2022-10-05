@@ -72,8 +72,7 @@ class Second(QWidget):
             if isinstance(self.btn,PosBtn):
                 self.btn.pos = coor
                 self.btn.parent().pos_le.setText(coor)
-                self.btn.setStyleSheet("color:black")
-                
+                self.btn.setStyleSheet("color:black")               
                 self.close()
             else:
                 pos_pair = self.btn.pos_pair
@@ -106,7 +105,8 @@ class Second(QWidget):
 
     def self_close(self):
         self.close()
-        
+
+#옮길때 pos coor 값 보존
 class PosBtn(QPushButton):
     double_signal = pyqtSignal()
     def __init__(self,name):
@@ -291,9 +291,10 @@ class TreeWidget(QTreeWidget):
             drag_item.act_cbx = ActCombo(drag_item.text(1),drag_item.text(2))
             self.setItemWidget(drag_item, 1, drag_item.typ_cbx)
             self.setItemWidget(drag_item, 2, drag_item.act_cbx)
-            print(drag_item.text(1))
             if drag_item.text(1) == "Mouse":
-                drag_item.pos_wdg = PosWidget("0,0")
+                coor = drag_item.pos_wdg.pos_le.text()
+                drag_item.pos_wdg = PosWidget(coor)
+                drag_item.pos_wdg.pos_btn.clicked.connect(lambda ignore,f=drag_item.pos_wdg.get_pos:f())                
                 self.setItemWidget(drag_item, 3, drag_item.pos_wdg)
             drag_item.typ_cbx.typ_signal.connect(lambda:drag_item.change_act(drag_item.typ_cbx,drag_item.act_cbx))
             child_cnt = drag_item.childCount()
