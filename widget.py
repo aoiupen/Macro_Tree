@@ -66,6 +66,7 @@ class TypCombo(QComboBox):
         
     def run(self):
         self.typ_signal.emit()
+        
 class PosWidget(QWidget):
     def __init__(self,pos):
         QWidget.__init__(self)
@@ -89,25 +90,26 @@ class resource_cl():
 class TreeWidgetItem(QTreeWidgetItem):
     def __init__(self,tw,parent,row=""):
         self.tw = tw
+        self.row = row
         QTreeWidgetItem.__init__(self,parent)
         self.prnt = parent
 
-        if len(row)>2:#우측 treewidget 없앨 때 같이 지울 조건
-            if row[2]:
-                typ = row[2]
+        if len(self.row)>2:#우측 treewidget 없앨 때 같이 지울 조건
+            if self.row[2]:
+                typ = self.row[2]
                 self.typ_cbx = TypCombo(self,typ)
                 self.tw.setItemWidget(self, 1, self.typ_cbx)
                 #row[2]가 있으면 row[3]도 있으므로 if문 생략
-                act = row[3]
+                act = self.row[3]
                 self.act_cbx = ActCombo(typ,act)
                 self.tw.setItemWidget(self, 2, self.act_cbx)
                 self.typ_cbx.typ_signal.connect(lambda:self.change_act(self.typ_cbx,self.act_cbx))
-                pos = row[4]
-                if row[2] == "Mouse":
+                pos = self.row[4]
+                if self.row[2] == "Mouse":
                     self.pos_wdg = PosWidget(pos)
 
         self.setFlags(self.flags()|Qt.ItemIsEditable) #editable
-        self.setCheckState(0,Qt.Checked)#col,state
+        self.setCheckState(0,Qt.Checked) #col,state
         self.setExpanded(True)
      
     #signal의 class가 qobject를 상속할 때만 @pyqtSlot()을 달아주고, 아니면 달지 않는다
@@ -168,21 +170,23 @@ class TreeWidget(QTreeWidget):
 
     #child로 만들때 item 사라지는 현상 해결해야함
     def treeDropEvent(self, event):
-        #현 treewidget으로 drop
+        # 현 treewidget으로 drop
         if event.source() == self:
             drag_item = self.currentItem()
             if drag_item.text(1):
-                self.typ_cbx = TypCombo(self,"Mouse")
-                self.act_cbx = ActCombo("Mouse","Click")
-                self.pos_wdg = PosWidget("0,0")
+                # *drop event가 먼저 적용돼야 widget이 사라지지 않음
                 event.setDropAction(Qt.MoveAction)
-                self.setItemWidget(drag_item, 1, self.typ_cbx)
-                self.setItemWidget(drag_item, 2, self.act_cbx)
-                self.setItemWidget(drag_item, 3, self.pos_wdg)
-            QTreeWidget.dropEvent(self, event)
-
+                QTreeWidget.dropEvent(self, event)
+                drag_item.typ_cbx = TypCombo(self,drag_item.text(1))
+                drag_item.act_cbx = ActCombo(drag_item.text(1),drag_item.text(2))
+                drag_item.pos_wdg = PosWidget("0,0")
+                self.setItemWidget(drag_item, 1, drag_item.typ_cbx)
+                self.setItemWidget(drag_item, 2, drag_item.act_cbx)
+                self.setItemWidget(drag_item, 3, drag_item.pos_wdg)
+                drag_item.typ_cbx.typ_signal.connect(lambda:drag_item.change_act(drag_item.typ_cbx,drag_item.act_cbx))
+                #child도 같은 처리해줘야함
             
-        #타 widget으로 drop     
+        # 타 widget으로 drop     
         elif isinstance(event.source(), QTreeWidget):
             if event.mimeData().hasFormat(TreeWidget.customMimeType):
                 encoded = event.mimeData().data(TreeWidget.customMimeType)
