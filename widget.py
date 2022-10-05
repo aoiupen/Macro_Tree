@@ -66,6 +66,20 @@ class TypCombo(QComboBox):
         
     def run(self):
         self.typ_signal.emit()
+class PosWidget(QWidget):
+    def __init__(self,pos):
+        QWidget.__init__(self)
+        self.widget = QWidget()
+        self.widget.minimumSize().height()
+        self.widget_lay = QHBoxLayout(self.widget)
+        self.widget_lay.setContentsMargins(0,0,0,0)
+        self.widget_lay.setSpacing(0)
+        self.pos_le = QLineEdit(pos)
+        self.pos_le.setFixedWidth(80)
+        self.pos_btn = QPushButton("pos")
+        self.pos_btn.setFixedWidth(50)
+        self.widget_lay.addWidget(self.pos_le)
+        self.widget_lay.addWidget(self.pos_btn)
     
 class resource_cl():
     newid = itertools.count()
@@ -77,6 +91,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.tw = tw
         QTreeWidgetItem.__init__(self,parent)
         self.prnt = parent
+
         if len(row)>2:#우측 treewidget 없앨 때 같이 지울 조건
             if row[2]:
                 typ = row[2]
@@ -88,21 +103,9 @@ class TreeWidgetItem(QTreeWidgetItem):
                 self.tw.setItemWidget(self, 2, self.act_cbx)
                 self.typ_cbx.typ_signal.connect(lambda:self.change_act(self.typ_cbx,self.act_cbx))
                 pos = row[4]
-                
                 if row[2] == "Mouse":
-                    self.widget = QWidget()
-                    self.widget.minimumSize().height()
-                    self.widget_lay = QHBoxLayout(self.widget)
-                    self.widget_lay.setContentsMargins(0,0,0,0)
-                    self.widget_lay.setSpacing(0)
-                    self.pos_le = QLineEdit(pos)
-                    self.pos_le.setFixedWidth(80)
-                    self.pos_btn = QPushButton("pos")
-                    self.pos_btn.setFixedWidth(50)
-                    self.widget_lay.addWidget(self.pos_le)
-                    self.widget_lay.addWidget(self.pos_btn)
-                    self.tw.setItemWidget(self, 3, self.widget)
-                    
+                    self.pos_wdg = PosWidget(pos)
+
         self.setFlags(self.flags()|Qt.ItemIsEditable) #editable
         self.setCheckState(0,Qt.Checked)#col,state
         self.setExpanded(True)
@@ -119,6 +122,7 @@ class TreeWidgetItem(QTreeWidgetItem):
             act_cbx.setCurrentIndex(0)
             self.setText(1,"Mouse")
             self.setText(2,"Click")
+            #pos새로 만들기
         elif typ_cbx.currentText() == "Key":
             act_cbx.clear()
             act_cbx.addItem("Copy")
@@ -127,16 +131,19 @@ class TreeWidgetItem(QTreeWidgetItem):
             self.setText(1,"Key")
             self.setText(2,"Copy")
             act_cbx.setCurrentIndex(0)
+            #pos item 있다면 지우기
         ctr_widget = self.tw.parent()
         wid = ctr_widget.parent()
         self.tw.itemChanged.connect(wid.get_item)
-        
+#https://stackoverflow.com/questions/25559221/qtreewidgetitem-issue-items-set-using-setwidgetitem-are-dispearring-after-movin        
 class TreeWidget(QTreeWidget):
     customMimeType = "application/x-customTreeWidgetdata"
     def __init__(self):
         super().__init__()
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
+        self.dropEvent = self.treeDropEvent
+                
         self.setEditTriggers(QAbstractItemView.DoubleClicked)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
@@ -159,10 +166,23 @@ class TreeWidget(QTreeWidget):
         drag.setMimeData(mimedata)
         drag.exec_(supportedActions)
 
-    def dropEvent(self, event):
+    #child로 만들때 item 사라지는 현상 해결해야함
+    def treeDropEvent(self, event):
+        #현 treewidget으로 drop
         if event.source() == self:
-            event.setDropAction(Qt.MoveAction)
+            drag_item = self.currentItem()
+            if drag_item.text(1):
+                self.typ_cbx = TypCombo(self,"Mouse")
+                self.act_cbx = ActCombo("Mouse","Click")
+                self.pos_wdg = PosWidget("0,0")
+                event.setDropAction(Qt.MoveAction)
+                self.setItemWidget(drag_item, 1, self.typ_cbx)
+                self.setItemWidget(drag_item, 2, self.act_cbx)
+                self.setItemWidget(drag_item, 3, self.pos_wdg)
             QTreeWidget.dropEvent(self, event)
+
+            
+        #타 widget으로 drop     
         elif isinstance(event.source(), QTreeWidget):
             if event.mimeData().hasFormat(TreeWidget.customMimeType):
                 encoded = event.mimeData().data(TreeWidget.customMimeType)
