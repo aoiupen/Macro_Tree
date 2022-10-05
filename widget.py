@@ -293,7 +293,7 @@ class TreeWidget(QTreeWidget):
     # cur의 child의 parent를 cur->cur.parent()로 바꾸기
     # cur의 ix와 parent를 뽑기
     # child_without_parent를 parent.addChild로 더하기
-    # ungrouping 할 때 맨 위 or 아래로 내려가고, widget 풀리는 현상 발생
+    # ungrouping 한 후 widget 풀리는 현상 발생
     def ungrouping(self,event):
         root = self.invisibleRootItem()
         for item in self.selectedItems():
@@ -308,10 +308,11 @@ class TreeWidget(QTreeWidget):
                         if isinstance(item.parent(),NoneType):
                             ix = self.indexOfTopLevelItem(item)
                             self.insertTopLevelItem(ix,item_without_parent)
+                            #move_item
                             #item이 toplevel 몇번째인지
                         else:
                             item.parent().insertChild(idx,item_without_parent)
-
+                        self.move_itemwidget(self,item_without_parent)
                         #root에 더할 때 index를 고려해서 넣기
                 (item.parent() or root).removeChild(item)
             
@@ -355,11 +356,12 @@ class TreeWidget(QTreeWidget):
 
         drag.setMimeData(mimedata)
         drag.exec_(supportedActions)
-
-    def move_itemwidget(self,tw,event,drag_item):
+    
+    def move_itemwidget(self,tw,drag_item,event=None):
         self.tw = tw
-        event.setDropAction(Qt.MoveAction)
-        QTreeWidget.dropEvent(self, event)
+        if event != None:
+            event.setDropAction(Qt.MoveAction)
+            QTreeWidget.dropEvent(self, event)
         # *drop event로 Data를 먼저 옮기고, if문 이하에서 item setting
         if drag_item.text(1):
             drag_item.typ_cbx = TypCombo(self,drag_item.text(1))
@@ -379,7 +381,7 @@ class TreeWidget(QTreeWidget):
                 for idx in range(child_cnt):
                     child = drag_item.child(idx)
                     #event를 param으로 넘겨도 되는지
-                    self.tw.move_itemwidget(self.tw,event,child)
+                    self.tw.move_itemwidget(self.tw,child,event)
             
     #group간 종속기능 추가해야함
     #pos 따라가도록
@@ -388,7 +390,7 @@ class TreeWidget(QTreeWidget):
         if event.source() == self:
             drag_item = self.currentItem()
             if drag_item.text(1):
-                self.move_itemwidget(self,event,drag_item)
+                self.move_itemwidget(self,drag_item,event)
                 #child도 같은 처리해줘야함
             
         # 타 widget으로 drop     
