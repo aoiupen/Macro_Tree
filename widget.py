@@ -16,13 +16,13 @@ from requests import delete
 
 #transfrom,flexible,pressed
 #실행 코드 작성 -> UX 개선 + region, image 탐색 기능 추가
+#inst 추가 삭제
 #group과 inst 앞에 서로 다른 아이콘
 #group은 대문자 G
 #inst는 문서그림
 #Group으로 묶이거나, 하위
 #content도 
 #all 선택
-#group해제는 우클릭해서 메뉴 팝업후 삭제 가능하도록
 #getpos 영역 확대하기 + 멀티모니터 사용 고려
 #image 검색을 사용할 경우 region 영역 버튼도 활성화하기 default는 전체영역
 
@@ -258,6 +258,7 @@ class TreeWidgetItem(QTreeWidgetItem):
             self.setText(2,"Copy")
             act_cbx.setCurrentIndex(0)
             self.tw.removeItemWidget(self,3)
+            self.setText(3,"") # pos widget 지운 후 treewidget의 pos data 삭제
         ctr_widget = self.tw.parent()
         wid = ctr_widget.parent()
         self.tw.itemChanged.connect(wid.get_item) # typ을 key로 변경시 - pos 연동 삭제
