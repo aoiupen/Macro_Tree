@@ -26,8 +26,9 @@ from requests import delete
 #getpos 영역 확대하기 + 멀티모니터 사용 고려
 #image 검색을 사용할 경우 region 영역 버튼도 활성화하기 default는 전체영역
 #Ctrl+left click시 복사붙여넣기 되도록
-#group 이동 불가문제 해결해야함
-
+#inst아래 inst가 종속되면 안됨
+#우클릭 context에 복수 선택 후 group 기능 추가
+#복수 선택 후 한 단계 올릴 때 선택된 item 중 2번째부터는 widget이 풀림
 class Second(QWidget):
     def __init__(self,MainUi,btn):
         super().__init__()
@@ -387,16 +388,17 @@ class TreeWidget(QTreeWidget):
                 #event를 param으로 넘겨도 되는지
                 self.tw.move_itemwidget(self.tw,child,event)
             
-    #group간 종속기능 추가해야함
+    #group간 종속기능 가능
     #pos 따라가도록
     def treeDropEvent(self, event):
         # 현 treewidget으로 drop
         if event.source() == self:
-            drag_item = self.currentItem()
-            if drag_item.text(0): # group도 이동 가능
-                self.move_itemwidget(self,drag_item,event)
-                #child도 같은 처리해줘야함
-            
+            drag_items = self.selectedItems()
+            for drag_item in drag_items:
+                if drag_item.text(0): # group도 이동 가능
+                    self.move_itemwidget(self,drag_item,event)
+                    #child도 같은 처리해줘야함
+                
         # 타 widget으로 drop     
         elif isinstance(event.source(), QTreeWidget):
             if event.mimeData().hasFormat(TreeWidget.customMimeType):
