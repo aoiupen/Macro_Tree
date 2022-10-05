@@ -12,11 +12,12 @@ from openpyxl import load_workbook
 import itertools
 
 from requests import delete
-#to do
-#typcombo 변경시 checkbox 풀리는 문제, pyqtslot으로 해결해보기
-#pos를 lineedit->button으로 : 더블클릭시 변경, 클릭시 getpos
 #content도 
 #all 선택
+#group해제는 우클릭해서 메뉴 팝업후 삭제 가능하도록
+#widgetitem 클릭 후 delet 누르면 삭제되도록
+#getpos 영역 확대하기 + 멀티모니터 사용 고려
+#image 검색을 사용할 경우 region 영역 버튼도 활성화하기 default는 전체영역
 class Second(QWidget):
     def __init__(self,MainUi,btn):
         super().__init__()
@@ -62,6 +63,7 @@ class Second(QWidget):
     def input_coor_to_btn(self,str):
         pass
     
+    # pos -> treewidgetitem에 저장
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.offset = event.pos()
@@ -112,7 +114,6 @@ class PosBtn(QPushButton):
     def __init__(self,name):
         super().__init__()
         self.setText(name)
-        print(1)
         self.clicked.connect(self.run)     
     def run(self):
         self.double_signal.emit()
@@ -294,7 +295,9 @@ class TreeWidget(QTreeWidget):
             if drag_item.text(1) == "Mouse":
                 coor = drag_item.pos_wdg.pos_le.text()
                 drag_item.pos_wdg = PosWidget(coor)
-                drag_item.pos_wdg.pos_btn.clicked.connect(lambda ignore,f=drag_item.pos_wdg.get_pos:f())                
+                # 이동해도, item을 새로 만드는 것이기 때문에, connect도 다시 해줘야한다.
+                # 추후 class init할 때 connect 하도록 수정할 필요있음
+                drag_item.pos_wdg.pos_btn.clicked.connect(lambda ignore,f=drag_item.pos_wdg.get_pos:f())                  
                 self.setItemWidget(drag_item, 3, drag_item.pos_wdg)
             drag_item.typ_cbx.typ_signal.connect(lambda:drag_item.change_act(drag_item.typ_cbx,drag_item.act_cbx))
             child_cnt = drag_item.childCount()
@@ -516,7 +519,11 @@ class MyWindow(QMainWindow):
             #그러므로 top은 예외고, 중간과 막내는 써주는 상황을 통일시켜야 한다
             #recursive 가기 전에 해주는게 맞아 보인다
             for ch_num in range(parent.childCount()):
-                lst = [parent.child(ch_num).text(i) for i in range(self.tw.columnCount())]
+                ch_item = parent.child(ch_num)
+                print(ch_item)
+                lst = [ch_item.text(i) for i in range(self.tw.columnCount())]
+                if ch_item.text(1) == "Mouse":
+                    lst[3] = ch_item.pos_wdg.pos_le.text()
                 lst.insert(0,parent.text(0))     
                 writer.writerow(lst)
                 self.recur_child(writer,parent.child(ch_num))
