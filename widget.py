@@ -18,7 +18,7 @@ from requests import delete
 #content도 
 #all 선택
 class Second(QWidget):
-    def __init__(self,window,MainUi,btn_list,idx):
+    def __init__(self,MainUi,btn):
         super().__init__()
         self.MainUi = MainUi
         self.setWindowTitle("Test")
@@ -40,9 +40,8 @@ class Second(QWidget):
         self.setWindowOpacity(0.3)
         self.set_maximize()
         self.offset = ""
-        self.btn_list = btn_list
-        self.idx = idx
-
+        self.btn = btn
+        
     def set_minimize(self):
         self.setGeometry(0, 0, 20, 20)
         self.setStyleSheet("background-color: yellow;")
@@ -69,17 +68,20 @@ class Second(QWidget):
             x= str(self.offset.x())
             y= str(self.offset.y())
             coor = x + "," + y
-            if isinstance(self.btn_list[self.idx],PosButton):
-                self.btn_list[self.idx].pos = coor
-                self.btn_list[self.idx].setStyleSheet("color:black")
+            # treewidgetitem->poswidget->posbtn
+            if isinstance(self.btn,PosBtn):
+                self.btn.pos = coor
+                self.btn.parent().pos_le.setText(coor)
+                self.btn.setStyleSheet("color:black")
+                
                 self.close()
             else:
-                pos_pair = self.btn_list[self.idx].pos_pair
+                pos_pair = self.btn.pos_pair
                 if len(pos_pair) == 2:
                     pos_pair = []
                 pos_pair.append(coor)
                 if len(pos_pair) == 2:
-                    self.btn_list[self.idx].setStyleSheet("color:black")
+                    self.btn.setStyleSheet("color:black")
                     self.close()
         else:
             super().mousePressEvent(event)
@@ -107,12 +109,21 @@ class Second(QWidget):
         
 class PosBtn(QPushButton):
     double_signal = pyqtSignal()
-    def __init__(self):
+    def __init__(self,name):
         super().__init__()
-        self.clicked.connect(self.run)
-        
+        self.setText(name)
+        print(1)
+        self.clicked.connect(self.run)     
     def run(self):
         self.double_signal.emit()
+
+class RegButton(QPushButton):
+    def __init__(self,name):
+        super().__init__()
+        self.setText(name)
+        self.pos_pair = []
+        self.setFixedSize(QSize(50,20))
+        self.setStyleSheet("color:red")
     
 class ActCombo(QComboBox):
     def __init__(self,typ,act):
@@ -163,16 +174,20 @@ class PosWidget(QWidget):
         self.widget_lay = QHBoxLayout(self)
         self.widget_lay.setContentsMargins(0,0,0,0)
         self.widget_lay.setSpacing(0)
-        self.pos_le = QLineEdit(pos)
+        self.pos_le = QLineEdit(pos,self)
         self.pos_le.setFixedWidth(80)
-        self.pos_btn = QPushButton("pos")
+        self.pos_btn = PosBtn("pos")
         self.pos_btn.setFixedWidth(50)
         self.widget_lay.addWidget(self.pos_le)
         self.widget_lay.addWidget(self.pos_btn)
-        self.pos_btn.connect(self.run)
+        self.pos_btn.clicked.connect(self.run)
         
     def run(self):
         self.pos_signal.emit()
+                
+    def get_pos(self):
+        self.second = Second(self,self.pos_btn)
+        self.second.show()
         
 class resource_cl():
     newid = itertools.count()
@@ -199,7 +214,7 @@ class TreeWidgetItem(QTreeWidgetItem):
                 pos = self.row[4]
                 if self.row[2] == "Mouse":
                     self.pos_wdg = PosWidget(pos)
-                    self.pos_wdg.pos_btn.clicked.connect(lambda ignore,f=self.get_pos,arg=self.trsf_btns,idx=x:f(arg,idx))
+                    self.pos_wdg.pos_btn.clicked.connect(lambda ignore,f=self.pos_wdg.get_pos:f())
                     self.tw.setItemWidget(self, 3, self.pos_wdg)
 
         self.setFlags(self.flags()|Qt.ItemIsEditable) #editable
@@ -221,6 +236,7 @@ class TreeWidgetItem(QTreeWidgetItem):
             self.setText(1,"Mouse")
             self.setText(2,"Click")
             self.pos_wdg = PosWidget("0,0")
+            self.pos_wdg.pos_btn.clicked.connect(lambda ignore,f=self.pos_wdg.get_pos:f())
             self.tw.setItemWidget(self,3,self.pos_wdg) # typ을 mouse로 변경시 - pos 연동 생성
         elif typ_cbx.currentText() == "Key":
             act_cbx.clear()
@@ -544,11 +560,7 @@ class MyWindow(QMainWindow):
 
     def self_close(self):
         self.close() 
-        
-    def get_pos(self,btn_list,idx):
-        self.second = Second(self.window,self,btn_list,idx)
-        self.second.show()
-                
+            
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     main = MyWindow()
