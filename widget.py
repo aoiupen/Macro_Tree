@@ -3,32 +3,262 @@ import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+import pandas as pd
+from screeninfo import get_monitors
 
 import pyautogui as pag
 from openpyxl import load_workbook
 
 import itertools
-#id관리
+
+from requests import delete
+#to do
+#typcombo 변경시 checkbox 풀리는 문제, pyqtslot으로 해결해보기
+#pos를 lineedit->button으로 : 더블클릭시 변경, 클릭시 getpos
+#content도 
+#all 선택
+class Second(QWidget):
+    def __init__(self,MainUi,btn):
+        super().__init__()
+        self.MainUi = MainUi
+        self.setWindowTitle("Test")
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        m = get_monitors()[0]
+        self.resolution_width = m.width
+        self.resolution_height = m.height
+        self.label = QLabel("", self)
+        self.offset = None
+        self.quitSc1 = QShortcut(QKeySequence('ESC'), self)
+        self.quitSc1.activated.connect(self.self_close)
+        self.quitSc2 = QShortcut(QKeySequence('Ctrl+M'), self)
+        self.quitSc2.activated.connect(self.set_maximize)
+        self.quitSc3 = QShortcut(QKeySequence('Ctrl+S'), self)
+        self.quitSc3.activated.connect(self.set_minimize)
+        op = QGraphicsOpacityEffect(self)
+        self.setGraphicsEffect(op)
+        self.setAutoFillBackground(True)
+        self.setWindowOpacity(0.3)
+        self.set_maximize()
+        self.offset = ""
+        self.btn = btn
+        
+    def set_minimize(self):
+        self.setGeometry(0, 0, 20, 20)
+        self.setStyleSheet("background-color: yellow;")
+        op = QGraphicsOpacityEffect(self)
+        self.setGraphicsEffect(op)
+        self.setAutoFillBackground(True)
+        self.setWindowOpacity(1)
+
+    def set_maximize(self):
+        self.setGeometry(0, 0, self.resolution_width,
+                         self.resolution_height-100)
+        self.setStyleSheet("background-color: white;")
+        op = QGraphicsOpacityEffect(self)
+        self.setGraphicsEffect(op)
+        self.setAutoFillBackground(True)
+        self.setWindowOpacity(0.1)
+    
+    def input_coor_to_btn(self,str):
+        pass
+    
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.offset = event.pos()
+            x= str(self.offset.x())
+            y= str(self.offset.y())
+            coor = x + "," + y
+            # treewidgetitem->poswidget->posbtn
+            if isinstance(self.btn,PosBtn):
+                self.btn.pos = coor
+                self.btn.parent().pos_le.setText(coor)
+                self.btn.setStyleSheet("color:black")               
+                self.close()
+            else:
+                pos_pair = self.btn.pos_pair
+                if len(pos_pair) == 2:
+                    pos_pair = []
+                pos_pair.append(coor)
+                if len(pos_pair) == 2:
+                    self.btn.setStyleSheet("color:black")
+                    self.close()
+        else:
+            super().mousePressEvent(event)
+            
+    def mouseMoveEvent(self, event):
+        if self.offset is not None and event.buttons() == Qt.LeftButton:
+            self.move(self.pos() + event.pos() - self.offset)
+        else:
+            super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        self.offset = None
+        super().mouseReleaseEvent(event)        
+
+    # move to getpos.py later
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setPen(QPen(Qt.green, 8, Qt.SolidLine))
+        # db.inst_dict
+        painter.drawEllipse(40, 40, 40, 40)
+        return
+
+    def self_close(self):
+        self.close()
+
+#옮길때 pos coor 값 보존
+class PosBtn(QPushButton):
+    double_signal = pyqtSignal()
+    def __init__(self,name):
+        super().__init__()
+        self.setText(name)
+        print(1)
+        self.clicked.connect(self.run)     
+    def run(self):
+        self.double_signal.emit()
+
+class RegButton(QPushButton):
+    def __init__(self,name):
+        super().__init__()
+        self.setText(name)
+        self.pos_pair = []
+        self.setFixedSize(QSize(50,20))
+        self.setStyleSheet("color:red")
+    
+class ActCombo(QComboBox):
+    def __init__(self,typ,act):
+        QComboBox.__init__(self)
+        if typ == "Mouse":
+            self.addItem("Click")
+            self.addItem("Double")
+            self.addItem("Right")
+            if act == "Click":
+                self.setCurrentIndex(0)
+            elif act == "Double":
+                self.setCurrentIndex(1)
+            else:
+                self.setCurrentIndex(2)
+        elif typ == "Key":
+            self.addItem("Copy")
+            self.addItem("Paste")
+            self.addItem("Delete")
+            if act == "Copy":
+                self.setCurrentIndex(0)
+            elif act == "Paste":
+                self.setCurrentIndex(1)
+            else:
+                self.setCurrentIndex(2)    
+        #self.setStyleSheet("background-color: rgb(250,250,250);")
+
+class TypCombo(QComboBox):
+    typ_signal = pyqtSignal()
+    def __init__(self,parent,typ):
+        QComboBox.__init__(self)
+        
+        self.prnt = parent
+        self.addItem("Mouse")
+        self.addItem("Key")
+        idx = lambda x : 0 if x == "Mouse" else 1
+        self.setCurrentIndex(idx(typ))
+        #self.setStyleSheet("background-color: rgb(250,250,250);")
+        self.currentIndexChanged.connect(self.run)
+        
+    def run(self):
+        self.typ_signal.emit()
+        
+class PosWidget(QWidget):
+    pos_signal = pyqtSignal()
+    def __init__(self,pos):
+        QWidget.__init__(self)
+        self.minimumSize().height()
+        self.widget_lay = QHBoxLayout(self)
+        self.widget_lay.setContentsMargins(0,0,0,0)
+        self.widget_lay.setSpacing(0)
+        self.pos_le = QLineEdit(pos,self)
+        self.pos_le.setFixedWidth(80)
+        self.pos_btn = PosBtn("pos")
+        self.pos_btn.setFixedWidth(50)
+        self.widget_lay.addWidget(self.pos_le)
+        self.widget_lay.addWidget(self.pos_btn)
+        self.pos_btn.clicked.connect(self.run)
+        
+    def run(self):
+        self.pos_signal.emit()
+                
+    def get_pos(self):
+        self.second = Second(self,self.pos_btn)
+        self.second.show()
+        
 class resource_cl():
     newid = itertools.count()
     def __init__(self):
         self.id = resource_cl.newid()
 
 class TreeWidgetItem(QTreeWidgetItem):
-    def __init__(self,parent,name=""):
+    def __init__(self,tw,parent,row=""):
+        self.tw = tw
+        self.row = row
         QTreeWidgetItem.__init__(self,parent)
         self.prnt = parent
-        self.name = name
-        self.setFlags(self.flags()|Qt.ItemIsEditable) #editable
-        self.setCheckState(0,Qt.Checked)#col,state
-        self.setExpanded(True)
 
+        if len(self.row)>2:#우측 treewidget 없앨 때 같이 지울 조건
+            if self.row[2]:
+                typ = self.row[2]
+                self.typ_cbx = TypCombo(self,typ)
+                self.tw.setItemWidget(self, 1, self.typ_cbx)
+                #row[2]가 있으면 row[3]도 있으므로 if문 생략
+                act = self.row[3]
+                self.act_cbx = ActCombo(typ,act)
+                self.tw.setItemWidget(self, 2, self.act_cbx)
+                self.typ_cbx.typ_signal.connect(lambda:self.change_act(self.typ_cbx,self.act_cbx))
+                pos = self.row[4]
+                if self.row[2] == "Mouse":
+                    self.pos_wdg = PosWidget(pos)
+                    self.pos_wdg.pos_btn.clicked.connect(lambda ignore,f=self.pos_wdg.get_pos:f())
+                    self.tw.setItemWidget(self, 3, self.pos_wdg)
+
+        self.setFlags(self.flags()|Qt.ItemIsEditable) #editable
+        self.setCheckState(0,Qt.Checked) #col,state
+        self.setExpanded(True)
+    #group을 지웠을 때 child가 윗계층으로 올라가기
+     
+    #signal의 class가 qobject를 상속할 때만 @pyqtSlot()을 달아주고, 아니면 달지 않는다
+    #https://stackoverflow.com/questions/40325953/why-do-i-need-to-decorate-connected-slots-with-pyqtslot/40330912#40330912       
+    def change_act(self,typ_cbx,act_cbx):
+        #typ_cbx를 self.typ_cbx로 바꾸고 param 지우기
+        self.tw.disconnect()
+        if typ_cbx.currentText() == "Mouse":
+            act_cbx.clear()
+            act_cbx.addItem("Click")
+            act_cbx.addItem("Double")
+            act_cbx.addItem("Right")
+            act_cbx.setCurrentIndex(0)
+            self.setText(1,"Mouse")
+            self.setText(2,"Click")
+            self.pos_wdg = PosWidget("0,0")
+            self.pos_wdg.pos_btn.clicked.connect(lambda ignore,f=self.pos_wdg.get_pos:f())
+            self.tw.setItemWidget(self,3,self.pos_wdg) # typ을 mouse로 변경시 - pos 연동 생성
+        elif typ_cbx.currentText() == "Key":
+            act_cbx.clear()
+            act_cbx.addItem("Copy")
+            act_cbx.addItem("Paste")
+            act_cbx.addItem("Delete")
+            self.setText(1,"Key")
+            self.setText(2,"Copy")
+            act_cbx.setCurrentIndex(0)
+            self.tw.removeItemWidget(self,3)
+        ctr_widget = self.tw.parent()
+        wid = ctr_widget.parent()
+        self.tw.itemChanged.connect(wid.get_item) # typ을 key로 변경시 - pos 연동 삭제
+#https://stackoverflow.com/questions/25559221/qtreewidgetitem-issue-items-set-using-setwidgetitem-are-dispearring-after-movin        
 class TreeWidget(QTreeWidget):
     customMimeType = "application/x-customTreeWidgetdata"
     def __init__(self):
         super().__init__()
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
+        self.dropEvent = self.treeDropEvent
+                
         self.setEditTriggers(QAbstractItemView.DoubleClicked)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
@@ -51,16 +281,47 @@ class TreeWidget(QTreeWidget):
         drag.setMimeData(mimedata)
         drag.exec_(supportedActions)
 
-    def dropEvent(self, event):
+    def move_itemwidget(self,tw,event,drag_item):
+        self.tw = tw
+        event.setDropAction(Qt.MoveAction)
+        QTreeWidget.dropEvent(self, event)
+        # *drop event로 Data를 먼저 옮기고, if문 이하에서 item setting
+        if drag_item.text(1):
+            drag_item.typ_cbx = TypCombo(self,drag_item.text(1))
+            drag_item.act_cbx = ActCombo(drag_item.text(1),drag_item.text(2))
+            self.setItemWidget(drag_item, 1, drag_item.typ_cbx)
+            self.setItemWidget(drag_item, 2, drag_item.act_cbx)
+            if drag_item.text(1) == "Mouse":
+                coor = drag_item.pos_wdg.pos_le.text()
+                drag_item.pos_wdg = PosWidget(coor)
+                drag_item.pos_wdg.pos_btn.clicked.connect(lambda ignore,f=drag_item.pos_wdg.get_pos:f())                
+                self.setItemWidget(drag_item, 3, drag_item.pos_wdg)
+            drag_item.typ_cbx.typ_signal.connect(lambda:drag_item.change_act(drag_item.typ_cbx,drag_item.act_cbx))
+            child_cnt = drag_item.childCount()
+            if child_cnt:
+                for idx in range(child_cnt):
+                    child = drag_item.child(idx)
+                    #event를 param으로 넘겨도 되는지
+                    self.tw.move_itemwidget(self.tw,event,child)
+            
+    #group간 종속기능 추가해야함
+    #pos 따라가도록
+    def treeDropEvent(self, event):
+        # 현 treewidget으로 drop
         if event.source() == self:
-            event.setDropAction(Qt.MoveAction)
-            QTreeWidget.dropEvent(self, event)
+            drag_item = self.currentItem()
+            if drag_item.text(1):
+                self.move_itemwidget(self,event,drag_item)
+                #child도 같은 처리해줘야함
+            
+        # 타 widget으로 drop     
         elif isinstance(event.source(), QTreeWidget):
             if event.mimeData().hasFormat(TreeWidget.customMimeType):
                 encoded = event.mimeData().data(TreeWidget.customMimeType)
                 parent = self.itemAt(event.pos())
                 items = self.decodeData(encoded, event.source())
                 for it in items:
+                    #QTree->TreeWidgetItem?
                     item = QTreeWidgetItem(parent)
                     self.fillItem(it, item)
                     self.fillItems(it, item)
@@ -114,38 +375,59 @@ class TreeWidget(QTreeWidget):
 
     @pyqtSlot(TreeWidgetItem, int)
     def onItemClicked(self, it, col):
-        print(it, col, it.text(col))
-
-
+        pass
+        #print(it, col, it.text(col))
+    
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("window title")
-        self.setGeometry(100,100,1300,700)
+        self.setGeometry(100,100,2000,700)
         self.ctr_wid = QWidget()
         self.ctr_lay = QHBoxLayout(self.ctr_wid)
         self.setCentralWidget(self.ctr_wid)
+        
+        saveAction = QAction('Save', self)
+        saveAction.setShortcut('Ctrl+S')
+        saveAction.setStatusTip('Save application')
+        loadAction = QAction('Load', self)
+        loadAction.setShortcut('Ctrl+O')
+        loadAction.setStatusTip('Load application')
+        exitAction = QAction('Exit', self)
+        exitAction.setShortcut('Ctrl+Q')
+        exitAction.setStatusTip('Exit application')
+
+        menubar = self.menuBar()
+        menubar.setNativeMenuBar(False)
+        filemenu = menubar.addMenu('&File')
+        filemenu.addAction(loadAction)
+        filemenu.addAction(saveAction)
+        filemenu.addAction(exitAction)
+        
+        loadAction.triggered.connect(self.load)
+        saveAction.triggered.connect(self.save)
+        exitAction.triggered.connect(self.self_close)
         
         self.tw = TreeWidget()
         self.tw.setColumnCount(5)
         self.tw.setHeaderLabels(["Name","Type","Act","Pos","Content"])
                 
         self.ctr_lay.addWidget(self.tw)
-        
+    
         self.tw2 = TreeWidget()
         self.tw2.setColumnCount(2)
         self.tw2.setHeaderLabels(["Name","List"])
-        val_1 = TreeWidgetItem(self.tw2)
+        val_1 = TreeWidgetItem(self.tw2,self.tw2)
         val_1.setText(0,"val_a")
         val_1.setText(1,"a,b,c,d,e,f,g,h,i,j,k")
         val_1.setFlags(val_1.flags()|Qt.ItemIsEditable) #editable
         
-        val_2 = TreeWidgetItem(self.tw2)
+        val_2 = TreeWidgetItem(self.tw2,self.tw2)
         val_2.setText(0,"val_a")
         val_2.setText(1,"a,b,c,d,e,f,g,h,i,j,k")
         val_2.setFlags(val_2.flags()|Qt.ItemIsEditable) #editable
         
-        val_3 = TreeWidgetItem(self.tw2)
+        val_3 = TreeWidgetItem(self.tw2,self.tw2)
         val_3.setText(0,"val_a")
         val_3.setText(1,"a,b,c,d,e,f,g,h,i,j,k")
         val_3.setFlags(val_3.flags()|Qt.ItemIsEditable) #editable
@@ -164,7 +446,7 @@ class MyWindow(QMainWindow):
         self.insts = []
         self.load()
         self.tw.itemChanged.connect(self.get_item)
-        
+       
     def check_child(self,cur,col):
         if col == 0:
             ch_num = cur.childCount()
@@ -224,7 +506,7 @@ class MyWindow(QMainWindow):
                 for i in range(top_cnt):
                     top_it = self.tw.topLevelItem(i)
                     if top_it:
-                        writer.writerow(["top",top_it.text(0)])
+                        writer.writerow(["top",top_it.text(0),"","","",""])
                         if top_it.childCount():
                             self.recur_child(writer,top_it)
         
@@ -242,39 +524,44 @@ class MyWindow(QMainWindow):
          
     def load(self):
         self.tw.disconnect()
+        self.tw.clear()
         with open('ex.csv', 'rt') as f:
             reader = csv.reader(f)
-            for row in reader:
+            self.insts=[]
+            for idx,row in enumerate(reader):
                 parent = ""
 
                 parent_str = row[0]
                 name = row[1]
                 if parent_str == 'top':
                     parent = self.tw
-                    tw_item = TreeWidgetItem(parent,parent_str)
+                    tw_item = TreeWidgetItem(self.tw,parent,row)
                     tw_item.setText(0,name)
                 else:
                     for inst in self.insts:
                         if inst.text(0) == parent_str:   
                             parent = inst                        
-                            tw_item = TreeWidgetItem(parent,parent_str)
+                            tw_item = TreeWidgetItem(self.tw,parent,row)
                             tw_item.setText(0,name)
+                            break
+                    
                 #parent에 string이 들어가면 안되고,이 이름을 가지는 widget을 불러와야한다
-                
+                #column에 widget이 들어가면 이 코드가 의미가 없을 듯
                 if len(row) >2:
                     typ = row[2]
                     act = row[3]
                     pos = row[4]
                     content = row[5]
-
                     tw_item.setText(1,typ)
                     tw_item.setText(2,act)
                     tw_item.setText(3,pos)
                     tw_item.setText(4,content)    
                 self.insts.append(tw_item)
+        self.tw.itemChanged.connect(self.get_item)
 
-
-                
+    def self_close(self):
+        self.close() 
+            
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     main = MyWindow()
