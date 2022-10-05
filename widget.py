@@ -168,22 +168,38 @@ class TreeWidget(QTreeWidget):
         drag.setMimeData(mimedata)
         drag.exec_(supportedActions)
 
+    def move_itemwidget(self,tw,event,drag_item):
+        self.tw = tw
+        event.setDropAction(Qt.MoveAction)
+        QTreeWidget.dropEvent(self, event)
+        print(drag_item.text(0))
+        print(drag_item.text(1))
+        if drag_item.text(1):
+            # *drop event가 먼저 적용돼야 widget이 사라지지 않음
+            drag_item.typ_cbx = TypCombo(self,drag_item.text(1))
+            drag_item.act_cbx = ActCombo(drag_item.text(1),drag_item.text(2))
+            self.setItemWidget(drag_item, 1, drag_item.typ_cbx)
+            self.setItemWidget(drag_item, 2, drag_item.act_cbx)
+            if drag_item.text(1) == "Mouse":
+                drag_item.pos_wdg = PosWidget("0,0")
+                self.setItemWidget(drag_item, 3, drag_item.pos_wdg)
+            drag_item.typ_cbx.typ_signal.connect(lambda:drag_item.change_act(drag_item.typ_cbx,drag_item.act_cbx))
+            child_cnt = drag_item.childCount()
+            print(child_cnt)
+            if child_cnt:
+                print(child_cnt)
+                for idx in range(child_cnt):
+                    child = drag_item.child(idx)
+                    # event를 param으로 넘겨도 되는지
+                    self.tw.move_itemwidget(self.tw,event,child)
+            
     #child로 만들때 item 사라지는 현상 해결해야함
     def treeDropEvent(self, event):
         # 현 treewidget으로 drop
         if event.source() == self:
             drag_item = self.currentItem()
             if drag_item.text(1):
-                # *drop event가 먼저 적용돼야 widget이 사라지지 않음
-                event.setDropAction(Qt.MoveAction)
-                QTreeWidget.dropEvent(self, event)
-                drag_item.typ_cbx = TypCombo(self,drag_item.text(1))
-                drag_item.act_cbx = ActCombo(drag_item.text(1),drag_item.text(2))
-                drag_item.pos_wdg = PosWidget("0,0")
-                self.setItemWidget(drag_item, 1, drag_item.typ_cbx)
-                self.setItemWidget(drag_item, 2, drag_item.act_cbx)
-                self.setItemWidget(drag_item, 3, drag_item.pos_wdg)
-                drag_item.typ_cbx.typ_signal.connect(lambda:drag_item.change_act(drag_item.typ_cbx,drag_item.act_cbx))
+                self.move_itemwidget(self,event,drag_item)
                 #child도 같은 처리해줘야함
             
         # 타 widget으로 drop     
