@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 import pandas as pd
+from screeninfo import get_monitors
 
 import pyautogui as pag
 from openpyxl import load_workbook
@@ -16,7 +17,94 @@ from requests import delete
 #pos를 lineedit->button으로 : 더블클릭시 변경, 클릭시 getpos
 #content도 
 #all 선택
+class Second(QWidget):
+    def __init__(self,window,MainUi,btn_list,idx):
+        super().__init__()
+        self.MainUi = MainUi
+        self.setWindowTitle("Test")
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        m = get_monitors()[0]
+        self.resolution_width = m.width
+        self.resolution_height = m.height
+        self.label = QLabel("", self)
+        self.offset = None
+        self.quitSc1 = QShortcut(QKeySequence('ESC'), self)
+        self.quitSc1.activated.connect(self.self_close)
+        self.quitSc2 = QShortcut(QKeySequence('Ctrl+M'), self)
+        self.quitSc2.activated.connect(self.set_maximize)
+        self.quitSc3 = QShortcut(QKeySequence('Ctrl+S'), self)
+        self.quitSc3.activated.connect(self.set_minimize)
+        op = QGraphicsOpacityEffect(self)
+        self.setGraphicsEffect(op)
+        self.setAutoFillBackground(True)
+        self.setWindowOpacity(0.3)
+        self.set_maximize()
+        self.offset = ""
+        self.btn_list = btn_list
+        self.idx = idx
 
+    def set_minimize(self):
+        self.setGeometry(0, 0, 20, 20)
+        self.setStyleSheet("background-color: yellow;")
+        op = QGraphicsOpacityEffect(self)
+        self.setGraphicsEffect(op)
+        self.setAutoFillBackground(True)
+        self.setWindowOpacity(1)
+
+    def set_maximize(self):
+        self.setGeometry(0, 0, self.resolution_width,
+                         self.resolution_height-100)
+        self.setStyleSheet("background-color: white;")
+        op = QGraphicsOpacityEffect(self)
+        self.setGraphicsEffect(op)
+        self.setAutoFillBackground(True)
+        self.setWindowOpacity(0.1)
+    
+    def input_coor_to_btn(self,str):
+        pass
+    
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.offset = event.pos()
+            x= str(self.offset.x())
+            y= str(self.offset.y())
+            coor = x + "," + y
+            if isinstance(self.btn_list[self.idx],PosButton):
+                self.btn_list[self.idx].pos = coor
+                self.btn_list[self.idx].setStyleSheet("color:black")
+                self.close()
+            else:
+                pos_pair = self.btn_list[self.idx].pos_pair
+                if len(pos_pair) == 2:
+                    pos_pair = []
+                pos_pair.append(coor)
+                if len(pos_pair) == 2:
+                    self.btn_list[self.idx].setStyleSheet("color:black")
+                    self.close()
+        else:
+            super().mousePressEvent(event)
+            
+    def mouseMoveEvent(self, event):
+        if self.offset is not None and event.buttons() == Qt.LeftButton:
+            self.move(self.pos() + event.pos() - self.offset)
+        else:
+            super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        self.offset = None
+        super().mouseReleaseEvent(event)        
+
+    # move to getpos.py later
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setPen(QPen(Qt.green, 8, Qt.SolidLine))
+        # db.inst_dict
+        painter.drawEllipse(40, 40, 40, 40)
+        return
+
+    def self_close(self):
+        self.close()
+        
 class PosBtn(QPushButton):
     double_signal = pyqtSignal()
     def __init__(self):
@@ -68,6 +156,7 @@ class TypCombo(QComboBox):
         self.typ_signal.emit()
         
 class PosWidget(QWidget):
+    pos_signal = pyqtSignal()
     def __init__(self,pos):
         QWidget.__init__(self)
         self.minimumSize().height()
@@ -80,7 +169,11 @@ class PosWidget(QWidget):
         self.pos_btn.setFixedWidth(50)
         self.widget_lay.addWidget(self.pos_le)
         self.widget_lay.addWidget(self.pos_btn)
-    
+        self.pos_btn.connect(self.run)
+        
+    def run(self):
+        self.pos_signal.emit()
+        
 class resource_cl():
     newid = itertools.count()
     def __init__(self):
@@ -106,11 +199,13 @@ class TreeWidgetItem(QTreeWidgetItem):
                 pos = self.row[4]
                 if self.row[2] == "Mouse":
                     self.pos_wdg = PosWidget(pos)
+                    self.pos_wdg.pos_btn.clicked.connect(lambda ignore,f=self.get_pos,arg=self.trsf_btns,idx=x:f(arg,idx))
                     self.tw.setItemWidget(self, 3, self.pos_wdg)
 
         self.setFlags(self.flags()|Qt.ItemIsEditable) #editable
         self.setCheckState(0,Qt.Checked) #col,state
         self.setExpanded(True)
+    #group을 지웠을 때 child가 윗계층으로 올라가기
      
     #signal의 class가 qobject를 상속할 때만 @pyqtSlot()을 달아주고, 아니면 달지 않는다
     #https://stackoverflow.com/questions/40325953/why-do-i-need-to-decorate-connected-slots-with-pyqtslot/40330912#40330912       
@@ -126,8 +221,7 @@ class TreeWidgetItem(QTreeWidgetItem):
             self.setText(1,"Mouse")
             self.setText(2,"Click")
             self.pos_wdg = PosWidget("0,0")
-            self.tw.setItemWidget(self,3,self.pos_wdg)
-            #pos새로 만들기
+            self.tw.setItemWidget(self,3,self.pos_wdg) # typ을 mouse로 변경시 - pos 연동 생성
         elif typ_cbx.currentText() == "Key":
             act_cbx.clear()
             act_cbx.addItem("Copy")
@@ -139,7 +233,7 @@ class TreeWidgetItem(QTreeWidgetItem):
             self.tw.removeItemWidget(self,3)
         ctr_widget = self.tw.parent()
         wid = ctr_widget.parent()
-        self.tw.itemChanged.connect(wid.get_item)
+        self.tw.itemChanged.connect(wid.get_item) # typ을 key로 변경시 - pos 연동 삭제
 #https://stackoverflow.com/questions/25559221/qtreewidgetitem-issue-items-set-using-setwidgetitem-are-dispearring-after-movin        
 class TreeWidget(QTreeWidget):
     customMimeType = "application/x-customTreeWidgetdata"
@@ -450,7 +544,10 @@ class MyWindow(QMainWindow):
 
     def self_close(self):
         self.close() 
-
+        
+    def get_pos(self,btn_list,idx):
+        self.second = Second(self.window,self,btn_list,idx)
+        self.second.show()
                 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
