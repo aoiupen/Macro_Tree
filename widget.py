@@ -1,5 +1,6 @@
 import csv
 import sys
+from types import NoneType
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -13,6 +14,8 @@ import itertools
 #####icon log flexble
 from requests import delete
 
+#transfrom,flexible,pressed
+#실행 코드 작성 -> UX 개선 + region, image 탐색 기능 추가
 #group과 inst 앞에 서로 다른 아이콘
 #group은 대문자 G
 #inst는 문서그림
@@ -206,6 +209,8 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.row = row
         QTreeWidgetItem.__init__(self,parent)
         self.prnt = parent
+        self.act_cbx = None
+        self.typ_cbx = None
 
         if len(self.row)>2:#우측 treewidget 없앨 때 같이 지울 조건
             if self.row[2]:
@@ -273,15 +278,36 @@ class TreeWidget(QTreeWidget):
         self.menu = QMenu(self)
         delete_act = QAction('Delete',self)
         delete_act.triggered.connect(lambda:self.recur_delete(event))
+        ungroup_act = QAction('Ungroup',self)
+        ungroup_act.triggered.connect(lambda:self.ungrouping(event))
         self.menu.addAction(delete_act)
+        self.menu.addAction(ungroup_act)
         self.menu.popup(QCursor.pos())
         
-    #나중에 sip 시도해보기
+    # 나중에 sip 시도해보기
     def recur_delete(self,event):
         root = self.invisibleRootItem()
         for item in self.selectedItems():
             (item.parent() or root).removeChild(item)
-
+    
+    # cur의 child의 parent를 cur->cur.parent()로 바꾸기
+    # cur의 ix와 parent를 뽑기
+    # child_without_parent를 parent.addChild로 더하기
+    # ungrouping 할 때 맨 아래로 내려가고, widget 풀리는 현상 발생
+    def ungrouping(self,event):
+        root = self.invisibleRootItem()
+        for item in self.selectedItems():
+            if isinstance(item.typ_cbx,NoneType):
+                new_parent = item.parent()
+                child_cnt = item.childCount()
+                if child_cnt:
+                    for idx in range(child_cnt):
+                        child = item.child(idx)
+                        ix = item.indexOfChild(child)
+                        item_without_parent = item.takeChild(ix)
+                        (item.parent() or root).addChild(item_without_parent)
+                (item.parent() or root).removeChild(item)
+            
     # custom일경우(나중에 공부). 옆에는 적용되던데 왜지...
     def context_menu(self, pos):
         index = self.indexAt(pos)
