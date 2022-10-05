@@ -49,7 +49,7 @@ class ActCombo(QComboBox):
                 self.setCurrentIndex(1)
             else:
                 self.setCurrentIndex(2)    
-        self.setStyleSheet("background-color: rgb(250,250,250);")
+        #self.setStyleSheet("background-color: rgb(250,250,250);")
 
 class TypCombo(QComboBox):
     typ_signal = pyqtSignal()
@@ -61,7 +61,7 @@ class TypCombo(QComboBox):
         self.addItem("Key")
         idx = lambda x : 0 if x == "Mouse" else 1
         self.setCurrentIndex(idx(typ))
-        self.setStyleSheet("background-color: rgb(250,250,250);")
+        #self.setStyleSheet("background-color: rgb(250,250,250);")
         self.currentIndexChanged.connect(self.run)
         
     def run(self):
@@ -70,9 +70,8 @@ class TypCombo(QComboBox):
 class PosWidget(QWidget):
     def __init__(self,pos):
         QWidget.__init__(self)
-        self.widget = QWidget()
-        self.widget.minimumSize().height()
-        self.widget_lay = QHBoxLayout(self.widget)
+        self.minimumSize().height()
+        self.widget_lay = QHBoxLayout(self)
         self.widget_lay.setContentsMargins(0,0,0,0)
         self.widget_lay.setSpacing(0)
         self.pos_le = QLineEdit(pos)
@@ -107,6 +106,7 @@ class TreeWidgetItem(QTreeWidgetItem):
                 pos = self.row[4]
                 if self.row[2] == "Mouse":
                     self.pos_wdg = PosWidget(pos)
+                    self.tw.setItemWidget(self, 3, self.pos_wdg)
 
         self.setFlags(self.flags()|Qt.ItemIsEditable) #editable
         self.setCheckState(0,Qt.Checked) #col,state
@@ -115,6 +115,7 @@ class TreeWidgetItem(QTreeWidgetItem):
     #signal의 class가 qobject를 상속할 때만 @pyqtSlot()을 달아주고, 아니면 달지 않는다
     #https://stackoverflow.com/questions/40325953/why-do-i-need-to-decorate-connected-slots-with-pyqtslot/40330912#40330912       
     def change_act(self,typ_cbx,act_cbx):
+        #typ_cbx를 self.typ_cbx로 바꾸고 param 지우기
         self.tw.disconnect()
         if typ_cbx.currentText() == "Mouse":
             act_cbx.clear()
@@ -124,6 +125,8 @@ class TreeWidgetItem(QTreeWidgetItem):
             act_cbx.setCurrentIndex(0)
             self.setText(1,"Mouse")
             self.setText(2,"Click")
+            self.pos_wdg = PosWidget("0,0")
+            self.tw.setItemWidget(self,3,self.pos_wdg)
             #pos새로 만들기
         elif typ_cbx.currentText() == "Key":
             act_cbx.clear()
@@ -133,7 +136,7 @@ class TreeWidgetItem(QTreeWidgetItem):
             self.setText(1,"Key")
             self.setText(2,"Copy")
             act_cbx.setCurrentIndex(0)
-            #pos item 있다면 지우기
+            self.tw.removeItemWidget(self,3)
         ctr_widget = self.tw.parent()
         wid = ctr_widget.parent()
         self.tw.itemChanged.connect(wid.get_item)
@@ -172,28 +175,26 @@ class TreeWidget(QTreeWidget):
         self.tw = tw
         event.setDropAction(Qt.MoveAction)
         QTreeWidget.dropEvent(self, event)
-        print(drag_item.text(0))
-        print(drag_item.text(1))
+        # *drop event로 Data를 먼저 옮기고, if문 이하에서 item setting
         if drag_item.text(1):
-            # *drop event가 먼저 적용돼야 widget이 사라지지 않음
             drag_item.typ_cbx = TypCombo(self,drag_item.text(1))
             drag_item.act_cbx = ActCombo(drag_item.text(1),drag_item.text(2))
             self.setItemWidget(drag_item, 1, drag_item.typ_cbx)
             self.setItemWidget(drag_item, 2, drag_item.act_cbx)
+            print(drag_item.text(1))
             if drag_item.text(1) == "Mouse":
                 drag_item.pos_wdg = PosWidget("0,0")
                 self.setItemWidget(drag_item, 3, drag_item.pos_wdg)
             drag_item.typ_cbx.typ_signal.connect(lambda:drag_item.change_act(drag_item.typ_cbx,drag_item.act_cbx))
             child_cnt = drag_item.childCount()
-            print(child_cnt)
             if child_cnt:
-                print(child_cnt)
                 for idx in range(child_cnt):
                     child = drag_item.child(idx)
-                    # event를 param으로 넘겨도 되는지
+                    #event를 param으로 넘겨도 되는지
                     self.tw.move_itemwidget(self.tw,event,child)
             
-    #child로 만들때 item 사라지는 현상 해결해야함
+    #group간 종속기능 추가해야함
+    #pos 따라가도록
     def treeDropEvent(self, event):
         # 현 treewidget으로 drop
         if event.source() == self:
@@ -442,7 +443,7 @@ class MyWindow(QMainWindow):
                     content = row[5]
                     tw_item.setText(1,typ)
                     tw_item.setText(2,act)
-                    #tw_item.setText(3,pos)
+                    tw_item.setText(3,pos)
                     tw_item.setText(4,content)    
                 self.insts.append(tw_item)
         self.tw.itemChanged.connect(self.get_item)
