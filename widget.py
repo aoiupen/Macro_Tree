@@ -293,7 +293,7 @@ class TreeWidget(QTreeWidget):
     # cur의 child의 parent를 cur->cur.parent()로 바꾸기
     # cur의 ix와 parent를 뽑기
     # child_without_parent를 parent.addChild로 더하기
-    # ungrouping 할 때 맨 아래로 내려가고, widget 풀리는 현상 발생
+    # ungrouping 할 때 맨 위 or 아래로 내려가고, widget 풀리는 현상 발생
     def ungrouping(self,event):
         root = self.invisibleRootItem()
         for item in self.selectedItems():
@@ -302,10 +302,17 @@ class TreeWidget(QTreeWidget):
                 child_cnt = item.childCount()
                 if child_cnt:
                     for idx in range(child_cnt):
-                        child = item.child(idx)
-                        ix = item.indexOfChild(child)
-                        item_without_parent = item.takeChild(ix)
-                        (item.parent() or root).addChild(item_without_parent)
+                        item_without_parent = item.takeChild(idx)
+                        #top일 때 nonetype이라 insertchild 안됨
+                        #child를 top으로 만들어줘야함. 복잡하네...
+                        if isinstance(item.parent(),NoneType):
+                            ix = self.indexOfTopLevelItem(item)
+                            self.insertTopLevelItem(ix,item_without_parent)
+                            #item이 toplevel 몇번째인지
+                        else:
+                            item.parent().insertChild(idx,item_without_parent)
+
+                        #root에 더할 때 index를 고려해서 넣기
                 (item.parent() or root).removeChild(item)
             
     # custom일경우(나중에 공부). 옆에는 적용되던데 왜지...
