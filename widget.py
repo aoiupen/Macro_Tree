@@ -15,6 +15,8 @@ import itertools
 from requests import delete
 
 #transfrom,flexible,pressed
+#시뮬레이션 기능 : pos를 클릭할 때 스크린샷도 같이
+#나중에 할 수 있을 듯
 #실행 코드 작성 -> UX 개선 + region, image 탐색 기능 추가
 #inst 추가 삭제
 #group과 inst 앞에 서로 다른 아이콘
@@ -26,9 +28,8 @@ from requests import delete
 #getpos 영역 확대하기 + 멀티모니터 사용 고려
 #image 검색을 사용할 경우 region 영역 버튼도 활성화하기 default는 전체영역
 #Ctrl+left click시 복사붙여넣기 되도록
-#inst아래 inst가 종속되면 안됨
 #우클릭 context에 복수 선택 후 group 기능 추가
-
+#한단계 올릴 때 맨 아래로 내려가는 문제, 최상위 단계로 올릴 시 순서가 root 밑으로 쌓이는 문제
 class Second(QWidget):
     def __init__(self,MainUi,btn):
         super().__init__()
@@ -286,9 +287,18 @@ class TreeWidget(QTreeWidget):
         delete_act.triggered.connect(lambda:self.recur_delete(event))
         ungroup_act = QAction('Ungroup',self)
         ungroup_act.triggered.connect(lambda:self.ungrouping(event))
+        group_act = QAction('Group',self)
+        group_act.triggered.connect(lambda:self.grouping(event))
         self.menu.addAction(delete_act)
         self.menu.addAction(ungroup_act)
+        self.menu.addAction(group_act)
         self.menu.popup(QCursor.pos())
+    
+    def grouping(self,event):
+        # selected items들에서 item without parent 뽑아냄
+        # 현재의 parent에서 새로 group 생성(생성후에 lineedit 수정 상태로)
+        # 새로 생성한 group가 addchild(item without parent)하기 
+        pass
         
     # 나중에 sip 시도해보기
     def recur_delete(self,event):
@@ -303,24 +313,27 @@ class TreeWidget(QTreeWidget):
     def ungrouping(self,event):
         root = self.invisibleRootItem()
         for item in self.selectedItems():
+            # inst에 ungroup 하면 바깥으로 빠져나오는 기능 추가
             if isinstance(item.typ_cbx,NoneType):
                 new_parent = item.parent()
                 child_cnt = item.childCount()
                 if child_cnt:
                     for idx in range(child_cnt):
-                        item_without_parent = item.takeChild(idx)
+                        #child가 하나씩 사라지므로 마지막 idx일때 1개만 남음
+                        #그러므로 최신 child를 지우도록 인자를 0 둠
+                        item_without_parent = item.takeChild(0) 
                         #top일 때 nonetype이라 insertchild 안됨
                         #child를 top으로 만들어줘야함. 복잡하네...
-                        if isinstance(item.parent(),NoneType):
+                        if isinstance(new_parent,NoneType):
                             ix = self.indexOfTopLevelItem(item)
-                            self.insertTopLevelItem(ix,item_without_parent)
+                            self.insertTopLevelItem(ix,item_without_parent)   
+                            #삭제하는법은?
                             #move_item
                             #item이 toplevel 몇번째인지
                         else:
-                            item.parent().insertChild(idx,item_without_parent)
+                            new_parent.insertChild(idx,item_without_parent)
                         self.move_itemwidget(self,item_without_parent)
-                        #root에 더할 때 index를 고려해서 넣기
-                (item.parent() or root).removeChild(item)
+                (new_parent or root).removeChild(item)
             
     # custom일경우(나중에 공부). 옆에는 적용되던데 왜지...
     def context_menu(self, pos):
