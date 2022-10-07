@@ -6,30 +6,42 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 import pandas as pd
 from screeninfo import get_monitors
-
 import pyautogui as pag
 from openpyxl import load_workbook
+import time
 
 import itertools
 #####icon log flexble
 from requests import delete
 
-#transfrom,flexible,pressed
-#시뮬레이션 기능 : pos를 클릭할 때 스크린샷도 같이
-#나중에 할 수 있을 듯
-#실행 코드 작성 -> UX 개선 + region, image 탐색 기능 추가
-#inst 추가 삭제
-#group과 inst 앞에 서로 다른 아이콘
-#group은 대문자 G
-#inst는 문서그림
-#Group으로 묶이거나, 하위
-#content도 
-#all 선택
-#getpos 영역 확대하기 + 멀티모니터 사용 고려
-#image 검색을 사용할 경우 region 영역 버튼도 활성화하기 default는 전체영역
-#Ctrl+left click시 복사붙여넣기 되도록
-#우클릭 context에 복수 선택 후 group 기능 추가
-#한단계 올릴 때 맨 아래로 내려가는 문제, 최상위 단계로 올릴 시 순서가 root 밑으로 쌓이는 문제
+# 기획 의도 : 프로그램 자체에 보안 관련 사항을 담지 않고,
+# 구체적 내용은 사용자가 커스터마이징하게 하며,
+# 특정 PC 환경에 종속되지 않아 범용 보급이 가능한 프로그램 개발
+
+# 실행하면 최소화. 끝나면 최대화 (옵션화)
+# 컨셉 : transfrom,flexible,pressed
+# Grouping 조건 : 위계 문제. 체크박스처럼. 폴더+child일부 선택해도 폴더는 선택 안되도록
+# 시뮬레이션 기능 : pos를 클릭할 때 스크린샷도 같이
+# 나중에 할 수 있을 듯
+# 그룹 or inst 우클릭 -> 실행
+# 실행 코드 작성 -> UX 개선 + region, image 탐색 기능 추가
+# inst 추가 삭제
+# group과 inst 앞에 서로 다른 아이콘
+# group은 대문자 G
+# inst는 문서그림
+# Group으로 묶이거나, 하위
+# content도 
+# all 선택
+# lock 기능 : locked 되면 실행시 돌지 않는다(일종의 주석처리)
+# getpos 영역 확대하기 + 멀티모니터 사용 고려
+# image 검색을 사용할 경우 region 영역 버튼도 활성화하기 default는 전체영역
+# Ctrl+left click시 복사붙여넣기 되도록
+# 우클릭 context에 복수 선택 후 group 기능 추가
+# 한단계 올릴 때 맨 아래로 내려가는 문제, 최상위 단계로 올릴 시 순서가 root 밑으로 쌓이는 문제
+# Ctrl+Z
+# 다중선택이면 선택된 Item의 현재 경로에서 복제 : Ctrl+C->V
+# Drag 기능 : pos 2개 찍기
+
 class Second(QWidget):
     def __init__(self,MainUi,btn):
         super().__init__()
@@ -215,6 +227,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.prnt = parent
         self.act_cbx = None
         self.typ_cbx = None
+        self.pos_wdg = None
 
         if len(self.row)>2:#우측 treewidget 없앨 때 같이 지울 조건
             if self.row[2]:
@@ -495,6 +508,8 @@ class MyWindow(QMainWindow):
         loadAction = QAction('Load', self)
         loadAction.setShortcut('Ctrl+O')
         loadAction.setStatusTip('Load application')
+        execAction = QAction('Execute', self)
+        execAction.setStatusTip('Execute application')
         exitAction = QAction('Exit', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application')
@@ -504,10 +519,12 @@ class MyWindow(QMainWindow):
         filemenu = menubar.addMenu('&File')
         filemenu.addAction(loadAction)
         filemenu.addAction(saveAction)
+        filemenu.addAction(execAction)
         filemenu.addAction(exitAction)
         
         loadAction.triggered.connect(self.load)
         saveAction.triggered.connect(self.save)
+        execAction.triggered.connect(self.exec_inst)
         exitAction.triggered.connect(self.self_close)
         
         self.tw = TreeWidget()
@@ -548,7 +565,7 @@ class MyWindow(QMainWindow):
         self.insts = []
         self.load()
         self.tw.itemChanged.connect(self.get_item)
-       
+    
     def check_child(self,cur,col):
         if col == 0:
             ch_num = cur.childCount()
@@ -611,7 +628,41 @@ class MyWindow(QMainWindow):
                         writer.writerow(["top",top_it.text(0),"","","",""])
                         if top_it.childCount():
                             self.recur_child(writer,top_it)
-                            
+    def exec_inst(self):
+        # inst_list 수집 끝
+        top_cnt = self.tw.topLevelItemCount()
+        inst_lst = []
+        if top_cnt:
+            for i in range(top_cnt):
+                top_it = self.tw.topLevelItem(i)
+                if top_it:
+                    if top_it.text(1):
+                        inst_lst.append(top_it)
+                    else:
+                        if top_it.childCount():
+                            self.recur_child_exec(top_it,inst_lst)
+
+        for inst in inst_lst:
+            if inst.text(1) == "Mouse":
+                if inst.text(2) == "Click":
+                    x,y = inst.pos_wdg.pos_le.text().split(',')
+                    print(inst.pos_wdg.pos_le.text())
+                    time.sleep(3)
+                    pag.moveTo(int(x),int(y))
+                    pag.click()                    
+    
+    def recur_child_exec(self,parent,lst):
+        if parent.childCount():
+            for ch_num in range(parent.childCount()):
+                ch_it = parent.child(ch_num)
+                if ch_it.text(1):
+                    lst.append(ch_it)
+                else:
+                    if ch_it.childCount():
+                        self.recur_child_exec(ch_it,lst)
+                
+                                
+    
     # 순수 recur만 분리하기. 지금은 write와 섞여있음   
     def recur_child(self,writer,parent):
         if parent.childCount():
@@ -619,14 +670,21 @@ class MyWindow(QMainWindow):
             #그러므로 top은 예외고, 중간과 막내는 써주는 상황을 통일시켜야 한다
             #recursive 가기 전에 해주는게 맞아 보인다
             for ch_num in range(parent.childCount()):
-                ch_item = parent.child(ch_num)
-                lst = [ch_item.text(i) for i in range(self.tw.columnCount())]
-                if ch_item.text(1) == "Mouse":
-                    lst[3] = ch_item.pos_wdg.pos_le.text()
+                ch_it = parent.child(ch_num)
+                lst = [ch_it.text(i) for i in range(self.tw.columnCount())] #text로 접근하기보다, widget으로 접근하는게 맞음
+                if ch_it.text(1) == "Mouse":
+                    lst[3] = ch_it.pos_wdg.pos_le.text()
                 lst.insert(0,parent.text(0))     
                 writer.writerow(lst)
                 self.recur_child(writer,parent.child(ch_num))
         return
+    
+    def write_csv(self,parent,ch_it):
+        lst = [ch_it.text(i) for i in range(self.tw.columnCount())] #text로 접근하기보다, widget으로 접근하는게 맞음
+        if ch_it.text(1) == "Mouse":
+            lst[3] = ch_it.pos_wdg.pos_le.text()
+        lst.insert(0,parent.text(0))     
+        writer.writerow(lst)
          
     def load(self):
         self.tw.disconnect()
