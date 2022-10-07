@@ -151,6 +151,7 @@ class RegButton(QPushButton):
         self.setStyleSheet("color:red")
     
 class ActCombo(QComboBox):
+    act_signal = pyqtSignal()
     def __init__(self,typ,act):
         QComboBox.__init__(self)
         if typ == "Mouse":
@@ -166,7 +167,7 @@ class ActCombo(QComboBox):
         elif typ == "Key":
             self.addItem("Copy")
             self.addItem("Paste")
-            self.addItem("Delete")
+            self.addItem("Select All")
             if act == "Copy":
                 self.setCurrentIndex(0)
             elif act == "Paste":
@@ -174,6 +175,10 @@ class ActCombo(QComboBox):
             else:
                 self.setCurrentIndex(2)    
         #self.setStyleSheet("background-color: rgb(250,250,250);")
+        self.currentIndexChanged.connect(self.run)
+        
+    def run(self):
+        self.act_signal.emit()
 
 class TypCombo(QComboBox):
     typ_signal = pyqtSignal()
@@ -240,7 +245,7 @@ class TreeWidgetItem(QTreeWidgetItem):
                 act = self.row[3]
                 self.act_cbx = ActCombo(typ,act)
                 self.tw.setItemWidget(self, 2, self.act_cbx)
-                self.typ_cbx.typ_signal.connect(lambda:self.change_act(self.typ_cbx,self.act_cbx))
+                self.typ_cbx.typ_signal.connect(lambda:self.change_typ(self.typ_cbx,self.act_cbx))
                 pos = self.row[4]
                 if self.row[2] == "Mouse":
                     self.pos_wdg = PosWidget(pos)
@@ -251,10 +256,13 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.setCheckState(0,Qt.Checked) #col,state
         self.setExpanded(True)
     #group을 지웠을 때 child가 윗계층으로 올라가기
+    
+    def change_act(self):
+        pass
      
     #signal의 class가 qobject를 상속할 때만 @pyqtSlot()을 달아주고, 아니면 달지 않는다
     #https://stackoverflow.com/questions/40325953/why-do-i-need-to-decorate-connected-slots-with-pyqtslot/40330912#40330912       
-    def change_act(self,typ_cbx,act_cbx):
+    def change_typ(self,typ_cbx,act_cbx):
         #typ_cbx를 self.typ_cbx로 바꾸고 param 지우기
         self.tw.disconnect()
         if typ_cbx.currentText() == "Mouse":
@@ -272,7 +280,7 @@ class TreeWidgetItem(QTreeWidgetItem):
             act_cbx.clear()
             act_cbx.addItem("Copy")
             act_cbx.addItem("Paste")
-            act_cbx.addItem("Delete")
+            act_cbx.addItem("Select All")
             self.setText(1,"Key")
             self.setText(2,"Copy")
             act_cbx.setCurrentIndex(0)
@@ -408,7 +416,7 @@ class TreeWidget(QTreeWidget):
                 # 추후 class init할 때 connect 하도록 수정할 필요있음
                 drag_item.pos_wdg.pos_btn.clicked.connect(lambda ignore,f=drag_item.pos_wdg.get_pos:f())                  
                 self.setItemWidget(drag_item, 3, drag_item.pos_wdg)
-            drag_item.typ_cbx.typ_signal.connect(lambda:drag_item.change_act(drag_item.typ_cbx,drag_item.act_cbx))
+            drag_item.typ_cbx.typ_signal.connect(lambda:drag_item.change_typ(drag_item.typ_cbx,drag_item.act_cbx))
         child_cnt = drag_item.childCount()
         # 단,group이어도 group 자신만 dropevent만하고, 자식들은 move_itemwidget 거치도록
         if child_cnt:
@@ -430,7 +438,7 @@ class TreeWidget(QTreeWidget):
                 
         # 타 widget으로 drop     
         elif isinstance(event.source(), QTreeWidget):
-            print(1)
+
             if event.mimeData().hasFormat(TreeWidget.customMimeType):
                 encoded = event.mimeData().data(TreeWidget.customMimeType)
                 parent = self.itemAt(event.pos())
@@ -564,8 +572,8 @@ class MyWindow(QMainWindow):
         #            item = TreeWidgetItem(row)#부모설정.결국
         self.insts = []
         self.load()
-        self.tw.itemChanged.connect(self.get_item)
     
+        self.tw.itemChanged.connect(self.get_item)
     def check_child(self,cur,col):
         if col == 0:
             ch_num = cur.childCount()
@@ -628,6 +636,7 @@ class MyWindow(QMainWindow):
                         writer.writerow(["top",top_it.text(0),"","","",""])
                         if top_it.childCount():
                             self.recur_child(writer,top_it)
+            csvfile.close()
                             
     def exec_inst(self):
         # inst_list 수집 끝
@@ -647,17 +656,13 @@ class MyWindow(QMainWindow):
             typ = inst.text(1)
             if typ == "Mouse":
                 x,y = inst.pos_wdg.pos_le.text().split(',')
-                print(inst.pos_wdg.pos_le.text())
-                time.sleep(1)
-                pag.moveTo(int(x),int(y))
                 act = inst.text(2)
                 if act == "Click":
-                    pag.click()     
+                    pag.click(x=int(x),y=int(y),clicks=1)
                 elif act == "Right":
                     pag.rightClick()
                 elif act == "Double":
-                    pag.doubleClick()
-                    
+                    pag.click(x=int(x),y=int(y),clicks=3,interval=0.1)     
             elif typ == "Key":
                 if act == "Copy":
                     pag.hotkey('ctrl', 'c')
@@ -685,10 +690,11 @@ class MyWindow(QMainWindow):
             for ch_num in range(parent.childCount()):
                 ch_it = parent.child(ch_num)
                 lst = [ch_it.text(i) for i in range(self.tw.columnCount())] #text로 접근하기보다, widget으로 접근하는게 맞음
-                if ch_it.text(1) == "Mouse":
-                    lst[3] = ch_it.pos_wdg.pos_le.text()
+                if ch_it.text(1):
+                    lst[2] = ch_it.act_cbx.currentText()
+                    if ch_it.text(1) == "Mouse":
+                        lst[3] = ch_it.pos_wdg.pos_le.text()
                 lst.insert(0,parent.text(0))   
-                print(lst)  
                 writer.writerow(lst)
                 self.recur_child(writer,parent.child(ch_num))
         return
