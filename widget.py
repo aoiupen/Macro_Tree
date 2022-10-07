@@ -256,7 +256,8 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.setCheckState(0,Qt.Checked) #col,state
         self.setExpanded(True)
     #group을 지웠을 때 child가 윗계층으로 올라가기
-    
+
+
     def change_act(self):
         pass
      
@@ -301,7 +302,15 @@ class TreeWidget(QTreeWidget):
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         #self.setContextMenuPolicy(Qt.CustomContextMenu) #비활성화시키면 contextmenuevent 동작됨
         self.customContextMenuRequested.connect(self.context_menu)
-
+    
+    def keyPressEvent(self, event):
+        root = self.invisibleRootItem()
+        if event.key() == Qt.Key_Delete:
+            cur_it = self.currentItem()
+            (cur_it.parent() or root).removeChild(cur_it)
+        else:
+            super().keyPressEvent(event)
+            
     def contextMenuEvent(self,event):
         self.menu = QMenu(self)
         delete_act = QAction('Delete',self)
