@@ -436,7 +436,7 @@ class TreeWidget(QTreeWidget):
                 parent = self.itemAt(event.pos())
                 items = self.decodeData(encoded, event.source())
                 for it in items:
-                    #QTree->TreeWidgetItem?
+                    # QTree->TreeWidgetItem?
                     item = QTreeWidgetItem(parent)
                     self.fillItem(it, item)
                     self.fillItems(it, item)
@@ -628,6 +628,7 @@ class MyWindow(QMainWindow):
                         writer.writerow(["top",top_it.text(0),"","","",""])
                         if top_it.childCount():
                             self.recur_child(writer,top_it)
+                            
     def exec_inst(self):
         # inst_list 수집 끝
         top_cnt = self.tw.topLevelItemCount()
@@ -643,13 +644,27 @@ class MyWindow(QMainWindow):
                             self.recur_child_exec(top_it,inst_lst)
 
         for inst in inst_lst:
-            if inst.text(1) == "Mouse":
-                if inst.text(2) == "Click":
-                    x,y = inst.pos_wdg.pos_le.text().split(',')
-                    print(inst.pos_wdg.pos_le.text())
-                    time.sleep(3)
-                    pag.moveTo(int(x),int(y))
-                    pag.click()                    
+            typ = inst.text(1)
+            if typ == "Mouse":
+                x,y = inst.pos_wdg.pos_le.text().split(',')
+                print(inst.pos_wdg.pos_le.text())
+                time.sleep(1)
+                pag.moveTo(int(x),int(y))
+                act = inst.text(2)
+                if act == "Click":
+                    pag.click()     
+                elif act == "Right":
+                    pag.rightClick()
+                elif act == "Double":
+                    pag.doubleClick()
+                    
+            elif typ == "Key":
+                if act == "Copy":
+                    pag.hotkey('ctrl', 'c')
+                elif act == "Paste":
+                    pag.hotkey('ctrl', 'v')
+                elif act == "Select All":
+                    pag.hotkey('ctrl', 'a')
     
     def recur_child_exec(self,parent,lst):
         if parent.childCount():
@@ -661,8 +676,6 @@ class MyWindow(QMainWindow):
                     if ch_it.childCount():
                         self.recur_child_exec(ch_it,lst)
                 
-                                
-    
     # 순수 recur만 분리하기. 지금은 write와 섞여있음   
     def recur_child(self,writer,parent):
         if parent.childCount():
@@ -674,17 +687,19 @@ class MyWindow(QMainWindow):
                 lst = [ch_it.text(i) for i in range(self.tw.columnCount())] #text로 접근하기보다, widget으로 접근하는게 맞음
                 if ch_it.text(1) == "Mouse":
                     lst[3] = ch_it.pos_wdg.pos_le.text()
-                lst.insert(0,parent.text(0))     
+                lst.insert(0,parent.text(0))   
+                print(lst)  
                 writer.writerow(lst)
                 self.recur_child(writer,parent.child(ch_num))
         return
-    
+    '''
     def write_csv(self,parent,ch_it):
         lst = [ch_it.text(i) for i in range(self.tw.columnCount())] #text로 접근하기보다, widget으로 접근하는게 맞음
         if ch_it.text(1) == "Mouse":
             lst[3] = ch_it.pos_wdg.pos_le.text()
         lst.insert(0,parent.text(0))     
         writer.writerow(lst)
+    '''
          
     def load(self):
         self.tw.disconnect()

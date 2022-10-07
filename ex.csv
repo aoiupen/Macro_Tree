@@ -1,8 +1,8 @@
 top,gr_b1,,,,
 gr_b1,Group,,,,
 top,SaveImg22,,,,
-SaveImg22,KEY,Mouse,Click,"813,261",
-SaveImg22,SaveImg,Mouse,Click,"713,442",
+SaveImg22,SaveImg,Key,Copy,,dfdf
+SaveImg22,KEY,Mouse,Click,"534,492",sfsfsf
 top,Content,,,,
 Content,GroupC,,,,
 GroupC,Mouse,Mouse,Click,"946,474",
