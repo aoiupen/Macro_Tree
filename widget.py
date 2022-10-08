@@ -38,9 +38,9 @@ from requests import delete
 # Ctrl+left click시 복사붙여넣기 되도록
 # 우클릭 context에 복수 선택 후 group 기능 추가
 # 한단계 올릴 때 맨 아래로 내려가는 문제, 최상위 단계로 올릴 시 순서가 root 밑으로 쌓이는 문제
-# Ctrl+Z
+# Ctrl+Z : limit : 매 동작마다 logsave를 해서 리스트 변수에 저장, 끝에 도달하면, undo 비활성화 redo 마찬가지
 # 다중선택이면 선택된 Item의 현재 경로에서 복제 : Ctrl+C->V
-# Drag 기능 : pos 2개 찍기
+# Drag 기능 : pos 2개 찍기(동작 자체를 저장 : press->release)
 
 class Second(QWidget):
     def __init__(self,MainUi,btn):
@@ -158,12 +158,15 @@ class ActCombo(QComboBox):
             self.addItem("Click")
             self.addItem("Double")
             self.addItem("Right")
+            self.addItem("Drag")
             if act == "Click":
                 self.setCurrentIndex(0)
             elif act == "Double":
                 self.setCurrentIndex(1)
-            else:
+            elif act == "Right":
                 self.setCurrentIndex(2)
+            else:
+                self.setCurrentIndex(3)
         elif typ == "Key":
             self.addItem("Copy")
             self.addItem("Paste")
@@ -246,6 +249,7 @@ class TreeWidgetItem(QTreeWidgetItem):
                 self.act_cbx = ActCombo(typ,act)
                 self.tw.setItemWidget(self, 2, self.act_cbx)
                 self.typ_cbx.typ_signal.connect(lambda:self.change_typ(self.typ_cbx,self.act_cbx))
+                self.act_cbx.act_signal.connect(lambda:self.change_act(self.act_cbx))
                 pos = self.row[4]
                 if self.row[2] == "Mouse":
                     self.pos_wdg = PosWidget(pos)
@@ -258,7 +262,10 @@ class TreeWidgetItem(QTreeWidgetItem):
     #group을 지웠을 때 child가 윗계층으로 올라가기
 
 
-    def change_act(self):
+    def change_act(self,act_cbx):
+        #self.tw.disconnect()
+        #if act_cbx.currentText() == "Double":
+            
         pass
      
     #signal의 class가 qobject를 상속할 때만 @pyqtSlot()을 달아주고, 아니면 달지 않는다
@@ -271,6 +278,7 @@ class TreeWidgetItem(QTreeWidgetItem):
             act_cbx.addItem("Click")
             act_cbx.addItem("Double")
             act_cbx.addItem("Right")
+            act_cbx.addItem("Drag")
             act_cbx.setCurrentIndex(0)
             self.setText(1,"Mouse")
             self.setText(2,"Click")
@@ -662,16 +670,19 @@ class MyWindow(QMainWindow):
                             self.recur_child_exec(top_it,inst_lst)
 
         for inst in inst_lst:
-            typ = inst.text(1)
+            typ = inst.typ_cbx.currentText()
             if typ == "Mouse":
                 x,y = inst.pos_wdg.pos_le.text().split(',')
-                act = inst.text(2)
+                act = inst.act_cbx.currentText()
                 if act == "Click":
                     pag.click(x=int(x),y=int(y),clicks=1)
                 elif act == "Right":
                     pag.rightClick()
                 elif act == "Double":
-                    pag.click(x=int(x),y=int(y),clicks=3,interval=0.1)     
+                    pag.click(x=int(x),y=int(y),clicks=3,interval=0.1) 
+                elif act == "Drag":
+                    pag.moveTo(x=1639,y=259)
+                    pag.dragTo(int(x),int(y),0.2)
             elif typ == "Key":
                 if act == "Copy":
                     pag.hotkey('ctrl', 'c')
