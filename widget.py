@@ -18,6 +18,7 @@ from requests import delete
 # 구체적 내용은 사용자가 커스터마이징하게 하며,
 # 특정 PC 환경에 종속되지 않아 범용 보급이 가능한 프로그램 개발
 
+# 기획
 # 실행하면 최소화. 끝나면 최대화 (옵션화)
 # 컨셉 : transfrom,flexible,pressed
 # Grouping 조건 : 위계 문제. 체크박스처럼. 폴더+child일부 선택해도 폴더는 선택 안되도록
@@ -35,12 +36,17 @@ from requests import delete
 # lock 기능 : locked 되면 실행시 돌지 않는다(일종의 주석처리)
 # getpos 영역 확대하기 + 멀티모니터 사용 고려
 # image 검색을 사용할 경우 region 영역 버튼도 활성화하기 default는 전체영역
-# Ctrl+left click시 복사붙여넣기 되도록
 # 우클릭 context에 복수 선택 후 group 기능 추가
 # 한단계 올릴 때 맨 아래로 내려가는 문제, 최상위 단계로 올릴 시 순서가 root 밑으로 쌓이는 문제
 # Ctrl+Z : limit : 매 동작마다 logsave를 해서 리스트 변수에 저장, 끝에 도달하면, undo 비활성화 redo 마찬가지
 # 다중선택이면 선택된 Item의 현재 경로에서 복제 : Ctrl+C->V
-# Drag 기능 : pos 2개 찍기(동작 자체를 저장 : press->release)
+
+
+# 진행
+# Tree : Ctrl+left click시 복사 붙여넣기 되도록
+
+# 완료
+# Tree,Acting : Drag 기능
 
 class Second(QWidget):
     def __init__(self,MainUi,btn):
@@ -159,14 +165,17 @@ class ActCombo(QComboBox):
             self.addItem("Double")
             self.addItem("Right")
             self.addItem("Drag")
+            self.addItem("Move")
             if act == "Click":
                 self.setCurrentIndex(0)
             elif act == "Double":
                 self.setCurrentIndex(1)
             elif act == "Right":
                 self.setCurrentIndex(2)
-            else:
+            elif act == "Drag":
                 self.setCurrentIndex(3)
+            else:
+                self.setCurrentIndex(4)
         elif typ == "Key":
             self.addItem("Copy")
             self.addItem("Paste")
@@ -279,6 +288,7 @@ class TreeWidgetItem(QTreeWidgetItem):
             act_cbx.addItem("Double")
             act_cbx.addItem("Right")
             act_cbx.addItem("Drag")
+            act_cbx.addItem("Move")
             act_cbx.setCurrentIndex(0)
             self.setText(1,"Mouse")
             self.setText(2,"Click")
@@ -683,6 +693,8 @@ class MyWindow(QMainWindow):
                 elif act == "Drag":
                     pag.moveTo(x=1639,y=259)
                     pag.dragTo(int(x),int(y),0.2)
+                elif act == "Move":
+                    pag.moveTo(x=int(x),y=int(y))
             elif typ == "Key":
                 if act == "Copy":
                     pag.hotkey('ctrl', 'c')
