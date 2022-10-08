@@ -689,7 +689,7 @@ class MyWindow(QMainWindow):
                 if act == "Click":
                     pag.click(x=int(x),y=int(y),clicks=1)
                 elif act == "Right":
-                    pag.rightClick()
+                    pag.rightClick(x=int(x),y=int(y))
                 elif act == "Double":
                     pag.click(x=int(x),y=int(y),clicks=3,interval=0.1) 
                 elif act == "Drag":
