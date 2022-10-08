@@ -41,11 +41,12 @@ from requests import delete
 # Ctrl+Z : limit : 매 동작마다 logsave를 해서 리스트 변수에 저장, 끝에 도달하면, undo 비활성화 redo 마찬가지
 # 다중선택이면 선택된 Item의 현재 경로에서 복제 : Ctrl+C->V
 
-
 # 진행
 # Tree : Ctrl+left click시 복사 붙여넣기 되도록
+# Tree : Check된 inst만 실행
 
 # 완료
+# Acting : Move 기능
 # Tree,Acting : Drag 기능
 
 class Second(QWidget):
@@ -666,19 +667,20 @@ class MyWindow(QMainWindow):
             csvfile.close()
                             
     def exec_inst(self):
-        # inst_list 수집 끝
+        # inst_list 수집
         top_cnt = self.tw.topLevelItemCount()
         inst_lst = []
         if top_cnt:
             for i in range(top_cnt):
                 top_it = self.tw.topLevelItem(i)
                 if top_it:
-                    if top_it.text(1):
-                        inst_lst.append(top_it)
-                    else:
-                        if top_it.childCount():
-                            self.recur_child_exec(top_it,inst_lst)
-
+                    if top_it.checkState(0) == Qt.Checked: # check 된 것만 돌기
+                        if top_it.text(1):
+                            inst_lst.append(top_it)
+                        else:
+                            if top_it.childCount():
+                                self.recur_child_exec(top_it,inst_lst)
+        # inst_list 실행
         for inst in inst_lst:
             typ = inst.typ_cbx.currentText()
             if typ == "Mouse":
@@ -707,11 +709,12 @@ class MyWindow(QMainWindow):
         if parent.childCount():
             for ch_num in range(parent.childCount()):
                 ch_it = parent.child(ch_num)
-                if ch_it.text(1):
-                    lst.append(ch_it)
-                else:
-                    if ch_it.childCount():
-                        self.recur_child_exec(ch_it,lst)
+                if ch_it.checkState(0) == Qt.Checked: # Check 된 것만 돌기
+                    if ch_it.text(1):
+                        lst.append(ch_it)
+                    else:
+                        if ch_it.childCount():
+                            self.recur_child_exec(ch_it,lst)
                 
     # 순수 recur만 분리하기. 지금은 write와 섞여있음   
     def recur_child(self,writer,parent):
