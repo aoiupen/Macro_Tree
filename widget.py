@@ -440,19 +440,20 @@ class TreeWidget(QTreeWidget):
             self.log_str += '\n' #추후 widget으로 접근하는 방식도 고려
             if ch_it.childCount():
                 self.recur_log(ch_it)
-        
+    
+    def save_push_log(self):
+        tree_str = self.save_log() 
+        cmd = TreeUndoCommand(self,tree_str,self.undoStack)
+        self.undoStack.push(cmd)                    
+                    
     def keyPressEvent(self, event):
         root = self.invisibleRootItem()
-        if event.key() == Qt.Key_Delete:
-            tree_str = self.save_log() # undo하기 위해 실행직전 상태를 save 한다
+        if event.key() == Qt.Key_Delete:  
+            # undo하기 위해 실행직전 상태를 save 한다 
+            self.save_push_log()
             cur_its = self.selectedItems()
             for cur_it in cur_its:
                 (cur_it.parent() or root).removeChild(cur_it)
-            
-            # delete 일때 상황 저장
-            cmd = TreeUndoCommand(self,tree_str,self.undoStack)
-            self.undoStack.push(cmd)
-
         elif event.matches(QKeySequence.Copy):
             self.copy_buf = self.selectedItems()
             prnt_lst = []
@@ -467,21 +468,20 @@ class TreeWidget(QTreeWidget):
                     main_lst.append(item)
             self.copy_buf = main_lst
         elif event.matches(QKeySequence.Paste):
+            self.save_push_log()
              # 붙여넣기 할 때 다중선택이 가능한지?
              # 우선은 다중선택 생각하지 않고
              # 이동과 같은 방식
-             target = self.currentItem()
-             if target.typ_cbx == None:
-                    for it in self.copy_buf:
-                        # QTree->TreeWidgetItem?
-                        item = TreeWidgetItem(self,target)
-                        self.fillItem(it, item)
-                        self.fillItems(it, item)
-                    print("Paste")
+            target = self.currentItem()
+            if target.typ_cbx == None:
+                for it in self.copy_buf:
+                    # QTree->TreeWidgetItem?
+                    item = TreeWidgetItem(self,target)
+                    self.fillItem(it, item)
+                    self.fillItems(it, item)
+                print("Paste")
         elif event.matches(QKeySequence.Undo):
-            print(self.undoStack.count())
             self.undoStack.undo()
-            print(self.undoStack.count())
         else:
             super().keyPressEvent(event)
             
@@ -626,7 +626,7 @@ class TreeWidget(QTreeWidget):
         target = self.itemAt(event.pos())
         # 현 treewidget으로 drop
         root = self.invisibleRootItem()
-                
+        self.save_push_log()        
         if event.source() == self:
             modifiers = event.keyboardModifiers()   
             if event.mimeData().hasFormat(TreeWidget.customMimeType):
