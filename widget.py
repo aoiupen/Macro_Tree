@@ -42,12 +42,12 @@ from requests import delete
 # pos 와 lineedit 통합
 
 # 진행
-# Tree-Ungrouping : top을 ungroup할때 or ungroup 후 top으로 올라갈 때 widget 풀림
 # Tree : 그룹을 한단계 위로 이동시 그룹은 이동 안되고, inst는 top 바로 아래 depth2까지만 가능
 # Tree : Content 적용하기
 # Tree : Image로 pos 찾기 : Image 등록된 경우 Image라는 폰트가 노란 2겹테두리, 글씨 검정색으로 바뀜
 
 # 완료
+# Tree-Ungrouping : top을 ungroup할때 or ungroup 후 top으로 올라갈 때 widget 풀림
 # Func-Ctrl+Z : 매 동작마다 logsave를 해서 리스트 변수에 저장, 끝에 도달하면, undo 비활성화 redo 마찬가지
 # Tree : Copy,Paste by 키보드 : 다중선택이면 마지막으로 선택된 Item의 현재 경로에 복제
 # Tree : 다중선택 후 delete
@@ -323,11 +323,8 @@ class TreeUndoCommand(QUndoCommand):
         self.tree = tree
         self.stack = stack
         self.tree_str = tree_str
-        print("init undocammand")
-        pass
     
     def redo(self):
-        print("redo")
         pass
     
     def undo(self):
@@ -337,13 +334,10 @@ class TreeUndoCommand(QUndoCommand):
         # 새로운 작업을 stack에 쌓는다
         # 그러므로 load_log에 들어갈 인자는 stack에서 꺼낸 tree여야한다
         idx = self.stack.index()
-        print('idx:',idx)
         cmd = self.stack.command(idx-1)
-        print(type(cmd))
         if not isinstance(cmd,NoneType):
             self.tree.load_log(cmd.tree_str)
             print(cmd.tree_str)
-        print("undo")
         pass
 
 #https://stackoverflow.com/questions/25559221/qtreewidgetitem-issue-items-set-using-setwidgetitem-are-dispearring-after-movin        
@@ -365,6 +359,11 @@ class TreeWidget(QTreeWidget):
         self.undoStack = QUndoStack(self)
         self.undoStack.setIndex(0)
         self.cnt = 0
+        self.setStyleSheet("TreeWidget::item:selected"
+            "{"
+            "background-color : #d9fffb;"
+            "selection-color : #000000;"
+            "}")
 
     def save_log(self):
         self.log_str = ""
@@ -626,6 +625,7 @@ class TreeWidget(QTreeWidget):
     #pos 따라가도록
     def treeDropEvent(self, event):
         target = self.itemAt(event.pos())
+        print(self.itemAbove(target))
         # 현 treewidget으로 drop
         root = self.invisibleRootItem()
         self.save_push_log()        
