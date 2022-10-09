@@ -43,16 +43,18 @@ from requests import delete
 
 # 진행
 # Tree-Ungrouping : top을 ungroup할때 or ungroup 후 top으로 올라갈 때 widget 풀림
-# Func-Ctrl+Z : 매 동작마다 logsave를 해서 리스트 변수에 저장, 끝에 도달하면, undo 비활성화 redo 마찬가지
+# Tree : 그룹을 한단계 위로 이동시 그룹은 이동 안되고, inst는 top 바로 아래 depth2까지만 가능
+# Tree : Content 적용하기
+# Tree : Image로 pos 찾기 : Image 등록된 경우 Image라는 폰트가 노란 2겹테두리, 글씨 검정색으로 바뀜
 
 # 완료
+# Func-Ctrl+Z : 매 동작마다 logsave를 해서 리스트 변수에 저장, 끝에 도달하면, undo 비활성화 redo 마찬가지
 # Tree : Copy,Paste by 키보드 : 다중선택이면 마지막으로 선택된 Item의 현재 경로에 복제
 # Tree : 다중선택 후 delete
 # Tree : Check된 inst만 실행
 # Acting : Move 기능
 # Tree,Acting : Drag 기능
 # Tree : Ctrl+left click시 복사 붙여넣기 되도록 + 여러개 선택시 모두 복사 되기
-
 
 class Second(QWidget):
     def __init__(self,MainUi,btn):
@@ -516,26 +518,25 @@ class TreeWidget(QTreeWidget):
     # child_without_parent를 parent.addChild로 더하기
     # ungrouping 한 후 widget 풀리는 현상 발생
     def ungrouping(self,event):
+        self.save_push_log()
         root = self.invisibleRootItem()
         for item in self.selectedItems():
             # inst에 ungroup 하면 바깥으로 빠져나오는 기능 추가
             if isinstance(item.typ_cbx,NoneType):
                 new_parent = item.parent()
-                print(new_parent)
                 child_cnt = item.childCount()
-                print(child_cnt)
                 if child_cnt:
                     for idx in range(child_cnt):
                         #child가 하나씩 사라지므로 마지막 idx일때 1개만 남음
                         #그러므로 최신 child를 지우도록 인자를 0 둠
                         item_without_parent = item.takeChild(0)
-                        print(item_without_parent.text(0)) 
                         #top일 때 nonetype이라 insertchild 안됨
                         #child를 top으로 만들어줘야함. 복잡하네...
                         if isinstance(new_parent,NoneType):
                             ix = self.indexOfTopLevelItem(item)
                             self.insertTopLevelItem(ix,item_without_parent)   
                             item_without_parent.prnt_name = "top"
+                            self.move_itemwidget(self,item_without_parent,new_parent)
                             #삭제하는법은?
                             #move_item
                             #item이 toplevel 몇번째인지
@@ -548,7 +549,6 @@ class TreeWidget(QTreeWidget):
     # custom일경우(나중에 공부). 옆에는 적용되던데 왜지...
     def context_menu(self, pos):
         index = self.indexAt(pos)
-        
         if not index.isValid():
             return
 
@@ -596,8 +596,10 @@ class TreeWidget(QTreeWidget):
         # *drop event로 Data를 먼저 옮기고, if문 이하에서 item setting
         if not drag_item.text(1): # Group이면 부모 재설정 new_parent(target)인자를 받아서
             drag_item.prnt = target
-            print(type(drag_item))
-            drag_item.prnt_name = target.text(0) 
+            if isinstance(target,NoneType):
+                drag_item.prnt_name = "top"
+            else:
+                drag_item.prnt_name = target.text(0) 
             #target.insertChild(0,drag_item) # 인덱스는 임시로 0
         elif drag_item.text(1):
             drag_item.typ_cbx = TypCombo(self,drag_item.text(1))
