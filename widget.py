@@ -17,6 +17,7 @@ from requests import delete
 # 기획 의도 : 프로그램 자체에 보안 관련 사항을 담지 않고,
 # 구체적 내용은 사용자가 커스터마이징하게 하며,
 # 특정 PC 환경에 종속되지 않아 범용 보급이 가능한 프로그램 개발
+# 기술 : Customizing을 통한 Pyqt 이해도
 
 # 기획
 # 실행하면 최소화. 끝나면 최대화 (옵션화)
@@ -27,6 +28,8 @@ from requests import delete
 # Tree : group과 inst 앞에 서로 다른 아이콘, group은 대문자 G, inst는 문서그림
 # Tree : 한단계 올릴 때 맨 아래로 내려가는 문제, 최상위 단계로 올릴 시 순서가 root 밑으로 쌓이는 문제
 # Tree : 다중선택이면 선택된 Item의 현재 경로에서 복제 : Ctrl+C->V
+# Tree : shift로 다중선택후 ctrl누르고 마우스클릭하면, 최종 마우스 클릭지점이 선택 제외되는 문제
+# Tree : top으로 올리는 기능 *** 최상위에 Root 폴더를 놓아야하나
 # Tree-Grouping : 위계 문제. 체크박스처럼. 폴더+child일부 선택해도 폴더는 선택 안되도록
 # Tree-Groupring : 우클릭 context에 복수 선택 후 group 기능 추가
 # Tree-Groupring : 그룹 or inst 우클릭 -> 실행 # 그룹 + 그룹에속한 inst인 경우의 조건필요함
@@ -35,16 +38,19 @@ from requests import delete
 # Strategy : 실행 코드 작성 -> UX 개선 + region, image 탐색 기능 추가
 # Simulation : 시뮬레이션 기능 : pos를 클릭할 때 스크린샷도 같이
 # Ctrl+Z : limit : 매 동작마다 logsave를 해서 리스트 변수에 저장, 끝에 도달하면, undo 비활성화 redo 마찬가지
+# mimedata encode, decode 할 지, selected items로 할지. 그리고 cbx를 새로 만들어줄지, deepcopy 할지
+# content 뒤에 sleep(delay) 넣기
+# 선택한 것만 우측 메뉴로 execute하기
 
 # 진행
-# Tree : Ctrl+left click시 복사 붙여넣기 되도록 + 여러개 선택시 모두 복사 되기
-# (세부 : inst 밑으로는 복사되지 않기, widget 풀림 방지)
-# 부모 이름을 저장하도록 변경해야함
+# Tree-Ungrouping : top을 ungroup할때 or ungroup 후 top으로 올라갈 때 widget 풀림
+# 다중선택 후 delete
 
 # 완료
 # Tree : Check된 inst만 실행
 # Acting : Move 기능
 # Tree,Acting : Drag 기능
+# Tree : Ctrl+left click시 복사 붙여넣기 되도록 + 여러개 선택시 모두 복사 되기
 
 
 class Second(QWidget):
@@ -324,8 +330,9 @@ class TreeWidget(QTreeWidget):
     def keyPressEvent(self, event):
         root = self.invisibleRootItem()
         if event.key() == Qt.Key_Delete:
-            cur_it = self.currentItem()
-            (cur_it.parent() or root).removeChild(cur_it)
+            cur_its = self.selectedItems()
+            for cur_it in cur_its:
+                (cur_it.parent() or root).removeChild(cur_it)
         else:
             super().keyPressEvent(event)
             
@@ -352,6 +359,7 @@ class TreeWidget(QTreeWidget):
     def recur_delete(self,event):
         root = self.invisibleRootItem()
         for item in self.selectedItems():
+            print(item)
             (item.parent() or root).removeChild(item)
     
     # cur의 child의 parent를 cur->cur.parent()로 바꾸기
