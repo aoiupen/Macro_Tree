@@ -27,7 +27,6 @@ from requests import delete
 # Tree : lock 기능 : locked 되면 실행시 돌지 않는다(일종의 주석처리)
 # Tree : group과 inst 앞에 서로 다른 아이콘, group은 대문자 G, inst는 문서그림
 # Tree : 한단계 올릴 때 맨 아래로 내려가는 문제, 최상위 단계로 올릴 시 순서가 root 밑으로 쌓이는 문제
-# Tree : 다중선택이면 선택된 Item의 현재 경로에서 복제 : Ctrl+C->V
 # Tree : shift로 다중선택후 ctrl누르고 마우스클릭하면, 최종 마우스 클릭지점이 선택 제외되는 문제
 # Tree : top으로 올리는 기능 *** 최상위에 Root 폴더를 놓아야하나
 # Tree-Grouping : 위계 문제. 체크박스처럼. 폴더+child일부 선택해도 폴더는 선택 안되도록
@@ -37,7 +36,6 @@ from requests import delete
 # Second : getpos 영역 확대하기 + 멀티모니터 사용 고려
 # Strategy : 실행 코드 작성 -> UX 개선 + region, image 탐색 기능 추가
 # Simulation : 시뮬레이션 기능 : pos를 클릭할 때 스크린샷도 같이
-# Ctrl+Z : limit : 매 동작마다 logsave를 해서 리스트 변수에 저장, 끝에 도달하면, undo 비활성화 redo 마찬가지
 # mimedata encode, decode 할 지, selected items로 할지. 그리고 cbx를 새로 만들어줄지, deepcopy 할지
 # content 뒤에 sleep(delay) 넣기
 # 선택한 것만 우측 메뉴로 execute하기
@@ -45,8 +43,10 @@ from requests import delete
 
 # 진행
 # Tree-Ungrouping : top을 ungroup할때 or ungroup 후 top으로 올라갈 때 widget 풀림
+# Func-Ctrl+Z : 매 동작마다 logsave를 해서 리스트 변수에 저장, 끝에 도달하면, undo 비활성화 redo 마찬가지
 
 # 완료
+# Tree : Copy,Paste by 키보드 : 다중선택이면 마지막으로 선택된 Item의 현재 경로에 복제
 # Tree : 다중선택 후 delete
 # Tree : Check된 inst만 실행
 # Acting : Move 기능
@@ -244,9 +244,9 @@ class resource_cl():
 
 class TreeWidgetItem(QTreeWidgetItem):
     def __init__(self,tw,parent,row=""):
+        QTreeWidgetItem.__init__(self,parent)
         self.tw = tw
         self.row = row
-        QTreeWidgetItem.__init__(self,parent)
         self.prnt = parent
         self.prnt_name = ""
         self.act_cbx = None
@@ -314,11 +314,42 @@ class TreeWidgetItem(QTreeWidgetItem):
         ctr_widget = self.tw.parent()
         wid = ctr_widget.parent()
         self.tw.itemChanged.connect(wid.get_item) # typ을 key로 변경시 - pos 연동 삭제
+        
+class TreeUndoCommand(QUndoCommand):
+    def __init__(self,tree,tree_str,stack):
+        super().__init__()
+        self.tree = tree
+        self.stack = stack
+        self.tree_str = tree_str
+        print("init undocammand")
+        pass
+    
+    def redo(self):
+        print("redo")
+        pass
+    
+    def undo(self):
+        # undo할 때 stack에서 1개를 꺼낸다
+        # 정확히는 마지막 tree값을 취하고, 현 index를 -1 시킨다
+        # undo,redo 외의 새로운 작업이 발생하면 index를 -1 뒤의 tree는 날리고,
+        # 새로운 작업을 stack에 쌓는다
+        # 그러므로 load_log에 들어갈 인자는 stack에서 꺼낸 tree여야한다
+        idx = self.stack.index()
+        print('idx:',idx)
+        cmd = self.stack.command(idx-1)
+        print(type(cmd))
+        if not isinstance(cmd,NoneType):
+            self.tree.load_log(cmd.tree_str)
+            print(cmd.tree_str)
+        print("undo")
+        pass
+
 #https://stackoverflow.com/questions/25559221/qtreewidgetitem-issue-items-set-using-setwidgetitem-are-dispearring-after-movin        
 class TreeWidget(QTreeWidget):
     customMimeType = "application/x-customTreeWidgetdata"
     def __init__(self,parent):
         super().__init__()
+        self.win = parent
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.dropEvent = self.treeDropEvent
@@ -327,13 +358,101 @@ class TreeWidget(QTreeWidget):
         #self.setContextMenuPolicy(Qt.CustomContextMenu) #비활성화시키면 contextmenuevent 동작됨
         self.customContextMenuRequested.connect(self.context_menu)
         self.copy_buf = []
+        self.log_lst = []
+        self.log_str = ""
+        self.undoStack = QUndoStack(self)
+        self.undoStack.setIndex(0)
+        self.cnt = 0
 
+    def save_log(self):
+        self.log_str = ""
+        col_cnt = self.columnCount()
+        top_cnt = self.topLevelItemCount()
+        if top_cnt:
+            for i in range(top_cnt):
+                top_it = self.topLevelItem(i)
+                if top_it:        
+                    self.log_str += ','.join(["top",top_it.text(0),"","","",""])
+                    self.log_str += '\n'
+                    if top_it.childCount():
+                        self.recur_log(top_it)
+        self.log_str = self.log_str.rstrip('\n')
+        return self.log_str
+        
+    def load_log(self,tree_str):
+        # stack에서 해당 index에 해당하는 tree를 꺼내온다
+        self.disconnect()
+        self.clear()
+        reader = list(tree_str.split('\n'))
+        for i,row in enumerate(reader):
+            row = row.split(',')
+            if len(row) == 7:
+                row[4] = (row[4]+","+row[5]).strip("\"")
+                row[5] = ""
+                row.pop()
+            reader[i] = row
+        self.insts=[]
+        
+        for idx,row in enumerate(reader):
+            parent = ""
+            parent_str = row[0]
+            name = row[1]
+            if parent_str == 'top':
+                parent = self
+                tw_item = TreeWidgetItem(self,parent,row)
+                tw_item.prnt_name = 'top'
+                tw_item.setText(0,name)
+            else:
+                for inst in self.insts:
+                    if inst.text(0) == parent_str:   
+                        parent = inst                        
+                        tw_item = TreeWidgetItem(self,parent,row)
+                        tw_item.prnt_name = parent.text(0)
+                        tw_item.setText(0,name)
+                        break
+            
+            #parent에 string이 들어가면 안되고,이 이름을 가지는 widget을 불러와야한다
+            #column에 widget이 들어가면 이 코드가 의미가 없을 듯
+            
+            if len(row) >2:
+                typ = row[2]
+                act = row[3]
+                pos = row[4]
+                content = row[5]
+                tw_item.setText(1,typ)
+                tw_item.setText(2,act)
+                tw_item.setText(3,pos)
+                tw_item.setText(4,content)    
+            self.insts.append(tw_item)
+        self.itemChanged.connect(self.win.get_item)
+
+    def recur_log(self,parent):
+        for ch_num in range(parent.childCount()):
+            ch_it = parent.child(ch_num)
+            
+            row = [ch_it.text(i) for i in range(self.columnCount())] 
+            if ch_it.text(1):
+                row[2] = ch_it.act_cbx.currentText()
+                if ch_it.text(1) == "Mouse":
+                    row[3] = "\""+ch_it.pos_wdg.pos_le.text()+"\""
+            row.insert(0,parent.text(0))   
+            self.log_str += ','.join(row)
+            self.log_str += '\n' #추후 widget으로 접근하는 방식도 고려
+            if ch_it.childCount():
+                self.recur_log(ch_it)
+        
     def keyPressEvent(self, event):
         root = self.invisibleRootItem()
         if event.key() == Qt.Key_Delete:
+            tree_str = self.save_log() # undo하기 위해 실행직전 상태를 save 한다
             cur_its = self.selectedItems()
             for cur_it in cur_its:
                 (cur_it.parent() or root).removeChild(cur_it)
+            
+            # delete 일때 상황 저장
+            cmd = TreeUndoCommand(self,tree_str,self.undoStack)
+            self.undoStack.push(cmd)
+
         elif event.matches(QKeySequence.Copy):
             self.copy_buf = self.selectedItems()
             prnt_lst = []
@@ -359,6 +478,10 @@ class TreeWidget(QTreeWidget):
                         self.fillItem(it, item)
                         self.fillItems(it, item)
                     print("Paste")
+        elif event.matches(QKeySequence.Undo):
+            print(self.undoStack.count())
+            self.undoStack.undo()
+            print(self.undoStack.count())
         else:
             super().keyPressEvent(event)
             
@@ -706,8 +829,8 @@ class MyWindow(QMainWindow):
         #            item = TreeWidgetItem(row)#부모설정.결국
         self.insts = []
         self.load()
-    
         self.tw.itemChanged.connect(self.get_item)
+        
     def check_child(self,cur,col):
         if col == 0:
             ch_num = cur.childCount()
@@ -856,13 +979,11 @@ class MyWindow(QMainWindow):
             self.insts=[]
             for idx,row in enumerate(reader):
                 parent = ""
-
                 parent_str = row[0]
                 name = row[1]
                 if parent_str == 'top':
                     parent = self.tw
                     tw_item = TreeWidgetItem(self.tw,parent,row)
-                    
                     tw_item.prnt_name = 'top'
                     tw_item.setText(0,name)
                 else:
