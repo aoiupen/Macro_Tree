@@ -471,27 +471,47 @@ class TreeWidget(QTreeWidget):
         target = self.itemAt(event.pos())
         # 현 treewidget으로 drop
         root = self.invisibleRootItem()
+                
         if event.source() == self:
-            modifiers = event.keyboardModifiers()
+            modifiers = event.keyboardModifiers()   
+            if event.mimeData().hasFormat(TreeWidget.customMimeType):
+                encoded = event.mimeData().data(TreeWidget.customMimeType)
+                items = self.decodeData(encoded, event.source())
+                # problem : 복수 선택 후 복사할 때 child가 중복 복사되는 문제
+                # solution : 선택된 것들의 이름 모으기, 부모 모으기
+                # -> 내 부모의 이름이 이름안에 있으면 난 안됨
+                # selected item에 col에 반영되지 않는 parent 정보가 있으면 편한데,
+                # 지금은 우선 번거롭더라도 selected items에서 prnt_str으로 parent 이름을 받자
+                prnt_lst = []
+                for sel_item in self.selectedItems():
+                    prnt_lst.append(sel_item.prnt_name)
+                name_lst = []
+                for item in items:
+                    name_lst.append(item.text(0))
+                main_lst = []
+                for sel_item in self.selectedItems():
+                    if sel_item.prnt_name not in name_lst:
+                        main_lst.append(sel_item)    
             if modifiers == Qt.NoModifier:
-                drag_items = self.selectedItems()
-                # 이동        
-                print("No Keyboard")
+                if target.typ_cbx == None:
+                    for it in main_lst:
+                        # QTree->TreeWidgetItem?
+                        item = TreeWidgetItem(self,target)
+                        self.fillItem(it, item)
+                        self.fillItems(it, item)
+                        (it.parent() or root).removeChild(it)
+                    event.acceptProposedAction()
+                    print("No Keyboard")
             elif modifiers == Qt.ControlModifier:
                 # 받는 item이 inst가 아닐때만 가능
                 if target.typ_cbx == None:
-                    # 받는 Item이 group일 때
-                    # selected items에 최상위들만 이동시키고 recursive로 widget setting
-                    # 최상위 item들이
-                    if event.mimeData().hasFormat(TreeWidget.customMimeType):
-                        encoded = event.mimeData().data(TreeWidget.customMimeType)
-                        items = self.decodeData(encoded, event.source())
-                        for it in items:
-                            # QTree->TreeWidgetItem?
-                            item = TreeWidgetItem(self,target)
-                            self.fillItem(it, item)
-                            self.fillItems(it, item)
-                        event.acceptProposedAction()
+                    for it in main_lst:
+                        # QTree->TreeWidgetItem?
+                        item = TreeWidgetItem(self,target)
+                        self.fillItem(it, item)
+                        self.fillItems(it, item)
+                    event.acceptProposedAction()
+                    print("Control")
             elif modifiers == Qt.ShiftModifier:
                 print("shift")
             #if (modifiers & Qt.ControlModifier) and (modifiers & Qt.ShiftModifier):
