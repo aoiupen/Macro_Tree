@@ -41,12 +41,13 @@ from requests import delete
 # mimedata encode, decode 할 지, selected items로 할지. 그리고 cbx를 새로 만들어줄지, deepcopy 할지
 # content 뒤에 sleep(delay) 넣기
 # 선택한 것만 우측 메뉴로 execute하기
+# pos 와 lineedit 통합
 
 # 진행
 # Tree-Ungrouping : top을 ungroup할때 or ungroup 후 top으로 올라갈 때 widget 풀림
-# 다중선택 후 delete
 
 # 완료
+# Tree : 다중선택 후 delete
 # Tree : Check된 inst만 실행
 # Acting : Move 기능
 # Tree,Acting : Drag 기능
@@ -275,8 +276,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.setCheckState(0,Qt.Checked) #col,state
         self.setExpanded(True)
     #group을 지웠을 때 child가 윗계층으로 올라가기
-
-
+  
     def change_act(self,act_cbx):
         #self.tw.disconnect()
         #if act_cbx.currentText() == "Double":
@@ -317,7 +317,7 @@ class TreeWidgetItem(QTreeWidgetItem):
 #https://stackoverflow.com/questions/25559221/qtreewidgetitem-issue-items-set-using-setwidgetitem-are-dispearring-after-movin        
 class TreeWidget(QTreeWidget):
     customMimeType = "application/x-customTreeWidgetdata"
-    def __init__(self):
+    def __init__(self,parent):
         super().__init__()
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
@@ -326,13 +326,39 @@ class TreeWidget(QTreeWidget):
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         #self.setContextMenuPolicy(Qt.CustomContextMenu) #비활성화시키면 contextmenuevent 동작됨
         self.customContextMenuRequested.connect(self.context_menu)
-    
+        self.copy_buf = []
+
     def keyPressEvent(self, event):
         root = self.invisibleRootItem()
         if event.key() == Qt.Key_Delete:
             cur_its = self.selectedItems()
             for cur_it in cur_its:
                 (cur_it.parent() or root).removeChild(cur_it)
+        elif event.matches(QKeySequence.Copy):
+            self.copy_buf = self.selectedItems()
+            prnt_lst = []
+            for item in self.copy_buf:
+                prnt_lst.append(item.prnt_name)
+            name_lst = []
+            for item in self.copy_buf:
+                name_lst.append(item.text(0))
+            main_lst = []
+            for item in self.copy_buf:
+                if item.prnt_name not in name_lst:
+                    main_lst.append(item)
+            self.copy_buf = main_lst
+        elif event.matches(QKeySequence.Paste):
+             # 붙여넣기 할 때 다중선택이 가능한지?
+             # 우선은 다중선택 생각하지 않고
+             # 이동과 같은 방식
+             target = self.currentItem()
+             if target.typ_cbx == None:
+                    for it in self.copy_buf:
+                        # QTree->TreeWidgetItem?
+                        item = TreeWidgetItem(self,target)
+                        self.fillItem(it, item)
+                        self.fillItems(it, item)
+                    print("Paste")
         else:
             super().keyPressEvent(event)
             
@@ -384,7 +410,6 @@ class TreeWidget(QTreeWidget):
                         #top일 때 nonetype이라 insertchild 안됨
                         #child를 top으로 만들어줘야함. 복잡하네...
                         if isinstance(new_parent,NoneType):
-                            print(1)
                             ix = self.indexOfTopLevelItem(item)
                             self.insertTopLevelItem(ix,item_without_parent)   
                             item_without_parent.prnt_name = "top"
@@ -392,7 +417,6 @@ class TreeWidget(QTreeWidget):
                             #move_item
                             #item이 toplevel 몇번째인지
                         else:
-                            print(2)
                             new_parent.insertChild(idx,item_without_parent)
                             item_without_parent.prnt_name = new_parent.text(0)
                             self.move_itemwidget(self,item_without_parent,new_parent)
@@ -645,13 +669,13 @@ class MyWindow(QMainWindow):
         execAction.triggered.connect(self.exec_inst)
         exitAction.triggered.connect(self.self_close)
         
-        self.tw = TreeWidget()
+        self.tw = TreeWidget(self)
         self.tw.setColumnCount(5)
         self.tw.setHeaderLabels(["Name","Type","Act","Pos","Content"])
                 
         self.ctr_lay.addWidget(self.tw)
     
-        self.tw2 = TreeWidget()
+        self.tw2 = TreeWidget(self)
         self.tw2.setColumnCount(2)
         self.tw2.setHeaderLabels(["Name","List"])
         val_1 = TreeWidgetItem(self.tw2,self.tw2)
