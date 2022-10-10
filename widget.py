@@ -361,11 +361,11 @@ class TreeWidget(QTreeWidget):
         self.undoStack = QUndoStack(self)
         self.undoStack.setIndex(0)
         self.cnt = 0
-        self.setStyleSheet("TreeWidget::item:selected"
-            "{"
-            "background-color : #d9fffb;"
-            "selection-color : #000000;"
-            "}")
+        #self.setStyleSheet("TreeWidget::item:selected"
+        #    "{"
+        #    "background-color : #d9fffb;"
+        #    "selection-color : #000000;"
+        #    "}")
 
     def mousePressEvent(self, event):
         print(event.modifiers())
@@ -593,18 +593,27 @@ class TreeWidget(QTreeWidget):
         mimetypes = QTreeWidget.mimeTypes(self)
         mimetypes.append(TreeWidget.customMimeType)
         return mimetypes
-
+    '''
     def startDrag(self, supportedActions):
         drag = QDrag(self)
+        
+        #drag.setPixmap(QPixmap("pic.PNG"))
+        pixmap = QPixmap(self.viewport().visibleRegion().boundingRect().size())
+        pixmap.fill(Qt.transparent)
+        painter = QPainter(pixmap)
+        painter.drawPixmap(self.rect(),self.grab())
+        painter.end()
+        drag.setPixmap(pixmap)
+        #drag.setHotSpot(event.pos())
+        
         mimedata = self.model().mimeData(self.selectedIndexes())
-
         encoded = QByteArray()
         stream = QDataStream(encoded, QIODevice.WriteOnly)
         self.encodeData(self.selectedItems(), stream)
         mimedata.setData(TreeWidget.customMimeType, encoded)
-
         drag.setMimeData(mimedata)
         drag.exec_(supportedActions)
+        '''
     
     def move_itemwidget(self,tw,drag_item,target,event=None):
         self.tw = tw
@@ -646,30 +655,29 @@ class TreeWidget(QTreeWidget):
     #pos 따라가도록
     def treeDropEvent(self, event):
         target = self.itemAt(event.pos())
-        print(self.itemAbove(target))
         # 현 treewidget으로 drop
         root = self.invisibleRootItem()
         self.save_push_log()        
         if event.source() == self:
             modifiers = event.keyboardModifiers()   
-            if event.mimeData().hasFormat(TreeWidget.customMimeType):
-                encoded = event.mimeData().data(TreeWidget.customMimeType)
-                items = self.decodeData(encoded, event.source())
-                # problem : 복수 선택 후 복사할 때 child가 중복 복사되는 문제
-                # solution : 선택된 것들의 이름 모으기, 부모 모으기
-                # -> 내 부모의 이름이 이름안에 있으면 난 안됨
-                # selected item에 col에 반영되지 않는 parent 정보가 있으면 편한데,
-                # 지금은 우선 번거롭더라도 selected items에서 prnt_str으로 parent 이름을 받자
-                prnt_lst = []
-                for sel_item in self.selectedItems():
-                    prnt_lst.append(sel_item.prnt_name)
-                name_lst = []
-                for item in items:
-                    name_lst.append(item.text(0))
-                main_lst = []
-                for sel_item in self.selectedItems():
-                    if sel_item.prnt_name not in name_lst:
-                        main_lst.append(sel_item)    
+            #if event.mimeData().hasFormat(TreeWidget.customMimeType):
+            #    encoded = event.mimeData().data(TreeWidget.customMimeType)
+            #    items = self.decodeData(encoded, event.source())
+            #    # problem : 복수 선택 후 복사할 때 child가 중복 복사되는 문제
+            #    # solution : 선택된 것들의 이름 모으기, 부모 모으기
+            #    # -> 내 부모의 이름이 이름안에 있으면 난 안됨
+            #    # selected item에 col에 반영되지 않는 parent 정보가 있으면 편한데,
+            #    # 지금은 우선 번거롭더라도 selected items에서 prnt_str으로 parent 이름을 받자
+            prnt_lst = []
+            for sel_item in self.selectedItems():
+                prnt_lst.append(sel_item.prnt_name)
+            name_lst = []
+            for item in self.selectedItems():
+                name_lst.append(item.text(0))
+            main_lst = []
+            for sel_item in self.selectedItems():
+                if sel_item.prnt_name not in name_lst:
+                    main_lst.append(sel_item)    
             if modifiers == Qt.NoModifier:
                 if target.typ_cbx == None:
                     for it in main_lst:
@@ -997,6 +1005,8 @@ class MyWindow(QMainWindow):
     def load(self):
         self.tw.disconnect()
         self.tw.clear()
+        self.tw.setDragEnabled(True)
+        self.tw.setAcceptDrops(True)
         with open('ex.csv', 'rt') as f:
             reader = csv.reader(f)
             self.insts=[]
