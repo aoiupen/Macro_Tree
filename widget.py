@@ -27,7 +27,6 @@ from requests import delete
 # Tree : lock 기능 : locked 되면 실행시 돌지 않는다(일종의 주석처리)
 # Tree : group과 inst 앞에 서로 다른 아이콘, group은 대문자 G, inst는 문서그림
 # Tree : 한단계 올릴 때 맨 아래로 내려가는 문제, 최상위 단계로 올릴 시 순서가 root 밑으로 쌓이는 문제
-# Tree : shift로 다중선택후 ctrl누르고 마우스클릭하면, 최종 마우스 클릭지점이 선택 제외되는 문제
 # Tree : top으로 올리는 기능 *** 최상위에 Root 폴더를 놓아야하나
 # Tree-Grouping : 위계 문제. 체크박스처럼. 폴더+child일부 선택해도 폴더는 선택 안되도록
 # Tree-Groupring : 우클릭 context에 복수 선택 후 group 기능 추가
@@ -42,17 +41,23 @@ from requests import delete
 # pos 와 lineedit 통합
 
 # 진행
-# Tree-Ungrouping : top을 ungroup할때 or ungroup 후 top으로 올라갈 때 widget 풀림
-# Func-Ctrl+Z : 매 동작마다 logsave를 해서 리스트 변수에 저장, 끝에 도달하면, undo 비활성화 redo 마찬가지
+# Tree : 그룹을 한단계 위로 이동시 그룹은 이동 안되고, inst는 top 바로 아래 depth2까지만 가능
+# Tree : Content 적용하기
+# Tree : Image로 pos 찾기 : Image 등록된 경우 Image라는 폰트가 노란 2겹테두리, 글씨 검정색으로 바뀜
+# Tree : Root 폴더는 건드리지 않기
+# Tree : Grouping
+# Tree : DropIndicatorPosition 적용해서, 위아래 이동복사 가능하도록 하기
 
 # 완료
+# Tree : ctrl 누른 상태에서는 선택된 아이템을 재클릭 후 release할 때 선택해제되도록 
+# Tree-Ungrouping : top을 ungroup할때 or ungroup 후 top으로 올라갈 때 widget 풀림
+# Func-Ctrl+Z : 매 동작마다 logsave를 해서 리스트 변수에 저장, 끝에 도달하면, undo 비활성화 redo 마찬가지
 # Tree : Copy,Paste by 키보드 : 다중선택이면 마지막으로 선택된 Item의 현재 경로에 복제
 # Tree : 다중선택 후 delete
 # Tree : Check된 inst만 실행
 # Acting : Move 기능
 # Tree,Acting : Drag 기능
 # Tree : Ctrl+left click시 복사 붙여넣기 되도록 + 여러개 선택시 모두 복사 되기
-
 
 class Second(QWidget):
     def __init__(self,MainUi,btn):
@@ -244,7 +249,7 @@ class resource_cl():
 
 class TreeWidgetItem(QTreeWidgetItem):
     def __init__(self,tw,parent,row=""):
-        QTreeWidgetItem.__init__(self,parent)
+        QTreeWidgetItem.__init__(self,parent) # 부모 지정하는 단계
         self.tw = tw
         self.row = row
         self.prnt = parent
@@ -321,11 +326,8 @@ class TreeUndoCommand(QUndoCommand):
         self.tree = tree
         self.stack = stack
         self.tree_str = tree_str
-        print("init undocammand")
-        pass
     
     def redo(self):
-        print("redo")
         pass
     
     def undo(self):
@@ -335,13 +337,10 @@ class TreeUndoCommand(QUndoCommand):
         # 새로운 작업을 stack에 쌓는다
         # 그러므로 load_log에 들어갈 인자는 stack에서 꺼낸 tree여야한다
         idx = self.stack.index()
-        print('idx:',idx)
         cmd = self.stack.command(idx-1)
-        print(type(cmd))
         if not isinstance(cmd,NoneType):
             self.tree.load_log(cmd.tree_str)
             print(cmd.tree_str)
-        print("undo")
         pass
 
 #https://stackoverflow.com/questions/25559221/qtreewidgetitem-issue-items-set-using-setwidgetitem-are-dispearring-after-movin        
@@ -363,6 +362,28 @@ class TreeWidget(QTreeWidget):
         self.undoStack = QUndoStack(self)
         self.undoStack.setIndex(0)
         self.cnt = 0
+        #self.setStyleSheet("TreeWidget::item:selected"
+        #    "{"
+        #    "background-color : #d9fffb;"
+        #    "selection-color : #000000;"
+        #    "}")
+
+    def mousePressEvent(self, event):
+        print(event.modifiers())
+        if event.modifiers() == Qt.ControlModifier:
+            return
+        return super().mousePressEvent(event)
+    
+    def mouseReleaseEvent(self, event):
+        if event.modifiers() == Qt.ControlModifier:
+            # 위에서 Select했던 item을 여기로 넘겨줘야함
+            super().mousePressEvent(event)
+            items = self.currentItem()
+            if items:
+                self.setCurrentItem(items)
+            else:
+                pass
+        return super().mouseReleaseEvent(event)
 
     def save_log(self):
         self.log_str = ""
@@ -440,19 +461,20 @@ class TreeWidget(QTreeWidget):
             self.log_str += '\n' #추후 widget으로 접근하는 방식도 고려
             if ch_it.childCount():
                 self.recur_log(ch_it)
-        
+    
+    def save_push_log(self):
+        tree_str = self.save_log() 
+        cmd = TreeUndoCommand(self,tree_str,self.undoStack)
+        self.undoStack.push(cmd)                    
+                    
     def keyPressEvent(self, event):
         root = self.invisibleRootItem()
-        if event.key() == Qt.Key_Delete:
-            tree_str = self.save_log() # undo하기 위해 실행직전 상태를 save 한다
+        if event.key() == Qt.Key_Delete:  
+            # undo하기 위해 실행직전 상태를 save 한다 
+            self.save_push_log()
             cur_its = self.selectedItems()
             for cur_it in cur_its:
                 (cur_it.parent() or root).removeChild(cur_it)
-            
-            # delete 일때 상황 저장
-            cmd = TreeUndoCommand(self,tree_str,self.undoStack)
-            self.undoStack.push(cmd)
-
         elif event.matches(QKeySequence.Copy):
             self.copy_buf = self.selectedItems()
             prnt_lst = []
@@ -467,21 +489,20 @@ class TreeWidget(QTreeWidget):
                     main_lst.append(item)
             self.copy_buf = main_lst
         elif event.matches(QKeySequence.Paste):
+            self.save_push_log()
              # 붙여넣기 할 때 다중선택이 가능한지?
              # 우선은 다중선택 생각하지 않고
              # 이동과 같은 방식
-             target = self.currentItem()
-             if target.typ_cbx == None:
-                    for it in self.copy_buf:
-                        # QTree->TreeWidgetItem?
-                        item = TreeWidgetItem(self,target)
-                        self.fillItem(it, item)
-                        self.fillItems(it, item)
-                    print("Paste")
+            target = self.currentItem()
+            if target.typ_cbx == None:
+                for it in self.copy_buf:
+                    # QTree->TreeWidgetItem?
+                    item = TreeWidgetItem(self,target)
+                    self.fillItem(it, item)
+                    self.fillItems(it, item)
+                print("Paste")
         elif event.matches(QKeySequence.Undo):
-            print(self.undoStack.count())
             self.undoStack.undo()
-            print(self.undoStack.count())
         else:
             super().keyPressEvent(event)
             
@@ -499,6 +520,8 @@ class TreeWidget(QTreeWidget):
         self.menu.popup(QCursor.pos())
     
     def grouping(self,event):
+        # selected items -> 마지막에 선택된 item의 부모 밑에 Group 폴더를 만듦
+        # selected items는 기존의 위치에서 삭제됨
         # selected items들에서 item without parent 뽑아냄
         # 현재의 parent에서 새로 group 생성(생성후에 lineedit 수정 상태로)
         # 새로 생성한 group가 addchild(item without parent)하기 
@@ -516,26 +539,25 @@ class TreeWidget(QTreeWidget):
     # child_without_parent를 parent.addChild로 더하기
     # ungrouping 한 후 widget 풀리는 현상 발생
     def ungrouping(self,event):
+        self.save_push_log()
         root = self.invisibleRootItem()
         for item in self.selectedItems():
             # inst에 ungroup 하면 바깥으로 빠져나오는 기능 추가
             if isinstance(item.typ_cbx,NoneType):
                 new_parent = item.parent()
-                print(new_parent)
                 child_cnt = item.childCount()
-                print(child_cnt)
                 if child_cnt:
                     for idx in range(child_cnt):
                         #child가 하나씩 사라지므로 마지막 idx일때 1개만 남음
                         #그러므로 최신 child를 지우도록 인자를 0 둠
                         item_without_parent = item.takeChild(0)
-                        print(item_without_parent.text(0)) 
                         #top일 때 nonetype이라 insertchild 안됨
                         #child를 top으로 만들어줘야함. 복잡하네...
                         if isinstance(new_parent,NoneType):
                             ix = self.indexOfTopLevelItem(item)
                             self.insertTopLevelItem(ix,item_without_parent)   
                             item_without_parent.prnt_name = "top"
+                            self.move_itemwidget(self,item_without_parent,new_parent)
                             #삭제하는법은?
                             #move_item
                             #item이 toplevel 몇번째인지
@@ -548,7 +570,6 @@ class TreeWidget(QTreeWidget):
     # custom일경우(나중에 공부). 옆에는 적용되던데 왜지...
     def context_menu(self, pos):
         index = self.indexAt(pos)
-        
         if not index.isValid():
             return
 
@@ -573,18 +594,27 @@ class TreeWidget(QTreeWidget):
         mimetypes = QTreeWidget.mimeTypes(self)
         mimetypes.append(TreeWidget.customMimeType)
         return mimetypes
-
+    '''
     def startDrag(self, supportedActions):
         drag = QDrag(self)
+        
+        #drag.setPixmap(QPixmap("pic.PNG"))
+        pixmap = QPixmap(self.viewport().visibleRegion().boundingRect().size())
+        pixmap.fill(Qt.transparent)
+        painter = QPainter(pixmap)
+        painter.drawPixmap(self.rect(),self.grab())
+        painter.end()
+        drag.setPixmap(pixmap)
+        #drag.setHotSpot(event.pos())
+        
         mimedata = self.model().mimeData(self.selectedIndexes())
-
         encoded = QByteArray()
         stream = QDataStream(encoded, QIODevice.WriteOnly)
         self.encodeData(self.selectedItems(), stream)
         mimedata.setData(TreeWidget.customMimeType, encoded)
-
         drag.setMimeData(mimedata)
         drag.exec_(supportedActions)
+        '''
     
     def move_itemwidget(self,tw,drag_item,target,event=None):
         self.tw = tw
@@ -596,8 +626,10 @@ class TreeWidget(QTreeWidget):
         # *drop event로 Data를 먼저 옮기고, if문 이하에서 item setting
         if not drag_item.text(1): # Group이면 부모 재설정 new_parent(target)인자를 받아서
             drag_item.prnt = target
-            print(type(drag_item))
-            drag_item.prnt_name = target.text(0) 
+            if isinstance(target,NoneType):
+                drag_item.prnt_name = "top"
+            else:
+                drag_item.prnt_name = target.text(0) 
             #target.insertChild(0,drag_item) # 인덱스는 임시로 0
         elif drag_item.text(1):
             drag_item.typ_cbx = TypCombo(self,drag_item.text(1))
@@ -623,48 +655,104 @@ class TreeWidget(QTreeWidget):
     #group간 종속기능 가능
     #pos 따라가도록
     def treeDropEvent(self, event):
+        indicator = QAbstractItemView.dropIndicatorPosition(self)
+        target_idx = self.indexAt(event.pos()).row()
         target = self.itemAt(event.pos())
+        parent = target.parent()
+        if not parent:
+            parent = self.topLevelItem(0)
+        # on 0 -> target
+        # above 1 -> target의 parent의 dropindex에 insert : 위에 있으면 그 아이템으로, 없으면 target의 같은 위계로, 하나 윗자리에 복제후 자신 삭제
+        # below 2 -> target의 parent의 dropindex에 insert : 아래에 있으면 그 아이템으로, 없으면 target의 같은 위계로, 하나 아랫자리에 복제후 자신 삭제 
         # 현 treewidget으로 drop
         root = self.invisibleRootItem()
-                
-        if event.source() == self:
+        self.save_push_log()        
+        if event.source() == self:  
             modifiers = event.keyboardModifiers()   
-            if event.mimeData().hasFormat(TreeWidget.customMimeType):
-                encoded = event.mimeData().data(TreeWidget.customMimeType)
-                items = self.decodeData(encoded, event.source())
-                # problem : 복수 선택 후 복사할 때 child가 중복 복사되는 문제
-                # solution : 선택된 것들의 이름 모으기, 부모 모으기
-                # -> 내 부모의 이름이 이름안에 있으면 난 안됨
-                # selected item에 col에 반영되지 않는 parent 정보가 있으면 편한데,
-                # 지금은 우선 번거롭더라도 selected items에서 prnt_str으로 parent 이름을 받자
-                prnt_lst = []
-                for sel_item in self.selectedItems():
-                    prnt_lst.append(sel_item.prnt_name)
-                name_lst = []
-                for item in items:
-                    name_lst.append(item.text(0))
-                main_lst = []
-                for sel_item in self.selectedItems():
-                    if sel_item.prnt_name not in name_lst:
-                        main_lst.append(sel_item)    
+            #if event.mimeData().hasFormat(TreeWidget.customMimeType):
+            #    encoded = event.mimeData().data(TreeWidget.customMimeType)
+            #    items = self.decodeData(encoded, event.source())
+            #    # problem : 복수 선택 후 복사할 때 child가 중복 복사되는 문제
+            #    # solution : 선택된 것들의 이름 모으기, 부모 모으기
+            #    # -> 내 부모의 이름이 이름안에 있으면 난 안됨
+            #    # selected item에 col에 반영되지 않는 parent 정보가 있으면 편한데,
+            #    # 지금은 우선 번거롭더라도 selected items에서 prnt_str으로 parent 이름을 받자
+            prnt_lst = []
+            for sel_item in self.selectedItems():
+                prnt_lst.append(sel_item.prnt_name)
+            name_lst = []
+            for item in self.selectedItems():
+                name_lst.append(item.text(0))
+            main_lst = []
+            for sel_item in self.selectedItems():
+                if sel_item.prnt_name not in name_lst:
+                    main_lst.append(sel_item)    
             if modifiers == Qt.NoModifier:
-                if target.typ_cbx == None:
-                    for it in main_lst:
-                        # QTree->TreeWidgetItem?
-                        item = TreeWidgetItem(self,target)
-                        self.fillItem(it, item)
-                        self.fillItems(it, item)
-                        (it.parent() or root).removeChild(it)
+                
+                for it in main_lst:
+                    # QTree->TreeWidgetItem?
+                    # target은 parent
+                    # indicator start
+                    if indicator == 0:
+                        if target.typ_cbx == None:
+                        # 평상시처럼
+                            item = TreeWidgetItem(self,None)
+                            self.fillItem(it, item)
+                            self.fillItems(it, item)
+                            (it.parent() or root).removeChild(it)
+                    elif indicator == 1:
+                        if isinstance(parent.parent(),NoneType):
+                            self.insertTopLevelItem(target_idx,item)
+                        else:
+                            item = TreeWidgetItem(self,None)
+                            parent.insertChild(target_idx,item)
+                            self.fillItem(it, item)
+                            self.fillItems(it, item)
+                            (it.parent() or root).removeChild(it)
+                    elif indicator == 2:
+                        if isinstance(parent.parent(),NoneType):
+                            self.insertTopLevelItem(target_idx,item)
+                        else:
+                            item = TreeWidgetItem(self,None)
+                            parent.insertChild(target_idx+1,item)
+                            self.fillItem(it, item)
+                            self.fillItems(it, item)
+                            (it.parent() or root).removeChild(it)
+                    else:
+                        pass
+                    # 이동시킬 때, items를 스택에 쌓아서 넣거나,
+                    # sort를 reverse해서 넣으면 된다
+                    # indicator end
+                
                     event.acceptProposedAction()
                     print("No Keyboard")
             elif modifiers == Qt.ControlModifier:
                 # 받는 item이 inst가 아닐때만 가능
-                if target.typ_cbx == None:
-                    for it in main_lst:
-                        # QTree->TreeWidgetItem?
-                        item = TreeWidgetItem(self,target)
-                        self.fillItem(it, item)
-                        self.fillItems(it, item)
+                for it in main_lst:
+                    if indicator == 0:
+                        if target.typ_cbx == None:
+                        # 평상시처럼
+                            item = TreeWidgetItem(self,None)
+                            self.fillItem(it, item)
+                            self.fillItems(it, item)
+                    elif indicator == 1:
+                        if isinstance(parent.parent(),NoneType):
+                            self.insertTopLevelItem(target_idx,item)
+                        else:
+                            item = TreeWidgetItem(self,None)
+                            parent.insertChild(target_idx,item)
+                            self.fillItem(it, item)
+                            self.fillItems(it, item)
+                    elif indicator == 2:
+                        if isinstance(parent.parent(),NoneType):
+                            self.insertTopLevelItem(target_idx,item)
+                        else:
+                            item = TreeWidgetItem(self,None)
+                            parent.insertChild(target_idx+1,item)
+                            self.fillItem(it, item)
+                            self.fillItems(it, item)
+                    else:
+                        pass
                     event.acceptProposedAction()
                     print("Control")
             elif modifiers == Qt.ShiftModifier:
@@ -974,6 +1062,8 @@ class MyWindow(QMainWindow):
     def load(self):
         self.tw.disconnect()
         self.tw.clear()
+        self.tw.setDragEnabled(True)
+        self.tw.setAcceptDrops(True)
         with open('ex.csv', 'rt') as f:
             reader = csv.reader(f)
             self.insts=[]

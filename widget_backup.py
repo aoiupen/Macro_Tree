@@ -66,7 +66,7 @@ class TreeWidget(QTreeWidget):
                     item = QTreeWidgetItem(parent)
                     self.fillItem(it, item)
                     self.fillItems(it, item)
-                event.acceptProposedAction()
+        event.acceptProposedAction()
 
     def fillItem(self, inItem, outItem):
         for col in range(inItem.columnCount()):
