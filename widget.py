@@ -27,7 +27,6 @@ from requests import delete
 # Tree : lock 기능 : locked 되면 실행시 돌지 않는다(일종의 주석처리)
 # Tree : group과 inst 앞에 서로 다른 아이콘, group은 대문자 G, inst는 문서그림
 # Tree : 한단계 올릴 때 맨 아래로 내려가는 문제, 최상위 단계로 올릴 시 순서가 root 밑으로 쌓이는 문제
-# Tree : shift로 다중선택후 ctrl누르고 마우스클릭하면, 최종 마우스 클릭지점이 선택 제외되는 문제
 # Tree : top으로 올리는 기능 *** 최상위에 Root 폴더를 놓아야하나
 # Tree-Grouping : 위계 문제. 체크박스처럼. 폴더+child일부 선택해도 폴더는 선택 안되도록
 # Tree-Groupring : 우클릭 context에 복수 선택 후 group 기능 추가
@@ -42,9 +41,12 @@ from requests import delete
 # pos 와 lineedit 통합
 
 # 진행
+# Tree : ctrl 누른 상태에서는 선택된 아이템을 재클릭 후 release할 때 선택해제되도록 
 # Tree : 그룹을 한단계 위로 이동시 그룹은 이동 안되고, inst는 top 바로 아래 depth2까지만 가능
 # Tree : Content 적용하기
 # Tree : Image로 pos 찾기 : Image 등록된 경우 Image라는 폰트가 노란 2겹테두리, 글씨 검정색으로 바뀜
+# Tree : Root 폴더는 건드리지 않기
+# Tree : Grouping
 
 # 완료
 # Tree-Ungrouping : top을 ungroup할때 or ungroup 후 top으로 올라갈 때 widget 풀림
@@ -365,6 +367,23 @@ class TreeWidget(QTreeWidget):
             "selection-color : #000000;"
             "}")
 
+    def mousePressEvent(self, event):
+        print(event.modifiers())
+        if event.modifiers() == Qt.ControlModifier:
+            return
+        return super().mousePressEvent(event)
+    
+    def mouseReleaseEvent(self, event):
+        if event.modifiers() == Qt.ControlModifier:
+            # 위에서 Select했던 item을 여기로 넘겨줘야함
+            super().mousePressEvent(event)
+            items = self.currentItem()
+            if items:
+                self.setCurrentItem(items)
+            else:
+                pass
+        return super().mouseReleaseEvent(event)
+
     def save_log(self):
         self.log_str = ""
         col_cnt = self.columnCount()
@@ -500,6 +519,8 @@ class TreeWidget(QTreeWidget):
         self.menu.popup(QCursor.pos())
     
     def grouping(self,event):
+        # selected items -> 마지막에 선택된 item의 부모 밑에 Group 폴더를 만듦
+        # selected items는 기존의 위치에서 삭제됨
         # selected items들에서 item without parent 뽑아냄
         # 현재의 parent에서 새로 group 생성(생성후에 lineedit 수정 상태로)
         # 새로 생성한 group가 addchild(item without parent)하기 
