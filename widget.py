@@ -37,10 +37,10 @@ from requests import delete
 # Simulation : 시뮬레이션 기능 : pos를 클릭할 때 스크린샷도 같이
 # mimedata encode, decode 할 지, selected items로 할지. 그리고 cbx를 새로 만들어줄지, deepcopy 할지
 # content 뒤에 sleep(delay) 넣기
-# 선택한 것만 우측 메뉴로 execute하기
 # pos 와 lineedit 통합
 
 # 진행
+# 선택한 것만 우측 context 메뉴로 execute하기
 # Tree : 그룹을 한단계 위로 이동시 그룹은 이동 안되고, inst는 top 바로 아래 depth2까지만 가능
 # Tree : Image로 pos 찾기 : Image 등록된 경우 Image라는 폰트가 노란 2겹테두리, 글씨 검정색으로 바뀜
 # Tree : Root 폴더는 건드리지 않기
@@ -514,11 +514,48 @@ class TreeWidget(QTreeWidget):
         ungroup_act.triggered.connect(lambda:self.ungrouping(event))
         group_act = QAction('Group',self)
         group_act.triggered.connect(lambda:self.grouping(event))
+        sel_exe = QAction('Execute',self)
+        sel_exe.triggered.connect(lambda:self.excute_sel(event))
         self.menu.addAction(delete_act)
         self.menu.addAction(ungroup_act)
         self.menu.addAction(group_act)
+        self.menu.addAction(sel_exe)
         self.menu.popup(QCursor.pos())
     
+    def execute_lst_com(self, inst_lst):      
+        # inst_list 실행
+        for inst in inst_lst:
+            typ = inst.typ_cbx.currentText()
+            act = inst.act_cbx.currentText()
+            if typ == "Mouse":
+                x,y = inst.pos_wdg.pos_le.text().split(',')
+                if act == "Click":
+                    pag.click(x=int(x),y=int(y),clicks=1)
+                elif act == "Right":
+                    pag.rightClick(x=int(x),y=int(y))
+                elif act == "Double":
+                    pag.click(x=int(x),y=int(y),clicks=3,interval=0.1) 
+                elif act == "Drag":
+                    pag.moveTo(x=1639,y=259)
+                    pag.dragTo(int(x),int(y),0.2)
+                elif act == "Move":
+                    pag.moveTo(x=int(x),y=int(y))
+            elif typ == "Key":
+                if act == "Copy":
+                    pag.hotkey('ctrl', 'c')
+                elif act == "Paste":
+                    if inst.text(4):
+                        pag.write(inst.text(4))
+                    else:
+                        pag.hotkey('ctrl', 'v')
+                elif act == "Select All":
+                    pag.hotkey('ctrl', 'a')
+                    
+    def excute_sel(self,event):
+        # inst_list 수집
+        inst_lst = self.selectedItems()
+        self.execute_lst_com(inst_lst)
+
     def grouping(self,event):
         # selected items -> 마지막에 선택된 item의 부모 밑에 Group 폴더를 만듦
         # selected items는 기존의 위치에서 삭제됨
@@ -999,33 +1036,7 @@ class MyWindow(QMainWindow):
                         else:
                             if top_it.childCount():
                                 self.recur_child_exec(top_it,inst_lst)
-        # inst_list 실행
-        for inst in inst_lst:
-            typ = inst.typ_cbx.currentText()
-            act = inst.act_cbx.currentText()
-            if typ == "Mouse":
-                x,y = inst.pos_wdg.pos_le.text().split(',')
-                if act == "Click":
-                    pag.click(x=int(x),y=int(y),clicks=1)
-                elif act == "Right":
-                    pag.rightClick(x=int(x),y=int(y))
-                elif act == "Double":
-                    pag.click(x=int(x),y=int(y),clicks=3,interval=0.1) 
-                elif act == "Drag":
-                    pag.moveTo(x=1639,y=259)
-                    pag.dragTo(int(x),int(y),0.2)
-                elif act == "Move":
-                    pag.moveTo(x=int(x),y=int(y))
-            elif typ == "Key":
-                if act == "Copy":
-                    pag.hotkey('ctrl', 'c')
-                elif act == "Paste":
-                    if inst.text(4):
-                        pag.write(inst.text(4))
-                    else:
-                        pag.hotkey('ctrl', 'v')
-                elif act == "Select All":
-                    pag.hotkey('ctrl', 'a')
+        self.execute_lst_com(inst_lst)
     
     def recur_child_exec(self,parent,lst):
         if parent.childCount():
