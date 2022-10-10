@@ -700,7 +700,6 @@ class TreeWidget(QTreeWidget):
                             self.fillItem(it, item)
                             self.fillItems(it, item)
                             (it.parent() or root).removeChild(it)
-                        pass
                     elif indicator == 1:
                         if isinstance(parent.parent(),NoneType):
                             self.insertTopLevelItem(target_idx,item)
@@ -719,26 +718,41 @@ class TreeWidget(QTreeWidget):
                             self.fillItem(it, item)
                             self.fillItems(it, item)
                             (it.parent() or root).removeChild(it)
-                            # if isinstance(parent,NoneType):
-                            # self.insertTopLevelItem(target_idx+1,item)
-                            # else:
-                            # parent.indexOfChild(target)
-                            # parent.insertChild(target_idx+1,item)
-                            # + widget setting
                     else:
                         pass
+                    # 이동시킬 때, items를 스택에 쌓아서 넣거나,
+                    # sort를 reverse해서 넣으면 된다
                     # indicator end
                 
                     event.acceptProposedAction()
                     print("No Keyboard")
             elif modifiers == Qt.ControlModifier:
                 # 받는 item이 inst가 아닐때만 가능
-                if target.typ_cbx == None:
-                    for it in main_lst:
-                        # QTree->TreeWidgetItem?
-                        item = TreeWidgetItem(self,target)
-                        self.fillItem(it, item)
-                        self.fillItems(it, item)
+                for it in main_lst:
+                    if indicator == 0:
+                        if target.typ_cbx == None:
+                        # 평상시처럼
+                            item = TreeWidgetItem(self,None)
+                            self.fillItem(it, item)
+                            self.fillItems(it, item)
+                    elif indicator == 1:
+                        if isinstance(parent.parent(),NoneType):
+                            self.insertTopLevelItem(target_idx,item)
+                        else:
+                            item = TreeWidgetItem(self,None)
+                            parent.insertChild(target_idx,item)
+                            self.fillItem(it, item)
+                            self.fillItems(it, item)
+                    elif indicator == 2:
+                        if isinstance(parent.parent(),NoneType):
+                            self.insertTopLevelItem(target_idx,item)
+                        else:
+                            item = TreeWidgetItem(self,None)
+                            parent.insertChild(target_idx+1,item)
+                            self.fillItem(it, item)
+                            self.fillItems(it, item)
+                    else:
+                        pass
                     event.acceptProposedAction()
                     print("Control")
             elif modifiers == Qt.ShiftModifier:
