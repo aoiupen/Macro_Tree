@@ -20,13 +20,13 @@ from requests import delete
 # 기술 : Customizing을 통한 Pyqt 이해도
 
 # 기획
+# 진행할 때 왼쪽 INST에도 각 단계에 맞춰 시각화(COPY의 내용이 채워진다든지)
 # 실행하면 최소화. 끝나면 최대화 (옵션화)
 # 컨셉 : transfrom,flexible,pressed
 # Tree : all 선택
 # Tree : inst 추가 삭제
 # Tree : lock 기능 : locked 되면 실행시 돌지 않는다(일종의 주석처리)
 # Tree : group과 inst 앞에 서로 다른 아이콘, group은 대문자 G, inst는 문서그림
-# Tree : 한단계 올릴 때 맨 아래로 내려가는 문제, 최상위 단계로 올릴 시 순서가 root 밑으로 쌓이는 문제
 # Tree : top으로 올리는 기능 *** 최상위에 Root 폴더를 놓아야하나
 # Tree-Grouping : 위계 문제. 체크박스처럼. 폴더+child일부 선택해도 폴더는 선택 안되도록
 # Tree-Groupring : 우클릭 context에 복수 선택 후 group 기능 추가
@@ -42,19 +42,21 @@ from requests import delete
 
 # 진행
 # Tree : 그룹을 한단계 위로 이동시 그룹은 이동 안되고, inst는 top 바로 아래 depth2까지만 가능
-# Tree : Content 적용하기
 # Tree : Image로 pos 찾기 : Image 등록된 경우 Image라는 폰트가 노란 2겹테두리, 글씨 검정색으로 바뀜
 # Tree : Root 폴더는 건드리지 않기
 # Tree : Grouping
+# Tree : 최상위 폴더로 이동, 복사 안되는 문제, 그룹이 inst 사이로 들어가는 문제 : 정렬은 순서대로 하기
+# Tree : Check된 inst만 실행
+# Tree : 이동하면 사라지고, 두번째부터 안됨 (복제,이동 둘다 onitem일 때 문제 발생)
 
 # 완료
+# Tree : Content 적용하기
 # Tree : DropIndicatorPosition 적용해서, 위아래 이동복사 가능하도록 하기
 # Tree : ctrl 누른 상태에서는 선택된 아이템을 재클릭 후 release할 때 선택해제되도록 
 # Tree-Ungrouping : top을 ungroup할때 or ungroup 후 top으로 올라갈 때 widget 풀림
 # Func-Ctrl+Z : 매 동작마다 logsave를 해서 리스트 변수에 저장, 끝에 도달하면, undo 비활성화 redo 마찬가지
 # Tree : Copy,Paste by 키보드 : 다중선택이면 마지막으로 선택된 Item의 현재 경로에 복제
 # Tree : 다중선택 후 delete
-# Tree : Check된 inst만 실행
 # Acting : Move 기능
 # Tree,Acting : Drag 기능
 # Tree : Ctrl+left click시 복사 붙여넣기 되도록 + 여러개 선택시 모두 복사 되기
@@ -340,7 +342,6 @@ class TreeUndoCommand(QUndoCommand):
         cmd = self.stack.command(idx-1)
         if not isinstance(cmd,NoneType):
             self.tree.load_log(cmd.tree_str)
-            print(cmd.tree_str)
         pass
 
 #https://stackoverflow.com/questions/25559221/qtreewidgetitem-issue-items-set-using-setwidgetitem-are-dispearring-after-movin        
@@ -369,7 +370,6 @@ class TreeWidget(QTreeWidget):
         #    "}")
 
     def mousePressEvent(self, event):
-        print(event.modifiers())
         if event.modifiers() == Qt.ControlModifier:
             return
         return super().mousePressEvent(event)
@@ -659,6 +659,7 @@ class TreeWidget(QTreeWidget):
         target_idx = self.indexAt(event.pos()).row()
         target = self.itemAt(event.pos())
         parent = target.parent()
+        print(parent.text(0))
         if not parent:
             parent = self.topLevelItem(0)
         # on 0 -> target
@@ -688,17 +689,20 @@ class TreeWidget(QTreeWidget):
                 if sel_item.prnt_name not in name_lst:
                     main_lst.append(sel_item)    
             if modifiers == Qt.NoModifier:
-                
                 for it in main_lst:
                     # QTree->TreeWidgetItem?
                     # target은 parent
                     # indicator start
                     if indicator == 0:
                         if target.typ_cbx == None:
+                            if isinstance(parent.parent(),NoneType):
+                                self.insertTopLevelItem(target_idx,item)
                         # 평상시처럼
-                            item = TreeWidgetItem(self,None)
-                            self.fillItem(it, item)
-                            self.fillItems(it, item)
+                            else:
+                                item = TreeWidgetItem(self,None)
+                                target.insertChild(target_idx,item)
+                                self.fillItem(it, item)
+                                self.fillItems(it, item)
                             (it.parent() or root).removeChild(it)
                     elif indicator == 1:
                         if isinstance(parent.parent(),NoneType):
@@ -708,7 +712,7 @@ class TreeWidget(QTreeWidget):
                             parent.insertChild(target_idx,item)
                             self.fillItem(it, item)
                             self.fillItems(it, item)
-                            (it.parent() or root).removeChild(it)
+                        (it.parent() or root).removeChild(it)
                     elif indicator == 2:
                         if isinstance(parent.parent(),NoneType):
                             self.insertTopLevelItem(target_idx,item)
@@ -717,7 +721,7 @@ class TreeWidget(QTreeWidget):
                             parent.insertChild(target_idx+1,item)
                             self.fillItem(it, item)
                             self.fillItems(it, item)
-                            (it.parent() or root).removeChild(it)
+                        (it.parent() or root).removeChild(it)
                     else:
                         pass
                     # indicator end
@@ -731,6 +735,7 @@ class TreeWidget(QTreeWidget):
                         if target.typ_cbx == None:
                         # 평상시처럼
                             item = TreeWidgetItem(self,None)
+                            target.insertChild(target_idx,item)
                             self.fillItem(it, item)
                             self.fillItems(it, item)
                     elif indicator == 1:
@@ -832,7 +837,6 @@ class TreeWidget(QTreeWidget):
                 rows.append(row)
 
         for row in rows:
-            print(row)
             it = tree.topLevelItem(row[0])
             for ix in row[1:]:
                 it = it.child(ix)
@@ -998,9 +1002,9 @@ class MyWindow(QMainWindow):
         # inst_list 실행
         for inst in inst_lst:
             typ = inst.typ_cbx.currentText()
+            act = inst.act_cbx.currentText()
             if typ == "Mouse":
                 x,y = inst.pos_wdg.pos_le.text().split(',')
-                act = inst.act_cbx.currentText()
                 if act == "Click":
                     pag.click(x=int(x),y=int(y),clicks=1)
                 elif act == "Right":
@@ -1016,7 +1020,10 @@ class MyWindow(QMainWindow):
                 if act == "Copy":
                     pag.hotkey('ctrl', 'c')
                 elif act == "Paste":
-                    pag.hotkey('ctrl', 'v')
+                    if inst.text(4):
+                        pag.write(inst.text(4))
+                    else:
+                        pag.hotkey('ctrl', 'v')
                 elif act == "Select All":
                     pag.hotkey('ctrl', 'a')
     
