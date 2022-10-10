@@ -1,14 +1,5 @@
 top,root,,,,
 root,GroupA,,,,
-GroupA,Content,Key,Select All,,C:\abc\abcd
-root,GroupB,,,,
-GroupB,gr_b1,,,,
-gr_b1,SaveImg,Mouse,Click,"259,12",
-gr_b1,SaveImg22,Mouse,Click,"259,12",
-gr_b1,FileName,Mouse,Click,"318,15",
-gr_b1,gr_b2,,,,
-gr_b2,SaveImg,Mouse,Click,"259,12",
-gr_b2,SaveImg,Mouse,Click,"259,12",
-gr_b2,FileName,Mouse,Click,"318,15",
-GroupB,gr_b2,,,,
-root,GroupC,,,,
+GroupA,gr_b1,,,,
+gr_b1,SaveImg,Mouse,Click,"432,178",
+GroupA,Content,Key,Paste,,C:\abc\abcd
