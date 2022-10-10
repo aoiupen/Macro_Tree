@@ -41,14 +41,15 @@ from requests import delete
 # pos 와 lineedit 통합
 
 # 진행
-# Tree : ctrl 누른 상태에서는 선택된 아이템을 재클릭 후 release할 때 선택해제되도록 
 # Tree : 그룹을 한단계 위로 이동시 그룹은 이동 안되고, inst는 top 바로 아래 depth2까지만 가능
 # Tree : Content 적용하기
 # Tree : Image로 pos 찾기 : Image 등록된 경우 Image라는 폰트가 노란 2겹테두리, 글씨 검정색으로 바뀜
 # Tree : Root 폴더는 건드리지 않기
 # Tree : Grouping
+# Tree : DropIndicatorPosition 적용해서, 위아래 이동복사 가능하도록 하기
 
 # 완료
+# Tree : ctrl 누른 상태에서는 선택된 아이템을 재클릭 후 release할 때 선택해제되도록 
 # Tree-Ungrouping : top을 ungroup할때 or ungroup 후 top으로 올라갈 때 widget 풀림
 # Func-Ctrl+Z : 매 동작마다 logsave를 해서 리스트 변수에 저장, 끝에 도달하면, undo 비활성화 redo 마찬가지
 # Tree : Copy,Paste by 키보드 : 다중선택이면 마지막으로 선택된 Item의 현재 경로에 복제
@@ -248,7 +249,7 @@ class resource_cl():
 
 class TreeWidgetItem(QTreeWidgetItem):
     def __init__(self,tw,parent,row=""):
-        QTreeWidgetItem.__init__(self,parent)
+        QTreeWidgetItem.__init__(self,parent) # 부모 지정하는 단계
         self.tw = tw
         self.row = row
         self.prnt = parent
@@ -654,11 +655,19 @@ class TreeWidget(QTreeWidget):
     #group간 종속기능 가능
     #pos 따라가도록
     def treeDropEvent(self, event):
+        indicator = QAbstractItemView.dropIndicatorPosition(self)
+        target_idx = self.indexAt(event.pos()).row()
         target = self.itemAt(event.pos())
+        parent = target.parent()
+        if not parent:
+            parent = self.topLevelItem(0)
+        # on 0 -> target
+        # above 1 -> target의 parent의 dropindex에 insert : 위에 있으면 그 아이템으로, 없으면 target의 같은 위계로, 하나 윗자리에 복제후 자신 삭제
+        # below 2 -> target의 parent의 dropindex에 insert : 아래에 있으면 그 아이템으로, 없으면 target의 같은 위계로, 하나 아랫자리에 복제후 자신 삭제 
         # 현 treewidget으로 drop
         root = self.invisibleRootItem()
         self.save_push_log()        
-        if event.source() == self:
+        if event.source() == self:  
             modifiers = event.keyboardModifiers()   
             #if event.mimeData().hasFormat(TreeWidget.customMimeType):
             #    encoded = event.mimeData().data(TreeWidget.customMimeType)
@@ -679,13 +688,47 @@ class TreeWidget(QTreeWidget):
                 if sel_item.prnt_name not in name_lst:
                     main_lst.append(sel_item)    
             if modifiers == Qt.NoModifier:
-                if target.typ_cbx == None:
-                    for it in main_lst:
-                        # QTree->TreeWidgetItem?
-                        item = TreeWidgetItem(self,target)
-                        self.fillItem(it, item)
-                        self.fillItems(it, item)
-                        (it.parent() or root).removeChild(it)
+                
+                for it in main_lst:
+                    # QTree->TreeWidgetItem?
+                    # target은 parent
+                    # indicator start
+                    if indicator == 0:
+                        if target.typ_cbx == None:
+                        # 평상시처럼
+                            item = TreeWidgetItem(self,None)
+                            self.fillItem(it, item)
+                            self.fillItems(it, item)
+                            (it.parent() or root).removeChild(it)
+                        pass
+                    elif indicator == 1:
+                        if isinstance(parent.parent(),NoneType):
+                            self.insertTopLevelItem(target_idx,item)
+                        else:
+                            item = TreeWidgetItem(self,None)
+                            parent.insertChild(target_idx,item)
+                            self.fillItem(it, item)
+                            self.fillItems(it, item)
+                            (it.parent() or root).removeChild(it)
+                    elif indicator == 2:
+                        if isinstance(parent.parent(),NoneType):
+                            self.insertTopLevelItem(target_idx,item)
+                        else:
+                            item = TreeWidgetItem(self,None)
+                            parent.insertChild(target_idx+1,item)
+                            self.fillItem(it, item)
+                            self.fillItems(it, item)
+                            (it.parent() or root).removeChild(it)
+                            # if isinstance(parent,NoneType):
+                            # self.insertTopLevelItem(target_idx+1,item)
+                            # else:
+                            # parent.indexOfChild(target)
+                            # parent.insertChild(target_idx+1,item)
+                            # + widget setting
+                    else:
+                        pass
+                    # indicator end
+                
                     event.acceptProposedAction()
                     print("No Keyboard")
             elif modifiers == Qt.ControlModifier:
