@@ -960,7 +960,7 @@ class MyWindow(QMainWindow):
         #            item = TreeWidgetItem(row)#부모설정.결국
         self.insts = []
         self.load()
-        self.tw.itemChanged.connect(self.get_item)
+        #self.tw.itemChanged.connect(self.get_item)
         
     def check_child(self,cur,col):
         if col == 0:
@@ -968,6 +968,7 @@ class MyWindow(QMainWindow):
             if ch_num:
                 for num in range(ch_num):
                     cur.child(num).setCheckState(0, Qt.Checked)
+                    print("check0")
                     self.check_child(cur.child(num),col)
                     
     def uncheck_child(self,cur,col):
@@ -976,11 +977,13 @@ class MyWindow(QMainWindow):
             if ch_num:
                 for num in range(ch_num):
                     cur.child(num).setCheckState(0, Qt.Unchecked)
+                    print("check1")
                     self.uncheck_child(cur.child(num),col)
 
     def uncheck_parent(self,cur,col):
         if cur.parent():
             cur.parent().setCheckState(0, Qt.Unchecked)
+            print("check2")
             self.uncheck_parent(cur.parent(),col)
     
     def check_parent(self,cur,col):
@@ -996,9 +999,12 @@ class MyWindow(QMainWindow):
                         break
             if sbl_true:
                 parent.setCheckState(0, Qt.Checked)
+                print("check3")
                 self.check_parent(parent,col)
     
     def get_item(self,cur,col):
+        self.tw.blockSignals(True)
+        print(cur.text(0))
         if cur.checkState(col) == Qt.Checked:
             self.check_child(cur,col) # 자식 전체 check
             self.check_parent(cur,col) # 동료 full check-> 부모 check                                  
@@ -1008,6 +1014,8 @@ class MyWindow(QMainWindow):
             self.uncheck_parent(cur,col) # 부모 전체 uncheck until
             self.tw.blockSignals(False)
         self.tw.setFocus()
+        self.tw.save_log()
+        self.tw.blockSignals(False)
             
     def save(self):
         with open('ex.csv', 'wt') as csvfile:
