@@ -26,13 +26,18 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.a.addItem("aa")
         self.a.addItem("bb")
         parent.setItemWidget(self,0,self.a)
+        self.setText(1,"111")
+
 class TreeWidget(QTreeWidget):
     def __init__(self,parent):
         super().__init__()
         self.win = parent
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
+        self.setHeaderLabels(["Name","Type","Act","Pos","Content"])
         #self.dropEvent = self.treeDropEvent
+        self.header().setSectionResizeMode(QHeaderView.Interactive)
+        self.header().setSectionResizeMode(QHeaderView.Fixed)
         self.setEditTriggers(QAbstractItemView.DoubleClicked)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         #self.setContextMenuPolicy(Qt.CustomContextMenu) #비활성화시키면 contextmenuevent 동작됨
@@ -130,7 +135,9 @@ class MyWindow(QMainWindow):
         self.item1 = TreeWidgetItem(self.tw)
         self.item2 = TreeWidgetItem(self.tw)
         self.item1.setText(0,'1')
+        self.item1.setText(1,'1')
         self.item2.setText(0,'2')
+        self.item2.setText(1,'2')
         
 if __name__ == "__main__":
     app = QApplication(sys.argv)

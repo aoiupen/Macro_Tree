@@ -359,6 +359,9 @@ class TreeWidget(QTreeWidget):
         self.dropEvent = self.treeDropEvent
         self.setEditTriggers(QAbstractItemView.DoubleClicked)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.header().setSectionResizeMode(QHeaderView.Interactive)
+        self.header().setCascadingSectionResizes(True)
+        self.header().setSectionsMovable(True)
         #self.setContextMenuPolicy(Qt.CustomContextMenu) #비활성화시키면 contextmenuevent 동작됨
         self.customContextMenuRequested.connect(self.context_menu)
         self.copy_buf = []
@@ -948,7 +951,7 @@ class MyWindow(QMainWindow):
         val_3.setFlags(val_3.flags()|Qt.ItemIsEditable) #editable
 
         self.tw.header().setStretchLastSection(True)
-        self.tw.header().setSectionResizeMode(QHeaderView.ResizeToContents)
+        #self.tw.header().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.tw2.header().setStretchLastSection(True)
         self.tw2.header().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.ctr_lay.addWidget(self.tw2)
