@@ -25,6 +25,7 @@ from requests import delete
 # 컨셉 : transfrom,flexible,pressed
 # Tree : all 선택
 # Tree : inst 추가 삭제
+# Tree : Mouse,Key 토글 버튼으로 바꾸기
 # Tree : lock 기능 : locked 되면 실행시 돌지 않는다(일종의 주석처리)
 # Tree : group과 inst 앞에 서로 다른 아이콘, group은 대문자 G, inst는 문서그림
 # Tree : top으로 올리는 기능 *** 최상위에 Root 폴더를 놓아야하나
@@ -36,13 +37,14 @@ from requests import delete
 # Strategy : 실행 코드 작성 -> UX 개선 + region, image 탐색 기능 추가
 # Simulation : 시뮬레이션 기능 : pos를 클릭할 때 스크린샷도 같이
 # mimedata encode, decode 할 지, selected items로 할지. 그리고 cbx를 새로 만들어줄지, deepcopy 할지
+# Tree : Image로 pos 찾기 : Image 등록된 경우 Image라는 폰트가 노란 2겹테두리, 글씨 검정색으로 바뀜
 # content 뒤에 sleep(delay) 넣기
 # pos 와 lineedit 통합
+# 0,0 에러 처리
 
 # 진행
-# 선택한 것만 우측 context 메뉴로 execute하기
+# Tree : typ,act combo 변경시도 undo 가능하게 : combo 박스 변경 후 treewidget을 찍어야만 undo가 가능한 문제
 # Tree : 그룹을 한단계 위로 이동시 그룹은 이동 안되고, inst는 top 바로 아래 depth2까지만 가능
-# Tree : Image로 pos 찾기 : Image 등록된 경우 Image라는 폰트가 노란 2겹테두리, 글씨 검정색으로 바뀜
 # Tree : Root 폴더는 건드리지 않기
 # Tree : Grouping
 # Tree : 최상위 폴더로 이동, 복사 안되는 문제, 그룹이 inst 사이로 들어가는 문제 : 정렬은 순서대로 하기
@@ -50,6 +52,7 @@ from requests import delete
 # Tree : 이동하면 사라지고, 두번째부터 안됨 (복제,이동 둘다 onitem일 때 문제 발생)
 
 # 완료
+# 선택한 것만 우측 context 메뉴로 execute하기
 # Tree : Content 적용하기
 # Tree : DropIndicatorPosition 적용해서, 위아래 이동복사 가능하도록 하기
 # Tree : ctrl 누른 상태에서는 선택된 아이템을 재클릭 후 release할 때 선택해제되도록 
@@ -287,13 +290,13 @@ class TreeWidgetItem(QTreeWidgetItem):
     def change_act(self,act_cbx):
         #self.tw.disconnect()
         #if act_cbx.currentText() == "Double":
-            
         pass
      
     #signal의 class가 qobject를 상속할 때만 @pyqtSlot()을 달아주고, 아니면 달지 않는다
     #https://stackoverflow.com/questions/40325953/why-do-i-need-to-decorate-connected-slots-with-pyqtslot/40330912#40330912       
     def change_typ(self,typ_cbx,act_cbx):
         #typ_cbx를 self.typ_cbx로 바꾸고 param 지우기
+        self.tw.save_push_log()
         self.tw.disconnect()
         if typ_cbx.currentText() == "Mouse":
             act_cbx.clear()
@@ -321,6 +324,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         ctr_widget = self.tw.parent()
         wid = ctr_widget.parent()
         self.tw.itemChanged.connect(wid.get_item) # typ을 key로 변경시 - pos 연동 삭제
+        self.tw.setFocus()
         
 class TreeUndoCommand(QUndoCommand):
     def __init__(self,tree,tree_str,stack):
@@ -1003,6 +1007,7 @@ class MyWindow(QMainWindow):
             self.tw.blockSignals(True) # itemChanged 시그널 발생 막기
             self.uncheck_parent(cur,col) # 부모 전체 uncheck until
             self.tw.blockSignals(False)
+        self.tw.setFocus()
             
     def save(self):
         with open('ex.csv', 'wt') as csvfile:
