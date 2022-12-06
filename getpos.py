@@ -1,13 +1,11 @@
-from screeninfo import get_monitors
 import os
-import sys
-import pyautogui
+import sys       
+from screeninfo import get_monitors
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 import pynput
 from pynput.mouse import Controller
-
 
 class FramelessWidget(QWidget):
     def __init__(self, parent=None):
