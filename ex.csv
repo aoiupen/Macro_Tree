@@ -1,5 +1,11 @@
-top,root,,,,
-root,GroupA,,,,
-GroupA,gr_b1,,,,
-gr_b1,SaveImg,Mouse,Click,"432,178",
-GroupA,Content,Key,Paste,,C:\abc\abcd
+top,GroupG,,,,
+GroupA,SaveImg,Mouse,Click,"259,12",
+GroupA,FileName,Mouse,Click,"318,15",
+GroupA,Content,Key,Typing,,C:\abc\abcd
+top,GroupB,,,,
+GroupB,gr_b1,,,,
+gr_b1,SaveImg,Mouse,Click,"259,12",
+GroupB,gr_b2,,,,
+gr_b2,SaveImg,Mouse,Click,"259,12",
+gr_b2,SaveImg,Mouse,Click,"259,12",
+top,GroupC,,,,

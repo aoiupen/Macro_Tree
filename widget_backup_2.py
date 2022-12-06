@@ -1,5 +1,6 @@
 import csv
 import sys
+print(sys.path)
 from types import NoneType
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -23,7 +24,6 @@ from requests import delete
 # 진행할 때 왼쪽 INST에도 각 단계에 맞춰 시각화(COPY의 내용이 채워진다든지)
 # 실행하면 최소화. 끝나면 최대화 (옵션화)
 # 컨셉 : transfrom,flexible,pressed
-# Tree : all 선택
 # Tree : inst 추가 삭제
 # Tree : Mouse,Key 토글 버튼으로 바꾸기
 # Tree : lock 기능 : locked 되면 실행시 돌지 않는다(일종의 주석처리)
@@ -43,6 +43,7 @@ from requests import delete
 # 0,0 에러 처리
 
 # 진행
+# Tree : all 선택
 # Tree : typ,act combo 변경시도 undo 가능하게 : combo 박스 변경 후 treewidget을 찍어야만 undo가 가능한 문제
 # Tree : 그룹을 한단계 위로 이동시 그룹은 이동 안되고, inst는 top 바로 아래 depth2까지만 가능
 # Tree : Root 폴더는 건드리지 않기
@@ -52,6 +53,7 @@ from requests import delete
 # Tree : 이동하면 사라지고, 두번째부터 안됨 (복제,이동 둘다 onitem일 때 문제 발생)
 
 # 완료
+# Tree : Header 이동,사이즈 조절 가능
 # 선택한 것만 우측 context 메뉴로 execute하기
 # Tree : Content 적용하기
 # Tree : DropIndicatorPosition 적용해서, 위아래 이동복사 가능하도록 하기
@@ -99,7 +101,7 @@ class Second(QWidget):
 
     def set_maximize(self):
         self.setGeometry(0, 0, self.resolution_width,
-                         self.resolution_height-100)
+                         self.resolution_height)
         self.setStyleSheet("background-color: white;")
         op = QGraphicsOpacityEffect(self)
         self.setGraphicsEffect(op)
@@ -119,7 +121,7 @@ class Second(QWidget):
             # treewidgetitem->poswidget->posbtn
             if isinstance(self.btn,PosBtn):
                 self.btn.pos = coor
-                self.btn.parent().pos_le.setText(coor)
+                self.btn.parent().coor.setText(coor)
                 self.btn.setStyleSheet("color:black")               
                 self.close()
             else:
@@ -164,7 +166,7 @@ class PosBtn(QPushButton):
     def run(self):
         self.double_signal.emit()
 
-class RegButton(QPushButton):
+class RegBtn(QPushButton):
     def __init__(self,name):
         super().__init__()
         self.setText(name)
@@ -232,11 +234,11 @@ class PosWidget(QWidget):
         self.widget_lay = QHBoxLayout(self)
         self.widget_lay.setContentsMargins(0,0,0,0)
         self.widget_lay.setSpacing(0)
-        self.pos_le = QLineEdit(pos,self)
-        self.pos_le.setFixedWidth(80)
+        self.coor = QLineEdit(pos,self)
+        self.coor.setFixedWidth(80)
         self.pos_btn = PosBtn("pos")
         self.pos_btn.setFixedWidth(50)
-        self.widget_lay.addWidget(self.pos_le)
+        self.widget_lay.addWidget(self.coor)
         self.widget_lay.addWidget(self.pos_btn)
         self.pos_btn.clicked.connect(self.run)
         
@@ -261,7 +263,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.prnt_name = ""
         self.act_cbx = None
         self.typ_cbx = None
-        self.pos_wdg = None
+        self.pos_cp = None
 
         if len(self.row)>2: # 우측 treewidget 없앨 때 같이 지울 조건
             if self.row[2]:
@@ -278,9 +280,9 @@ class TreeWidgetItem(QTreeWidgetItem):
                 self.act_cbx.act_signal.connect(lambda:self.change_act(self.act_cbx))
                 pos = self.row[4]
                 if self.row[2] == "Mouse":
-                    self.pos_wdg = PosWidget(pos)
-                    self.pos_wdg.pos_btn.clicked.connect(lambda ignore,f=self.pos_wdg.get_pos:f())
-                    self.tw.setItemWidget(self, 3, self.pos_wdg)
+                    self.pos_cp = PosWidget(pos)
+                    self.pos_cp.pos_btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
+                    self.tw.setItemWidget(self, 3, self.pos_cp)
 
         self.setFlags(self.flags()|Qt.ItemIsEditable) #editable
         self.setCheckState(0,Qt.Checked) #col,state
@@ -308,9 +310,9 @@ class TreeWidgetItem(QTreeWidgetItem):
             act_cbx.setCurrentIndex(0)
             self.setText(1,"Mouse")
             self.setText(2,"Click")
-            self.pos_wdg = PosWidget("0,0")
-            self.pos_wdg.pos_btn.clicked.connect(lambda ignore,f=self.pos_wdg.get_pos:f())
-            self.tw.setItemWidget(self,3,self.pos_wdg) # typ을 mouse로 변경시 - pos 연동 생성
+            self.pos_cp = PosWidget("0,0")
+            self.pos_cp.pos_btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
+            self.tw.setItemWidget(self,3,self.pos_cp) # typ을 mouse로 변경시 - pos 연동 생성
         elif typ_cbx.currentText() == "Key":
             act_cbx.clear()
             act_cbx.addItem("Copy")
@@ -394,7 +396,6 @@ class TreeWidget(QTreeWidget):
 
     def save_log(self):
         self.log_str = ""
-        col_cnt = self.columnCount()
         top_cnt = self.topLevelItemCount()
         if top_cnt:
             for i in range(top_cnt):
@@ -456,13 +457,13 @@ class TreeWidget(QTreeWidget):
 
     def recur_log(self,parent):
         for ch_num in range(parent.childCount()):
+            print(parent.text(0))
             ch_it = parent.child(ch_num)
-            
             row = [ch_it.text(i) for i in range(self.columnCount())] 
             if ch_it.text(1):
                 row[2] = ch_it.act_cbx.currentText()
                 if ch_it.text(1) == "Mouse":
-                    row[3] = "\""+ch_it.pos_wdg.pos_le.text()+"\""
+                    row[3] = "\""+ch_it.pos_cp.coor.text()+"\""
             row.insert(0,parent.text(0))   
             self.log_str += ','.join(row)
             self.log_str += '\n' #추후 widget으로 접근하는 방식도 고려
@@ -529,13 +530,13 @@ class TreeWidget(QTreeWidget):
         self.menu.addAction(sel_exe)
         self.menu.popup(QCursor.pos())
     
-    def execute_lst_com(self, inst_lst):      
+    def exec_insts(self, inst_lst):      
         # inst_list 실행
         for inst in inst_lst:
             typ = inst.typ_cbx.currentText()
             act = inst.act_cbx.currentText()
             if typ == "Mouse":
-                x,y = inst.pos_wdg.pos_le.text().split(',')
+                x,y = inst.pos_cp.coor.text().split(',')
                 if act == "Click":
                     pag.click(x=int(x),y=int(y),clicks=1)
                 elif act == "Right":
@@ -561,7 +562,7 @@ class TreeWidget(QTreeWidget):
     def excute_sel(self,event):
         # inst_list 수집
         inst_lst = self.selectedItems()
-        self.execute_lst_com(inst_lst)
+        self.exec_insts(inst_lst)
 
     def grouping(self,event):
         # selected items -> 마지막에 선택된 item의 부모 밑에 Group 폴더를 만듦
@@ -681,12 +682,12 @@ class TreeWidget(QTreeWidget):
             self.setItemWidget(drag_item, 1, drag_item.typ_cbx)
             self.setItemWidget(drag_item, 2, drag_item.act_cbx)
             if drag_item.text(1) == "Mouse":
-                coor = drag_item.pos_wdg.pos_le.text()
-                drag_item.pos_wdg = PosWidget(coor)
+                coor = drag_item.pos_cp.coor.text()
+                drag_item.pos_cp = PosWidget(coor)
                 # 이동해도, item을 새로 만드는 것이기 때문에, connect도 다시 해줘야한다.
                 # 추후 class init할 때 connect 하도록 수정할 필요있음
-                drag_item.pos_wdg.pos_btn.clicked.connect(lambda ignore,f=drag_item.pos_wdg.get_pos:f())                  
-                self.setItemWidget(drag_item, 3, drag_item.pos_wdg)
+                drag_item.pos_cp.pos_btn.clicked.connect(lambda ignore,f=drag_item.pos_cp.get_pos:f())                  
+                self.setItemWidget(drag_item, 3, drag_item.pos_cp)
             drag_item.typ_cbx.typ_signal.connect(lambda:drag_item.change_typ(drag_item.typ_cbx,drag_item.act_cbx))
         child_cnt = drag_item.childCount()
         # 단,group이어도 group 자신만 dropevent만하고, 자식들은 move_itemwidget 거치도록
@@ -837,11 +838,11 @@ class TreeWidget(QTreeWidget):
             self.setItemWidget(outItem, 2, outItem.act_cbx)
             if outItem.text(1) == "Mouse":
                 coor = outItem.text(3)
-                outItem.pos_wdg = PosWidget(coor)
+                outItem.pos_cp = PosWidget(coor)
                 # 이동해도, item을 새로 만드는 것이기 때문에, connect도 다시 해줘야한다.
                 # 추후 class init할 때 connect 하도록 수정할 필요있음
-                outItem.pos_wdg.pos_btn.clicked.connect(lambda ignore,f=outItem.pos_wdg.get_pos:f())                  
-                self.setItemWidget(outItem, 3, outItem.pos_wdg)
+                outItem.pos_cp.pos_btn.clicked.connect(lambda ignore,f=outItem.pos_cp.get_pos:f())                  
+                self.setItemWidget(outItem, 3, outItem.pos_cp)
             outItem.typ_cbx.typ_signal.connect(lambda:outItem.change_typ(outItem.typ_cbx,outItem.act_cbx))
         child_cnt = outItem.childCount()
         # 단,group이어도 group 자신만 dropevent만하고, 자식들은 move_itemwidget 거치도록       
@@ -954,7 +955,7 @@ class MyWindow(QMainWindow):
         #self.tw.header().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.tw2.header().setStretchLastSection(True)
         self.tw2.header().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.ctr_lay.addWidget(self.tw2)
+        #self.ctr_lay.addWidget(self.tw2)
         self.adjustSize()
         
         #with open('ex.csv', 'rt') as f:
@@ -971,7 +972,6 @@ class MyWindow(QMainWindow):
             if ch_num:
                 for num in range(ch_num):
                     cur.child(num).setCheckState(0, Qt.Checked)
-                    print("check0")
                     self.check_child(cur.child(num),col)
                     
     def uncheck_child(self,cur,col):
@@ -980,13 +980,11 @@ class MyWindow(QMainWindow):
             if ch_num:
                 for num in range(ch_num):
                     cur.child(num).setCheckState(0, Qt.Unchecked)
-                    print("check1")
                     self.uncheck_child(cur.child(num),col)
 
     def uncheck_parent(self,cur,col):
         if cur.parent():
             cur.parent().setCheckState(0, Qt.Unchecked)
-            print("check2")
             self.uncheck_parent(cur.parent(),col)
     
     def check_parent(self,cur,col):
@@ -1002,7 +1000,6 @@ class MyWindow(QMainWindow):
                         break
             if sbl_true:
                 parent.setCheckState(0, Qt.Checked)
-                print("check3")
                 self.check_parent(parent,col)
     
     def get_item(self,cur,col):
@@ -1052,7 +1049,7 @@ class MyWindow(QMainWindow):
                         else:
                             if top_it.childCount():
                                 self.recur_child_exec(top_it,inst_lst)
-        self.execute_lst_com(inst_lst)
+        self.exec_insts(inst_lst)
     
     def recur_child_exec(self,parent,lst):
         if parent.childCount():
@@ -1077,7 +1074,7 @@ class MyWindow(QMainWindow):
                 if ch_it.text(1):
                     lst[2] = ch_it.act_cbx.currentText()
                     if ch_it.text(1) == "Mouse":
-                        lst[3] = ch_it.pos_wdg.pos_le.text()
+                        lst[3] = ch_it.pos_cp.coor.text()
                 lst.insert(0,parent.text(0))   
                 writer.writerow(lst)
                 self.recur_child(writer,parent.child(ch_num))
@@ -1086,7 +1083,7 @@ class MyWindow(QMainWindow):
     def write_csv(self,parent,ch_it):
         lst = [ch_it.text(i) for i in range(self.tw.columnCount())] #text로 접근하기보다, widget으로 접근하는게 맞음
         if ch_it.text(1) == "Mouse":
-            lst[3] = ch_it.pos_wdg.pos_le.text()
+            lst[3] = ch_it.pos_cp.coor.text()
         lst.insert(0,parent.text(0))     
         writer.writerow(lst)
     '''
