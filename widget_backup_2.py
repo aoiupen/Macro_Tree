@@ -174,7 +174,7 @@ class RegBtn(QPushButton):
         self.setFixedSize(QSize(50,20))
         self.setStyleSheet("color:red")
     
-class ActCombo(QComboBox):
+class ActCb(QComboBox):
     act_signal = pyqtSignal()
     def __init__(self,typ,act):
         QComboBox.__init__(self)
@@ -210,7 +210,7 @@ class ActCombo(QComboBox):
     def run(self):
         self.act_signal.emit()
 
-class TypCombo(QComboBox):
+class TypCb(QComboBox):
     typ_signal = pyqtSignal()
     def __init__(self,parent,typ):
         QComboBox.__init__(self)
@@ -270,11 +270,11 @@ class TreeWidgetItem(QTreeWidgetItem):
                 #~ ^ 차이
                 self.setFlags(self.flags() ^ Qt.ItemIsDropEnabled) #inst에는 inst를 drop할 수 없음
                 typ = self.row[2]
-                self.typ_cbx = TypCombo(self,typ)
+                self.typ_cbx = TypCb(self,typ)
                 self.tw.setItemWidget(self, 1, self.typ_cbx)
                 #row[2]가 있으면 row[3]도 있으므로 if문 생략
                 act = self.row[3]
-                self.act_cbx = ActCombo(typ,act)
+                self.act_cbx = ActCb(typ,act)
                 self.tw.setItemWidget(self, 2, self.act_cbx)
                 self.typ_cbx.typ_signal.connect(lambda:self.change_typ(self.typ_cbx,self.act_cbx))
                 self.act_cbx.act_signal.connect(lambda:self.change_act(self.act_cbx))
@@ -677,8 +677,8 @@ class TreeWidget(QTreeWidget):
                 drag_item.prnt_name = target.text(0) 
             #target.insertChild(0,drag_item) # 인덱스는 임시로 0
         elif drag_item.text(1):
-            drag_item.typ_cbx = TypCombo(self,drag_item.text(1))
-            drag_item.act_cbx = ActCombo(drag_item.text(1),drag_item.text(2))
+            drag_item.typ_cbx = TypCb(self,drag_item.text(1))
+            drag_item.act_cbx = ActCb(drag_item.text(1),drag_item.text(2))
             self.setItemWidget(drag_item, 1, drag_item.typ_cbx)
             self.setItemWidget(drag_item, 2, drag_item.act_cbx)
             if drag_item.text(1) == "Mouse":
@@ -832,8 +832,8 @@ class TreeWidget(QTreeWidget):
             outItem.prnt_name = outItem.text(0) 
             #target.insertChild(0,drag_item) # 인덱스는 임시로 0
         elif outItem.text(1):
-            outItem.typ_cbx = TypCombo(self,outItem.text(1))
-            outItem.act_cbx = ActCombo(outItem.text(1),outItem.text(2))
+            outItem.typ_cbx = TypCb(self,outItem.text(1))
+            outItem.act_cbx = ActCb(outItem.text(1),outItem.text(2))
             self.setItemWidget(outItem, 1, outItem.typ_cbx)
             self.setItemWidget(outItem, 2, outItem.act_cbx)
             if outItem.text(1) == "Mouse":

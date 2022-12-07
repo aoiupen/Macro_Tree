@@ -5,19 +5,21 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from package import pos as ps
 from package import compo as cp
+from package import tree as tr
+from types import NoneType
 from enum import Enum
 
 class Head(Enum):
-    typ = 0
-    act = 1
-    pos = 2
+    non = 0
+    typ = 1
+    act = 2
+    pos = 3
     
 class TreeWidgetItem(QTreeWidgetItem):
     def __init__(self,tw,parent,row=""):
         QTreeWidgetItem.__init__(self,parent) # 부모 지정하는 단계
         self.tw = tw
         self.row = row
-        self.prnt = parent
         self.p_name = "" #parent 내부 name 인자있는지?
         self.typ_cb = None
         self.act_cb = None
@@ -28,15 +30,15 @@ class TreeWidgetItem(QTreeWidgetItem):
             if self.row[2]:
                 #~ ^ 차이
                 self.setFlags(self.flags() ^ Qt.ItemIsDropEnabled) #inst에는 inst를 drop할 수 없음
-                typ = self.row[2]
-                self.typ_cb = cp.TypCombo(self,typ)
+                
+                typ,act = self.row[2:4]
+                self.typ_cb = cp.TypCb(self,typ)
+                self.act_cb = cp.ActCb(typ,act)
+                self.typ_cb.signal.connect(lambda:self.change_typ())
+                self.act_cb.signal.connect(lambda:self.change_act())
                 self.tw.setItemWidget(self, 1, self.typ_cb)
-                #row[2]가 있으면 row[3]도 있으므로 if문 생략
-                act = self.row[3]
-                self.act_cb = cp.ActCombo(typ,act)
                 self.tw.setItemWidget(self, 2, self.act_cb)
-                self.typ_cb.typ_signal.connect(lambda:self.change_typ())
-                self.act_cb.act_signal.connect(lambda:self.change_act())
+                
                 pos = self.row[4]
                 if self.row[2] == "Mouse":
                     self.pos_cp = cp.PosWidget(pos)
@@ -48,122 +50,6 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.setExpanded(True)
     #group을 지웠을 때 child가 윗계층으로 올라가기
 
-    def exec_inst(self): # inst_list 수집
-        # 미리 수집을 해놓야야한다. item 변할 때마다. 그래서 아래 함수를 없애고, exec_insts만 존재하게 한다
-        t_n = self.topLevelItemCount()
-        inst_lst = []
-        if t_n:
-            for ix in range(t_n):
-                t_it = self.topLevelItem(ix)
-                if t_it:
-                    if t_it.checkState(0) == Qt.Checked: # check 된 것만 돌기
-                        if t_it.text(1):
-                            inst_lst.append(t_it)
-                        else:
-                            if t_it.childCount():
-                                self.recur_child_exec(t_it,inst_lst)
-        self.exec_insts(inst_lst) 
-        
-    def check_child(self,cur,col):
-        if col == 0:
-            ch_num = cur.childCount()
-            if ch_num:
-                for num in range(ch_num):
-                    cur.child(num).setCheckState(0, Qt.Checked)
-                    self.check_child(cur.child(num),col)
-
-    def uncheck_child(self,cur,col):
-        if col == 0:
-            ch_num = cur.childCount()
-            if ch_num:
-                for num in range(ch_num):
-                    ch = cur.child(num)
-                    ch.setCheckState(0, Qt.Unchecked)
-                    self.uncheck_child(ch,col)
-
-    def uncheck_parent(self,cur,col):
-        p = cur.parent()
-        if p:
-            p.setCheckState(0, Qt.Unchecked)
-            self.uncheck_parent(p,col)
-
-    def check_parent(self,cur,col):
-        # 나와 동료가 full check -> 부모도 check
-        p = cur.parent()
-        sbl_true = True
-        if p:
-            sbl_num = p.childCount()
-            if sbl_num:
-                for num in range(sbl_num):
-                    sbl = p.child(num)
-                    if sbl.checkState(col) == Qt.Unchecked: #col을 적어줘야함
-                        sbl_true = False
-                        break
-            if sbl_true:
-                p.setCheckState(0, Qt.Checked)
-                self.check_parent(p,col)
-
-    def chagne_check(self,cur,col):
-        self.tw.blockSignals(True)
-        if cur.checkState(col) == Qt.Checked:
-            self.check_child(cur,col) # 자식 전체 check
-            self.check_parent(cur,col) # 동료 full check-> 부모 check                                  
-        else:
-            self.uncheck_child(cur,col) # 자식 전체 uncheck
-            self.tw.blockSignals(True) # itemChanged 시그널 발생 막기
-            self.uncheck_parent(cur,col) # 부모 전체 uncheck until
-            self.tw.blockSignals(False)
-        self.tw.setFocus()
-        self.tw.save_log()
-        self.tw.blockSignals(False)
-            
-    def save(self):
-        with open('ex.csv', 'wt') as csvfile:
-            writer = csv.writer(csvfile, dialect='excel', lineterminator='\n')
-            #writer.writerow(self.header)
-            infos = []
-            t_n = self.tw.topLevelItemCount()
-            if t_n:
-                for ix in range(t_n):
-                    t_it = self.tw.topLevelItem(ix)
-                    if t_it:
-                        infos.append(["top",t_it.text(0),"","","",""])
-                        if t_it.childCount():
-                            self.recur_get_info(infos,t_it)
-            
-            for info in infos:
-                writer.writerow(info)
-            
-        csvfile.close()
-                        
-    #top은 예외
-    #recur은 마지막에
-    def recur_get_info(self,infos,parent):
-        num = parent.childCount()
-        for ix in range(num):
-            ch = parent.child(ix)
-            ch_infos = [ch.text(i) for i in range(self.tw.columnCount())] #text로 접근하기보다, widget으로 접근하는게 맞음
-            if ch_infos[1]:
-                ch_infos[2] = ch.act_cb.currentText()
-                if ch_infos[1] == "Mouse":
-                    ch_infos[3] = ch.pos_cp.coor.text()
-            ch_infos.insert(0,parent.text(0))   
-            infos.append(ch_infos)
-            self.recur_get_info(infos,parent.child(ix))
-        return
-    
-    def recur_child_exec(self,parent,lst):
-        num = parent.childCount()
-        for ix in range(num):
-            ch = parent.child(ix)
-            if ch.checkState(0) == Qt.Checked: # Check 된 것만 돌기
-                if ch.text(1):
-                    lst.append(ch)
-                else:
-                    if ch.childCount():
-                        self.recur_child_exec(ch,lst)   
-    
-           
     def change_act(self):
         #self.tw.disconnect()
         #if act_cb.currentText() == "Double":
@@ -177,29 +63,20 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.act_cb.clear()
         
         typ_cb_cur = self.typ_cb.currentText()
-        act_cb_items = {"Mouse":["Click","Double","Right","Drag","Move"], "Key":["Copy","Paste","Select_All"]}
-        
+        for item in self.tw.act_cb_items[typ_cb_cur]:
+            self.act_cb.addItem(item)
+            
         if  typ_cb_cur == "Mouse":
-            for item in act_cb_items[typ_cb_cur]:
-                self.act_cb.addItem(item)
             self.act_cb.setCurrentIndex(0)
-            self.setText(Head.typ.value,"Mouse")
-            self.setText(Head.act.value,"Click")
-            self.pos_cp = ps.PosWidget("0,0")
+            self.pos_cp = cp.PosWidget("0,0")
             self.pos_cp.pos_btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
             self.tw.setItemWidget(self,Head.pos.value,self.pos_cp) # typ을 mouse로 변경시 - pos 연동 생성
         elif typ_cb_cur == "Key":
-            for item in act_cb_items[typ_cb_cur]:
+            for item in self.tw.act_cb_items[typ_cb_cur]:
                 self.act_cb.addItem(item)
-            self.setText(Head.typ.value,"Key")
-            self.setText(Head.act.value,"Copy")
             self.act_cb.setCurrentIndex(0)
             self.tw.removeItemWidget(self,Head.pos.value)
-            self.setText(Head.pos.value,"") # pos widget 지운 후 treewidget의 pos data 삭제
-            
-        ctr_widget = self.tw.parent()
-        win = ctr_widget.parent()
-        self.tw.itemChanged.connect(win.chagne_check) # typ을 key로 변경시 - pos 연동 삭제
+        self.tw.itemChanged.connect(self.tw.change_check) # typ을 key로 변경시 - pos 연동 삭제
         self.tw.setFocus()
         
 class TreeUndoCommand(QUndoCommand):
@@ -246,6 +123,7 @@ class TreeWidget(QTreeWidget):
         self.undoStack = QUndoStack(self)
         self.undoStack.setIndex(0)
         self.cnt = 0
+        self.act_cb_items = {"Mouse":["Click","Double","Right","Drag","Move"], "Key":["Copy","Paste","Select_All"]}
         #self.setStyleSheet("TreeWidget::item:selected"
         #    "{"
         #    "background-color : #d9fffb;"
@@ -318,21 +196,51 @@ class TreeWidget(QTreeWidget):
             #column에 widget이 들어가면 이 코드가 의미가 없을 듯
             
             if len(row) >2:
-                typ = row[2]
-                act = row[3]
-                pos = row[4]
                 con = row[5]
-                tw_it.setText(1,typ)
-                tw_it.setText(2,act)
-                tw_it.setText(3,pos)
                 tw_it.setText(4,con)    
             self.insts.append(tw_it)
-        self.itemChanged.connect(self.win.chagne_check)
+        self.itemChanged.connect(self.win.change_check)
 
-    #cvs나 excel로 넣는게 나을 듯
+    def load(self):
+        self.disconnect()
+        self.clear()
+        self.setDragEnabled(True)
+        self.setAcceptDrops(True)
+        with open('ex.csv', 'rt') as f:
+            reader = csv.reader(f)
+            self.inst_list=[]
+            for _,row in enumerate(reader):
+                p = ""
+                p_str = row[0]
+                name = row[1]
+                if p_str == 'top':
+                    p = self
+                    tw_it = tr.TreeWidgetItem(self,p,row)
+                    tw_it.p_name = 'top'
+                    tw_it.setText(0,name)
+                else:
+                    for inst in self.inst_list:
+                        if inst.text(0) == p_str:
+                            p = inst
+                            tw_it = tr.TreeWidgetItem(self,p,row)
+                            tw_it.p_name = p.text(0)
+                            tw_it.setText(0,name)
+                            break
+                    
+                # parent에 string이 들어가면 안되고,이 이름을 가지는 widget을 불러와야한다
+                # column에 widget이 들어가면 이 코드가 의미가 없을 듯
+                
+                if len(row) >2:
+                    content = row[5]
+                    tw_it.setText(4,content)    
+                self.inst_list.append(tw_it)
+        self.itemChanged.connect(self.change_check)
+
+    def set_cls_win(self):
+        self.close() 
+        #cvs나 excel로 넣는게 나을 듯
     def recur_log(self,parent):
         for ch_num in range(parent.childCount()):
-            print(parent.text(0))
             ch_it = parent.child(ch_num)
             ch_it_vals = [ch_it.text(i) for i in range(self.columnCount())] 
             if ch_it_vals[1]:
@@ -546,15 +454,15 @@ class TreeWidget(QTreeWidget):
             print(drag_item.childCount())
         # *drop event로 Data를 먼저 옮기고, if문 이하에서 item setting
         if not drag_item.text(1): # Group이면 부모 재설정 new_parent(trg)인자를 받아서
-            drag_item.prnt = trg
+            drag_item.p = trg
             if isinstance(trg,NoneType):
                 drag_item.p_name = "top"
             else:
                 drag_item.p_name = trg.text(0) 
             #trg.insertChild(0,drag_item) # 인덱스는 임시로 0
         elif drag_item.text(1):
-            drag_item.typ_cb = ps.TypCombo(self,drag_item.text(1))
-            drag_item.act_cb = ps.ActCombo(drag_item.text(1),drag_item.text(2))
+            drag_item.typ_cb = ps.TypCb(self,drag_item.text(1))
+            drag_item.act_cb = ps.ActCb(drag_item.text(1),drag_item.text(2))
             self.setItemWidget(drag_item, 1, drag_item.typ_cb)
             self.setItemWidget(drag_item, 2, drag_item.act_cb)
             if drag_item.text(1) == "Mouse":
@@ -564,7 +472,7 @@ class TreeWidget(QTreeWidget):
                 # 추후 class init할 때 connect 하도록 수정할 필요있음
                 drag_item.pos_cp.pos_btn.clicked.connect(lambda ignore,f=drag_item.pos_cp.get_pos:f())                  
                 self.setItemWidget(drag_item, 3, drag_item.pos_cp)
-            drag_item.typ_cb.typ_signal.connect(lambda:drag_item.change_typ())
+            drag_item.typ_cb.signal.connect(lambda:drag_item.change_typ())
         child_cnt = drag_item.childCount()
         # 단,group이어도 group 자신만 dropevent만하고, 자식들은 move_itemwidget 거치도록
         if child_cnt:
@@ -704,12 +612,12 @@ class TreeWidget(QTreeWidget):
                 
         # *drop event로 Data를 먼저 옮기고, if문 이하에서 item setting
         if not outItem.text(1): # Group이면 부모 재설정 new_parent(trg)인자를 받아서
-            #outItem.prnt = trg
+            #outItem.p = trg
             outItem.p_name = outItem.text(0) 
             #trg.insertChild(0,drag_item) # 인덱스는 임시로 0
         elif outItem.text(1):
-            outItem.typ_cb = ps.TypCombo(self,outItem.text(1))
-            outItem.act_cb = ps.ActCombo(outItem.text(1),outItem.text(2))
+            outItem.typ_cb = ps.TypCb(self,outItem.text(1))
+            outItem.act_cb = ps.ActCb(outItem.text(1),outItem.text(2))
             self.setItemWidget(outItem, 1, outItem.typ_cb)
             self.setItemWidget(outItem, 2, outItem.act_cb)
             if outItem.text(1) == "Mouse":
@@ -719,7 +627,7 @@ class TreeWidget(QTreeWidget):
                 # 추후 class init할 때 connect 하도록 수정할 필요있음
                 outItem.pos_cp.pos_btn.clicked.connect(lambda ignore,f=outItem.pos_cp.get_pos:f())                  
                 self.setItemWidget(outItem, 3, outItem.pos_cp)
-            outItem.typ_cb.typ_signal.connect(lambda:outItem.change_typ())
+            outItem.typ_cb.signal.connect(lambda:outItem.change_typ())
         child_cnt = outItem.childCount()
         # 단,group이어도 group 자신만 dropevent만하고, 자식들은 move_itemwidget 거치도록       
 
@@ -769,3 +677,105 @@ class TreeWidget(QTreeWidget):
         pass
         #print(it, col, it.text(col))
     
+
+    def exec_inst(self): # inst_list 수집
+        # 미리 수집을 해놓야야한다. item 변할 때마다. 그래서 아래 함수를 없애고, exec_insts만 존재하게 한다
+        inst_lst = []
+        for ix in range(self.topLevelItemCount()):
+            t_it = self.topLevelItem(ix)
+            if t_it:
+                if t_it.checkState(0) == Qt.Checked: # check 된 것만 돌기
+                    if t_it.text(1):
+                        inst_lst.append(t_it)
+                    else:
+                        if t_it.childCount():
+                            self.recur_child_exec(t_it,inst_lst)
+        self.exec_insts(inst_lst)
+        
+    def check_child(self,cur,col):
+        if col == 0:
+            for num in range(cur.childCount()):
+                cur.child(num).setCheckState(0, Qt.Checked)
+                self.check_child(cur.child(num),col)
+
+    def uncheck_child(self,cur,col):
+        if col == 0:
+            for num in range(cur.childCount()):
+                ch = cur.child(num)
+                ch.setCheckState(0, Qt.Unchecked)
+                self.uncheck_child(ch,col)
+
+    def uncheck_parent(self,cur,col):
+        p = cur.parent()
+        if p:
+            p.setCheckState(0, Qt.Unchecked)
+            self.uncheck_parent(p,col)
+
+    def check_parent(self,cur,col):
+        # 추가 조건 : 나와 동료가 full check -> 부모도 check
+        sbl_true = True
+        p = cur.parent()
+        if p:
+            for ix in range(p.childCount()):
+                sbl = p.child(ix)
+                if sbl.checkState(col) == Qt.Unchecked: #col을 적어줘야함
+                    sbl_true = False
+                    break
+            if sbl_true:
+                p.setCheckState(0, Qt.Checked)
+                self.check_parent(p,col)
+
+    def change_check(self,cur,col):
+        self.blockSignals(True)
+        if cur.checkState(col) == Qt.Checked:
+            self.check_child(cur,col) # 자식 전체 check
+            self.check_parent(cur,col) # 동료 full check-> 부모 check                                  
+        else:
+            self.uncheck_child(cur,col) # 자식 전체 uncheck
+            self.blockSignals(True) # itemChanged 시그널 발생 막기
+            self.uncheck_parent(cur,col) # 부모 전체 uncheck until
+            self.blockSignals(False)
+        self.setFocus()
+        self.save_log()
+        self.blockSignals(False)
+            
+    def save(self):
+        with open('ex.csv', 'wt') as csvfile:
+            writer = csv.writer(csvfile, dialect='excel', lineterminator='\n')
+            # writer.writerow(self.header)
+            insts = []
+            for ix in range(self.tw.topLevelItemCount()):
+                t_it = self.tw.topLevelItem(ix)
+                if t_it:
+                    insts.append(["top",t_it.text(0),"","","",""])
+                    if t_it.childCount():
+                        self.recur_get_info(insts,t_it)
+            
+            for inst in insts:
+                writer.writerow(inst)
+                
+        csvfile.close()
+                        
+    # top은 예외
+    # recur은 마지막에
+    def recur_get_info(self,insts,parent):
+        for ix in range(parent.childCount()):
+            ch = parent.child(ix)
+            if ch.text(1):
+                ch.setText(2,ch.act_cb.currentText())
+                if ch.text(1) == "Mouse":
+                    ch.setText(3,ch.pos_cp.coor.text())
+            ch.setText(0,parent.text(0))
+            insts.append([ch.text(i) for i in range(self.tw.columnCount())])
+            self.recur_get_info(insts,ch)
+        return
+    
+    def recur_child_exec(self,parent,lst):
+        for ix in range(parent.childCount()):
+            ch = parent.child(ix)
+            if ch.checkState(0) == Qt.Checked: # Check 된 것만 돌기
+                if ch.text(1): # type 존재할 때
+                    lst.append(ch)
+                else:
+                    if ch.childCount():
+                        self.recur_child_exec(ch,lst)

@@ -22,8 +22,8 @@ class RegBtn(QPushButton):
         self.setFixedSize(QSize(50,20))
         self.setStyleSheet("color:red")
 
-class TypCombo(QComboBox):
-    typ_signal = pyqtSignal()
+class TypCb(QComboBox):
+    signal = pyqtSignal()
     def __init__(self,parent,typ):
         QComboBox.__init__(self)
         
@@ -36,10 +36,10 @@ class TypCombo(QComboBox):
         self.currentIndexChanged.connect(self.run)
         
     def run(self):
-        self.typ_signal.emit()
+        self.signal.emit()
         
 class PosWidget(QWidget):
-    pos_signal = pyqtSignal()
+    signal = pyqtSignal()
     def __init__(self,pos):
         QWidget.__init__(self)
         self.minimumSize().height()
@@ -55,14 +55,14 @@ class PosWidget(QWidget):
         self.pos_btn.clicked.connect(self.run)
         
     def run(self):
-        self.pos_signal.emit()
+        self.signal.emit()
                 
     def get_pos(self):
         self.second = ps.Second(self,self.pos_btn)
         self.second.show()
     
-class ActCombo(QComboBox):
-    act_signal = pyqtSignal()
+class ActCb(QComboBox):
+    signal = pyqtSignal()
     def __init__(self,typ,act):
         QComboBox.__init__(self)
         if typ == "Mouse":
@@ -95,4 +95,4 @@ class ActCombo(QComboBox):
         self.currentIndexChanged.connect(self.run)
         
     def run(self):
-        self.act_signal.emit()
+        self.signal.emit()
