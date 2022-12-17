@@ -48,17 +48,17 @@ class PosWidget(QWidget):
         self.widget_lay.setSpacing(0)
         self.coor = QLineEdit(pos,self)
         self.coor.setFixedWidth(80)
-        self.pos_btn = cp.PosBtn("pos")
-        self.pos_btn.setFixedWidth(50)
+        self.btn = cp.PosBtn("pos")
+        self.btn.setFixedWidth(50)
         self.widget_lay.addWidget(self.coor)
-        self.widget_lay.addWidget(self.pos_btn)
-        self.pos_btn.clicked.connect(self.run)
+        self.widget_lay.addWidget(self.btn)
+        self.btn.clicked.connect(self.run)
         
     def run(self):
         self.signal.emit()
                 
     def get_pos(self):
-        self.second = ps.Second(self,self.pos_btn)
+        self.second = ps.Second(self,self.btn)
         self.second.show()
     
 class ActCb(QComboBox):

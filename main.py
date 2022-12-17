@@ -7,7 +7,7 @@ from package import ui
 class MainWindow(QMainWindow):
     def __init__(self,app):
         super().__init__()
-        main_ui = ui.MainUi()
+        main_ui = ui.UI()
         main_ui.setup_ui(self,app)
         
 if __name__ == "__main__":

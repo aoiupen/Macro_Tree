@@ -12,7 +12,7 @@ class ShortC(Enum):
     tip = 2
     func = 3
 
-class MainUi():
+class UI():
     def __init__(self):
         super().__init__()
     
