@@ -20,7 +20,7 @@ class UI():
         self.app = app
         self.win = MainWindow
         self.win.setWindowTitle("window title")
-        self.win.setGeometry(100,100,2000,700)
+        self.win.setGeometry(100,100,1000,400)
         self.ctr_wid = QWidget()
         self.ctr_lay = QHBoxLayout(self.ctr_wid)
         self.win.setCentralWidget(self.ctr_wid)
@@ -62,7 +62,7 @@ class UI():
         self.setup_top(self.tw)
         
         # finish
-        self.win.adjustSize()
+        #self.win.adjustSize()
         self.tw.load()
         
     
