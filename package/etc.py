@@ -97,11 +97,7 @@ def fillItem(self, inItem, outItem):
             items.append(it)
         return items
     
-    def change_parent(self, item, new_parent):
-        old_parent = item.parent()
-        ix = old_parent.indexOfChild(item)
-        item_without_parent = old_parent.takeChild(ix)
-        new_parent.addChild(item_without_parent) 
+
         
     def startDrag(self, supportedActions):
         drag = QDrag(self)
@@ -122,5 +118,20 @@ def fillItem(self, inItem, outItem):
         mimedata.setData(TreeWidget.customMimeType, encoded)
         drag.setMimeData(mimedata)
         drag.exec_(supportedActions)
-        '''
+
+        
+    elif isinstance(event.source(), QTreeWidget): # 타 widget으로 drop  
+                if event.mimeData().hasFormat(TreeWidget.customMimeType):
+                    encoded = event.mimeData().data(TreeWidget.customMimeType)
+                    items = self.decodeData(encoded, event.source())
+                    for it in items:
+                        # QTree->TreeWidgetItem?
+                        new_it = TreeWidgetItem(self,tar)
+                        new_it.pos_cp = it.pos_cp
+                        new_it.act_cb = it.act_cb
+                        new_it.typ_cb = it.typ_cb
+                        
+                        #self.fillItem(it, new_it)
+                        #self.fillItems(it, new_it)
+                    event.acceptProposedAction()
 '''
