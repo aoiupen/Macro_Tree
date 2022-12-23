@@ -28,7 +28,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.row = row
         self.p_name = row[0]        
         self.name = row[1]
-        self.typ_cb = None
+        self.typ_btn = None
         self.act_cb = None
         self.pos_cp = None
         self.setText(0,self.name)
@@ -46,11 +46,11 @@ class TreeWidgetItem(QTreeWidgetItem):
             self.setFlags(self.flags() ^ Qt.ItemIsDropEnabled)
             
             typ_txt,act_txt = self.row[2:4]
-            self.typ_cb = cp.TypCb(self,typ_txt)
             self.act_cb = cp.ActCb(typ_txt,act_txt)
-            self.typ_cb.signal.connect(lambda:self.change_typ())
+            self.typ_btn = cp.TypBtn(self,typ_txt)
             self.act_cb.signal.connect(lambda:self.change_act())
-            tw.setItemWidget(self, 1, self.typ_cb)
+            self.typ_btn.signal.connect(lambda:self.change_typ())
+            tw.setItemWidget(self, 1, self.typ_btn)
             tw.setItemWidget(self, 2, self.act_cb)
             
             pos = self.row[4]
@@ -71,20 +71,22 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.tw.disconnect()
         self.act_cb.clear()
         
-        typ_cur = self.typ_cb.currentText()
-        for item in self.tw.act_items[typ_cur]:
+        typ_cur = self.typ_btn.text()
+        new_typ = "Key" if typ_cur == "Mouse" else "Mouse"
+        for item in self.tw.act_items[new_typ]:
             self.act_cb.addItem(item)
+        self.act_cb.setCurrentIndex(0)
             
-        if  typ_cur == "Mouse":
-            self.act_cb.setCurrentIndex(0)
+        if  typ_cur == "Key":
             self.pos_cp = cp.PosWidget("0,0")
             self.pos_cp.btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
             self.tw.setItemWidget(self,Head.pos.value,self.pos_cp) # typ을 mouse로 변경시 - pos 연동 생성
-        elif typ_cur == "Key":
-            for item in self.tw.act_items[typ_cur]:
-                self.act_cb.addItem(item)
-            self.act_cb.setCurrentIndex(0)
+            self.typ_btn.setText("Mouse")
+            self.typ_btn.setIcon(QIcon("src/cursor.png"))
+        elif typ_cur == "Mouse":
             self.tw.removeItemWidget(self,Head.pos.value)
+            self.typ_btn.setText("Key")
+            self.typ_btn.setIcon(QIcon("src/key.png"))
         self.tw.itemChanged.connect(self.tw.change_check) # typ을 key로 변경시 - pos 연동 삭제
         self.tw.setFocus()
         
@@ -289,13 +291,13 @@ class TreeWidget(QTreeWidget):
             # 우선은 다중선택 생각하지 않고
             # 이동과 같은 방식
             tar = self.currentItem()
-            if tar.typ_cb == None:
+            if tar.typ_btn == None: # 다시
                 for it in self.copy_buf:
                     # QTree->TreeWidgetItem?
                     new_it = TreeWidgetItem(self,tar)
                     new_it.pos_cp = it.pos_cp
                     new_it.act_cb = it.act_cb
-                    new_it.typ_cb = it.typ_cb
+                    new_it.typ_btn = it.typ_btn
                 print("Paste")
         elif event.matches(QKeySequence.Undo):
             self.undoStack.undo()
@@ -322,7 +324,7 @@ class TreeWidget(QTreeWidget):
     def exec_insts(self, inst_lst):      
         # inst_list 실행
         for inst in inst_lst:
-            typ_cur = inst.typ_cb.currentText()
+            typ_cur = inst.typ_btn.Text()
             act_cur = inst.act_cb.currentText()
             if typ_cur == "Mouse":
                 x,y = inst.pos_cp.coor.text().split(',')
@@ -374,7 +376,7 @@ class TreeWidget(QTreeWidget):
         root = self.invisibleRootItem()
         for item in self.selectedItems():
             # inst에 ungroup 하면 바깥으로 빠져나오는 기능 추가
-            if isinstance(item.typ_cb,NoneType):
+            if isinstance(item.typ_btn,NoneType): # btn 불안정
                 new_parent = item.parent()
                 child_cnt = item.childCount()
                 if child_cnt:
@@ -441,9 +443,9 @@ class TreeWidget(QTreeWidget):
                 drag_item.p_name = tar.text(0) 
             # tar.insertChild(0,drag_item) # 인덱스는 임시로 0
         elif drag_item.text(1):
-            drag_item.typ_cb = ps.TypCb(self,drag_item.text(1))
+            drag_item.typ_btn = ps.TypBtn(self,drag_item.text(1))
             drag_item.act_cb = ps.ActCb(drag_item.text(1),drag_item.text(2))
-            self.setItemWidget(drag_item, 1, drag_item.typ_cb)
+            self.setItemWidget(drag_item, 1, drag_item.typ_btn)
             self.setItemWidget(drag_item, 2, drag_item.act_cb)
             if drag_item.text(1) == "Mouse":
                 coor = drag_item.pos_cp.coor.text()
@@ -452,7 +454,7 @@ class TreeWidget(QTreeWidget):
                 # 추후 class init할 때 connect 하도록 수정할 필요있음
                 drag_item.pos_cp.btn.clicked.connect(lambda ignore,f=drag_item.pos_cp.get_pos:f())                  
                 self.setItemWidget(drag_item, 3, drag_item.pos_cp)
-            drag_item.typ_cb.signal.connect(lambda:drag_item.change_typ())
+            drag_item.typ_btn.signal.connect(lambda:drag_item.change_typ())
         child_cnt = drag_item.childCount()
         # 단,group이어도 group 자신만 dropevent만하고, 자식들은 move_itemwidget 거치도록
         if child_cnt:
