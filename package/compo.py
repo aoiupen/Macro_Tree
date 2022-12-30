@@ -32,10 +32,10 @@ class TypBtn(QPushButton):
             self.setIcon(QIcon("src/cursor.png"))
         else:
             self.setIcon(QIcon("src/key.png"))
-        
+
     def run(self):
         self.signal.emit()
-        
+
 class PosWidget(QWidget):
     signal = pyqtSignal()
     def __init__(self,pos):
@@ -51,10 +51,10 @@ class PosWidget(QWidget):
         self.widget_lay.addWidget(self.coor)
         self.widget_lay.addWidget(self.btn)
         self.btn.clicked.connect(self.run)
-        
+
     def run(self):
         self.signal.emit()
-                
+
     def get_pos(self):
         self.second = ps.Second(self,self.btn)
         self.second.show()

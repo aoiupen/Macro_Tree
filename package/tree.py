@@ -428,12 +428,12 @@ class TreeWidget(QTreeWidget):
         mimetypes.append(TreeWidget.customMimeType)
         return mimetypes
 
+    # 쓰이지 않음
     def move_itemwidget(self,drag_item,tar,event=None):
         if event != None:
             event.setDropAction(Qt.MoveAction)
             # drag item이 inst이고, drop하려는 위치가 inst이면 return 시키기
             TreeWidget.dropEvent(self, event) # dropevent 이후 자식 사라짐
-            print(drag_item.childCount())
         # *drop event로 Data를 먼저 옮기고, if문 이하에서 item setting
         if not drag_item.text(1): # Group이면 부모 재설정 new_parent(tar)인자를 받아서
             drag_item.p = tar
@@ -492,8 +492,13 @@ class TreeWidget(QTreeWidget):
                 ix = self.indexOfTopLevelItem(tar)
                 self.insertTopLevelItem(ix+1,new_it)
         else:
+            ix = new_p.indexOfChild(tar)
             new_it.p_name = new_p.name
-            new_p.addChild(new_it)
+            if indi == Indi.up.value:
+                new_p.insertChild(ix,new_it)
+            else:
+                new_p.insertChild(ix+1,new_it)
+                
         self.recur_set_widget(new_it,tw)
         #mod == Qt.ControlModifier:
 
