@@ -1,7 +1,7 @@
 top,GroupG,,,,
-GroupA,SaveImg,Mouse,Click,"259,12",
-GroupA,FileName,Mouse,Click,"318,15",
-GroupA,Content,Key,Typing,,C:\abc\abcd
+GroupG,SaveImg,Mouse,Click,"259,12",
+GroupG,FileName,Mouse,Click,"318,15",
+GroupG,Content,Key,Typing,,C:\abc\abcd
 top,GroupB,,,,
 GroupB,gr_b1,,,,
 gr_b1,SaveImg,Mouse,Click,"259,12",

@@ -4,13 +4,12 @@ from PyQt5.QtGui import *
 from package import pos as ps
 from package import compo as cp
 
-#옮길때 pos coor 값 보존
 class PosBtn(QPushButton):
     double_signal = pyqtSignal()
     def __init__(self,name):
         super().__init__()
         self.setText(name)
-        self.clicked.connect(self.run)     
+        self.clicked.connect(self.run)
     def run(self):
         self.double_signal.emit()
 
@@ -22,24 +21,23 @@ class RegBtn(QPushButton):
         self.setFixedSize(QSize(50,20))
         self.setStyleSheet("color:red")
 
-class TypCombo(QComboBox):
-    typ_signal = pyqtSignal()
+class TypBtn(QPushButton):
+    signal = pyqtSignal()
     def __init__(self,parent,typ):
-        QComboBox.__init__(self)
-        
+        QPushButton.__init__(self)
         self.prnt = parent
-        self.addItem("Mouse")
-        self.addItem("Key")
-        idx = lambda x : 0 if x == "Mouse" else 1
-        self.setCurrentIndex(idx(typ))
-        #self.setStyleSheet("background-color: rgb(250,250,250);")
-        self.currentIndexChanged.connect(self.run)
-        
+        self.setText(typ)
+        self.clicked.connect(self.run)
+        if typ == "Mouse":
+            self.setIcon(QIcon("src/cursor.png"))
+        else:
+            self.setIcon(QIcon("src/key.png"))
+
     def run(self):
-        self.typ_signal.emit()
-        
+        self.signal.emit()
+
 class PosWidget(QWidget):
-    pos_signal = pyqtSignal()
+    signal = pyqtSignal()
     def __init__(self,pos):
         QWidget.__init__(self)
         self.minimumSize().height()
@@ -48,29 +46,27 @@ class PosWidget(QWidget):
         self.widget_lay.setSpacing(0)
         self.coor = QLineEdit(pos,self)
         self.coor.setFixedWidth(80)
-        self.pos_btn = cp.PosBtn("pos")
-        self.pos_btn.setFixedWidth(50)
+        self.btn = cp.PosBtn("pos")
+        self.btn.setFixedWidth(50)
         self.widget_lay.addWidget(self.coor)
-        self.widget_lay.addWidget(self.pos_btn)
-        self.pos_btn.clicked.connect(self.run)
-        
+        self.widget_lay.addWidget(self.btn)
+        self.btn.clicked.connect(self.run)
+
     def run(self):
-        self.pos_signal.emit()
-                
+        self.signal.emit()
+
     def get_pos(self):
-        self.second = ps.Second(self,self.pos_btn)
+        self.second = ps.Second(self,self.btn)
         self.second.show()
     
-class ActCombo(QComboBox):
-    act_signal = pyqtSignal()
+class ActCb(QComboBox):
+    signal = pyqtSignal()
     def __init__(self,typ,act):
         QComboBox.__init__(self)
         if typ == "Mouse":
-            self.addItem("Click")
-            self.addItem("Double")
-            self.addItem("Right")
-            self.addItem("Drag")
-            self.addItem("Move")
+            act_lst = ["Click","Double","Right","Drag","Move"]
+            for a in act_lst:
+                self.addItem(a)
             if act == "Click":
                 self.setCurrentIndex(0)
             elif act == "Double":
@@ -95,4 +91,4 @@ class ActCombo(QComboBox):
         self.currentIndexChanged.connect(self.run)
         
     def run(self):
-        self.act_signal.emit()
+        self.signal.emit()
