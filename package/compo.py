@@ -36,6 +36,44 @@ class TypBtn(QPushButton):
     def run(self):
         self.signal.emit()
 
+class ActBtnSet(QObject):
+    def __init__(self,tw,typ,act):
+        self.tw = tw
+        self.l_btn = ActBtn(self.tw,act)
+        self.r_btn = ActBtn(self.tw,act)
+        return
+
+class ActBtn(QPushButton):
+    signal = pyqtSignal()
+    def __init__(self,tw,typ,act):
+        QPushButton.__init__(self)
+        self.setText(act)
+        self.clicked.connect(self.run)
+        if act == "Mouse":
+            self.setIcon(QIcon("src/cursor.png"))
+        else:
+            self.setIcon(QIcon("src/key.png"))
+        return
+
+class ActCb(QComboBox):
+    signal = pyqtSignal()
+    def __init__(self,tw,typ,act):
+        QComboBox.__init__(self)
+        act_lst = tw.act_items[typ]
+        if typ == "Mouse":
+            ix = act_lst.index(act)
+            for a in act_lst:
+                self.addItem(a)
+            self.setCurrentIndex(ix)
+        elif typ == "Key":
+            ix = act_lst.index(act)
+            self.setCurrentIndex(ix)    
+        #self.setStyleSheet("background-color: rgb(250,250,250);")
+        self.currentIndexChanged.connect(self.run)
+        
+    def run(self):
+        self.signal.emit()
+
 class PosWidget(QWidget):
     signal = pyqtSignal()
     def __init__(self,pos):
@@ -47,6 +85,7 @@ class PosWidget(QWidget):
         self.coor = QLineEdit(pos,self)
         self.coor.setFixedWidth(80)
         self.btn = cp.PosBtn("pos")
+        self.btn.setIcon(QIcon("src/coor.png"))
         self.btn.setFixedWidth(50)
         self.widget_lay.addWidget(self.coor)
         self.widget_lay.addWidget(self.btn)
@@ -59,36 +98,3 @@ class PosWidget(QWidget):
         self.second = ps.Second(self,self.btn)
         self.second.show()
     
-class ActCb(QComboBox):
-    signal = pyqtSignal()
-    def __init__(self,typ,act):
-        QComboBox.__init__(self)
-        if typ == "Mouse":
-            act_lst = ["Click","Double","Right","Drag","Move"]
-            for a in act_lst:
-                self.addItem(a)
-            if act == "Click":
-                self.setCurrentIndex(0)
-            elif act == "Double":
-                self.setCurrentIndex(1)
-            elif act == "Right":
-                self.setCurrentIndex(2)
-            elif act == "Drag":
-                self.setCurrentIndex(3)
-            else:
-                self.setCurrentIndex(4)
-        elif typ == "Key":
-            self.addItem("Copy")
-            self.addItem("Paste")
-            self.addItem("Select All")
-            if act == "Copy":
-                self.setCurrentIndex(0)
-            elif act == "Paste":
-                self.setCurrentIndex(1)
-            else:
-                self.setCurrentIndex(2)    
-        #self.setStyleSheet("background-color: rgb(250,250,250);")
-        self.currentIndexChanged.connect(self.run)
-        
-    def run(self):
-        self.signal.emit()

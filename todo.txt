@@ -11,7 +11,6 @@
 # Tree : Mouse,Key 토글 버튼으로 바꾸기
 # Tree : lock 기능 : locked 되면 실행시 돌지 않는다(일종의 주석처리)
 # Tree : group과 inst 앞에 서로 다른 아이콘, group은 대문자 G, inst는 문서그림
-# Tree : top으로 올리는 기능 *** 최상위에 Root 폴더를 놓아야하나
 # Tree-Grouping : 위계 문제. 체크박스처럼. 폴더+child일부 선택해도 폴더는 선택 안되도록
 # Tree-Groupring : 우클릭 context에 복수 선택 후 group 기능 추가
 # Tree-Groupring : 그룹 or inst 우클릭 -> 실행 # 그룹 + 그룹에속한 inst인 경우의 조건필요함
@@ -19,7 +18,6 @@
 # Second : getpos 영역 확대하기 + 멀티모니터 사용 고려
 # Strategy : 실행 코드 작성 -> UX 개선 + region, image 탐색 기능 추가
 # Simulation : 시뮬레이션 기능 : pos를 클릭할 때 스크린샷도 같이
-# mimedata encode, decode 할 지, selected items로 할지. 그리고 cbx를 새로 만들어줄지, deepcopy 할지
 # Tree : Image로 pos 찾기 : Image 등록된 경우 Image라는 폰트가 노란 2겹테두리, 글씨 검정색으로 바뀜
 # content 뒤에 sleep(delay) 넣기
 # pos 와 lineedit 통합
@@ -31,11 +29,14 @@
 # Tree : 그룹을 한단계 위로 이동시 그룹은 이동 안되고, inst는 top 바로 아래 depth2까지만 가능
 # Tree : Root 폴더는 건드리지 않기
 # Tree : Grouping
-# Tree : 최상위 폴더로 이동, 복사 안되는 문제, 그룹이 inst 사이로 들어가는 문제 : 정렬은 순서대로 하기
 # Tree : Check된 inst만 실행
-# Tree : 이동하면 사라지고, 두번째부터 안됨 (복제,이동 둘다 onitem일 때 문제 발생)
+# Tree : 자기 자신에게 이동,종속시킬 때 에러
+
 
 # 완료
+# 기획 : mimedata encode, decode 할 지, selected items로 할지. 그리고 cbx를 새로 만들어줄지, deepcopy 할지
+# Tree : 이동하면 사라지고, 두번째부터 안됨 (복제,이동 둘다 onitem일 때 문제 발생)
+# Tree : 최상위 폴더로 이동, 복사 안되는 문제, 그룹이 inst 사이로 들어가는 문제 : 정렬은 순서대로 하기
 # Tree : Header 이동,사이즈 조절 가능
 # 선택한 것만 우측 context 메뉴로 execute하기
 # Tree : Content 적용하기

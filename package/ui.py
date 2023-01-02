@@ -20,7 +20,7 @@ class UI():
         self.app = app
         self.win = MainWindow
         self.win.setWindowTitle("window title")
-        self.win.setGeometry(100,100,1000,400)
+        self.win.setGeometry(100,100,500,400)
         self.ctr_wid = QWidget()
         self.ctr_lay = QHBoxLayout(self.ctr_wid)
         self.win.setCentralWidget(self.ctr_wid)
@@ -56,7 +56,7 @@ class UI():
         col_num = 5
         self.tw = tr.TreeWidget(self)
         self.tw.setColumnCount(col_num)
-        self.tw.setHeaderLabels(["Name","Type","Act","Pos","Content"])
+        self.tw.setHeaderLabels(["Name","Type","Act","Value",""])
         self.ctr_lay.addWidget(self.tw)
         
         self.setup_top(self.tw)
