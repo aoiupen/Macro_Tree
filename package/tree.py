@@ -19,7 +19,7 @@ class Head(Enum):
     non = 0
     typ = 1
     act = 2
-    pos = 3
+    pos = 31
     
 class TreeWidgetItem(QTreeWidgetItem):
     def __init__(self,tw,parent,row=""):
