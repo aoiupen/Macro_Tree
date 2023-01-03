@@ -19,7 +19,7 @@ class Head(Enum):
     non = 0
     typ = 1
     act = 2
-    pos = 31
+    pos = 3
     
 class TreeWidgetItem(QTreeWidgetItem):
     def __init__(self,tw,parent,row=""):
@@ -78,7 +78,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.act_cb.setCurrentIndex(0)
             
         if  typ_cur == "Key":
-            self.pos_cp = cp.PosWidget("0,0")
+            self.pos_cp = cp.PosWidget("0.0")
             self.pos_cp.btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
             self.tw.setItemWidget(self,Head.pos.value,self.pos_cp) # typ을 mouse로 변경시 - pos 연동 생성
             self.typ_btn.setText("Mouse")
@@ -109,7 +109,7 @@ class TreeUndoCommand(QUndoCommand):
         ix = self.stack.index()
         cmd = self.stack.command(ix-1)
         if not isinstance(cmd,NoneType):
-            self.tree.load_log(cmd.tr_str)
+            self.tree.load(cmd.tr_str)
         pass
 
 #https://stackoverflow.com/questions/25559221/qtreewidgetitem-issue-items-set-using-setwidgetitem-are-dispearring-after-movin        
@@ -214,16 +214,17 @@ class TreeWidget(QTreeWidget):
             it.setIcon(0,QIcon("src/inst.png")) 
             
 
-    def load(self):
+    def load(self,mem=""):
         self.inst_list = []
         self.disconnect()
         self.clear()
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
-        with open('ex.csv', 'rt') as f:
-            reader = csv.reader(f)
-            for _,row in enumerate(reader):
-                print(row)
+        if mem:
+            mem_list = mem.split("\n")
+            for ix,m in enumerate(mem_list):
+                mem_list[ix] = m.split(",")
+            for _,row in enumerate(mem_list):
                 p = ""
                 p_str = row[0]
                 name = row[1]
@@ -249,6 +250,36 @@ class TreeWidget(QTreeWidget):
                     content = row[4]
                     tw_it.setText(3,content)    
                 self.inst_list.append(tw_it)
+        else:
+            with open('ex.csv', 'rt') as f:
+                reader = csv.reader(f)
+                for _,row in enumerate(reader):
+                    print(row)
+                    p = ""
+                    p_str = row[0]
+                    name = row[1]
+                    if p_str == 'top':
+                        tw_it = tr.TreeWidgetItem(self,self,row)
+                        tw_it.p_name = 'top'
+                        self.set_icon(tw_it)
+                        tw_it.setText(0,name) # 없애보고 해보기
+                    else:
+                        for inst in self.inst_list:
+                            if inst.text(0) == p_str:
+                                p = inst
+                                tw_it = tr.TreeWidgetItem(self,p,row)
+                                tw_it.p_name = p.text(0)
+                                self.set_icon(tw_it)
+                                tw_it.setText(0,name) # 없애보고 해보기
+                                break
+                        
+                    # parent에 string이 들어가면 안되고,이 이름을 가지는 widget을 불러와야한다
+                    # column에 widget이 들어가면 이 코드가 의미가 없을 듯
+                    
+                    if len(row) >2:
+                        content = row[4]
+                        tw_it.setText(3,content)    
+                    self.inst_list.append(tw_it)
         self.itemChanged.connect(self.change_check)
 
     def set_cls_win(self):
@@ -259,12 +290,17 @@ class TreeWidget(QTreeWidget):
         for ix in range(parent.childCount()):
             ch = parent.child(ix)
             ch_vals = [ch.text(i) for i in range(self.columnCount())] 
-            if ch_vals[1]:
+            if ch.typ_btn:
+                ch_vals[1] = ch.typ_btn.text()
                 ch_vals[2] = ch.act_cb.currentText()
                 if ch_vals[1] == "Mouse":
-                    ch_vals[3] = "\"" + ch.pos_cp.coor.text() + "\""
-            ch_vals.insert(0,parent.text(0))   
-            self.log_txt += ','.join(ch_vals)
+                    ch_vals[3] = ch.pos_cp.coor.text()
+                elif ch_vals[1] == "Key":
+                    ch_vals[3] = ch.text(3)
+                    
+            ch_vals.insert(0,parent.text(0))
+            val_join = ','.join(ch_vals)
+            self.log_txt += val_join
             self.log_txt += '\n' #추후 widget으로 접근하는 방식도 고려
             if ch.childCount():
                 self.recur_log(ch)

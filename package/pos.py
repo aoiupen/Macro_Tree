@@ -43,7 +43,7 @@ class Second(QWidget):
             self.offset = event.pos()
             x= str(self.offset.x())
             y= str(self.offset.y())
-            coor = x + "," + y
+            coor = x + "." + y
             # treewidgetitem->poswidget->cp.PosBtn
             if isinstance(self.btn,cp.PosBtn):
                 self.btn.pos = coor
