@@ -653,10 +653,11 @@ class TreeWidget(QTreeWidget):
             if ch.typ_btn:
                 inst[2] = ch.typ_btn.text()
                 if inst[2] == "Mouse":
-                    inst[3] = ch.pos_cp.coor.text()
+                    inst[3] = ch.act_cb.currentText()
+                    inst[4] = ch.pos_cp.coor.text()
                 else:
-                    inst[3] = ch.text(3)
-            print(inst)
+                    inst[3] = ch.act_cb.currentText()
+                    inst[4] = ch.text(3)
             insts.append(inst)
             self.recur_get_info(insts,ch)
         return

@@ -60,14 +60,10 @@ class ActCb(QComboBox):
     def __init__(self,tw,typ,act):
         QComboBox.__init__(self)
         act_lst = tw.act_items[typ]
-        if typ == "Mouse":
-            ix = act_lst.index(act)
-            for a in act_lst:
-                self.addItem(a)
-            self.setCurrentIndex(ix)
-        elif typ == "Key":
-            ix = act_lst.index(act)
-            self.setCurrentIndex(ix)    
+        ix = act_lst.index(act)
+        for a in act_lst:
+            self.addItem(a)
+        self.setCurrentIndex(ix)
         #self.setStyleSheet("background-color: rgb(250,250,250);")
         self.currentIndexChanged.connect(self.run)
         
