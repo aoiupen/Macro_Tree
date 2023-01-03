@@ -215,6 +215,7 @@ class TreeWidget(QTreeWidget):
             
 
     def load(self):
+        self.inst_list = []
         self.disconnect()
         self.clear()
         self.setDragEnabled(True)
