@@ -1,11 +1,11 @@
 top,GroupG,,,,
-GroupG,SaveImg,Mouse,Right,1159.336
-GroupG,FileName,Mouse,Click,1061.378
-GroupG,Content,Key,Typing,C:\abc\abcd
+GroupG,SaveImg,M,Right,1159.336
+GroupG,FileName,M,Click,1061.378
+GroupG,Content,K,Typing,C:\abc\abcd
 top,GroupB,,,,
 GroupB,gr_b1,,,
-gr_b1,SaveImg,Mouse,Click,1178.381
+gr_b1,SaveImg,M,Click,1178.381
 GroupB,gr_b2,,,
-gr_b2,SaveImg,Mouse,Click,259.12
-gr_b2,SaveImg,Mouse,Click,259.12
+gr_b2,SaveImg,M,Click,259.12
+gr_b2,SaveImg,M,Click,259.12
 top,GroupC,,,,
