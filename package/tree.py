@@ -54,7 +54,7 @@ class TreeWidgetItem(QTreeWidgetItem):
             tw.setItemWidget(self, 2, self.act_cb)
             
             pos = self.row[4]
-            if self.row[2] == "Mouse":
+            if self.row[2] == "M":
                 self.pos_cp = cp.PosWidget(pos)
                 self.pos_cp.btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
                 tw.setItemWidget(self, 3, self.pos_cp)
@@ -72,20 +72,20 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.act_cb.clear()
         
         typ_cur = self.typ_btn.text()
-        new_typ = "Key" if typ_cur == "Mouse" else "Mouse"
+        new_typ = "K" if typ_cur == "M" else "M"
         for item in self.tw.act_items[new_typ]:
             self.act_cb.addItem(item)
         self.act_cb.setCurrentIndex(0)
             
-        if  typ_cur == "Key":
+        if  typ_cur == "K":
             self.pos_cp = cp.PosWidget("0.0")
             self.pos_cp.btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
-            self.tw.setItemWidget(self,Head.pos.value,self.pos_cp) # typ을 mouse로 변경시 - pos 연동 생성
-            self.typ_btn.setText("Mouse")
+            self.tw.setItemWidget(self,Head.pos.value,self.pos_cp) # typ을 M로 변경시 - pos 연동 생성
+            self.typ_btn.setText("M")
             self.typ_btn.setIcon(QIcon("src/cursor.png"))
-        elif typ_cur == "Mouse":
+        elif typ_cur == "M":
             self.tw.removeItemWidget(self,Head.pos.value)
-            self.typ_btn.setText("Key")
+            self.typ_btn.setText("K")
             self.typ_btn.setIcon(QIcon("src/key.png"))
         self.tw.itemChanged.connect(self.tw.change_check) # typ을 key로 변경시 - pos 연동 삭제
         self.tw.setFocus()
@@ -136,7 +136,7 @@ class TreeWidget(QTreeWidget):
         self.undoStack.setIndex(0)
         self.cnt = 0
         self.header = [self.headerItem().text(col) for col in range(self.columnCount())]
-        self.act_items = {"Mouse":["Click","Double","Long","Center","Scroll","Right","Drag","Move"], "Key":["Copy","Paste","Select All","Typing"]}
+        self.act_items = {"M":["Click","Double","Long","Center","Scroll","Right","Drag","Move"], "K":["Copy","Paste","Select All","Typing"]}
         
     def mousePressEvent(self, event):
         if event.modifiers() == Qt.ControlModifier:
@@ -167,7 +167,6 @@ class TreeWidget(QTreeWidget):
         return self.log_txt
     
     def load_log(self,tr_str):
-        # stack에서 해당 index에 해당하는 tree를 꺼내온다
         self.disconnect()
         self.clear()
         reader = list(tr_str.split('\n'))
@@ -245,10 +244,10 @@ class TreeWidget(QTreeWidget):
                     
                 # parent에 string이 들어가면 안되고,이 이름을 가지는 widget을 불러와야한다
                 # column에 widget이 들어가면 이 코드가 의미가 없을 듯
-                
                 if len(row) >2:
                     content = row[4]
-                    tw_it.setText(3,content)    
+                    if row[2] == "K":
+                        tw_it.setText(3,content)    
                 self.inst_list.append(tw_it)
         else:
             with open('ex.csv', 'rt') as f:
@@ -278,7 +277,8 @@ class TreeWidget(QTreeWidget):
                     
                     if len(row) >2:
                         content = row[4]
-                        tw_it.setText(3,content)    
+                        if row[2] == "K":
+                            tw_it.setText(3,content)       
                     self.inst_list.append(tw_it)
         self.itemChanged.connect(self.change_check)
 
@@ -293,9 +293,9 @@ class TreeWidget(QTreeWidget):
             if ch.typ_btn:
                 ch_vals[1] = ch.typ_btn.text()
                 ch_vals[2] = ch.act_cb.currentText()
-                if ch_vals[1] == "Mouse":
+                if ch_vals[1] == "M":
                     ch_vals[3] = ch.pos_cp.coor.text()
-                elif ch_vals[1] == "Key":
+                elif ch_vals[1] == "K":
                     ch_vals[3] = ch.text(3)
                     
             ch_vals.insert(0,parent.text(0))
@@ -313,7 +313,6 @@ class TreeWidget(QTreeWidget):
     def keyPressEvent(self, event):
         root = self.invisibleRootItem()
         if event.key() == Qt.Key_Delete:  
-            # undo하기 위해 실행직전 상태를 save 한다 
             self.save_push_log()
             cur_its = self.selectedItems()
             for cur_it in cur_its:
@@ -333,9 +332,6 @@ class TreeWidget(QTreeWidget):
             self.copy_buf = main_lst
         elif event.matches(QKeySequence.Paste):
             self.save_push_log()
-            # 붙여넣기 할 때 다중선택이 가능한지?
-            # 우선은 다중선택 생각하지 않고
-            # 이동과 같은 방식
             tar = self.currentItem()
             if tar.typ_btn == None: # 다시
                 for it in self.copy_buf:
@@ -372,7 +368,7 @@ class TreeWidget(QTreeWidget):
         for inst in inst_lst:
             typ_cur = inst.typ_btn.Text()
             act_cur = inst.act_cb.currentText()
-            if typ_cur == "Mouse":
+            if typ_cur == "M":
                 x,y = inst.pos_cp.coor.text().split(',')
                 if act_cur == "Click":
                     pag.click(x=int(x),y=int(y),clicks=1)
@@ -385,7 +381,7 @@ class TreeWidget(QTreeWidget):
                     pag.dragTo(int(x),int(y),0.2)
                 elif act_cur == "Move":
                     pag.moveTo(x=int(x),y=int(y))
-            elif typ_cur == "Key":
+            elif typ_cur == "K":
                 if act_cur == "Copy":
                     pag.hotkey('ctrl', 'c')
                 elif act_cur == "Paste":
@@ -493,7 +489,7 @@ class TreeWidget(QTreeWidget):
             drag_item.act_cb = ps.ActCb(self,drag_item.text(1),drag_item.text(2))
             self.setItemWidget(drag_item, 1, drag_item.typ_btn)
             self.setItemWidget(drag_item, 2, drag_item.act_cb)
-            if drag_item.text(1) == "Mouse":
+            if drag_item.text(1) == "M":
                 coor = drag_item.pos_cp.coor.text()
                 drag_item.pos_cp = ps.PosWidget(coor)
                 # 이동해도, item을 새로 만드는 것이기 때문에, connect도 다시 해줘야한다
@@ -689,7 +685,7 @@ class TreeWidget(QTreeWidget):
             inst[1] = ch.text(0)
             if ch.typ_btn:
                 inst[2] = ch.typ_btn.text()
-                if inst[2] == "Mouse":
+                if inst[2] == "M":
                     inst[3] = ch.act_cb.currentText()
                     inst[4] = ch.pos_cp.coor.text()
                 else:

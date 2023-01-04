@@ -1,62 +1,25 @@
-# 기획 의도 : 프로그램 자체에 보안 관련 사항을 담지 않고,
-# 구체적 내용은 사용자가 커스터마이징하게 하며,
-# 특정 PC 환경에 종속되지 않아 범용 보급이 가능한 프로그램 개발
-# 기술 : Customizing을 통한 Pyqt 이해도
+# 기획 의도 : Flexible 범용 매크로 개발
 
 # 기획
-# 진행할 때 왼쪽 INST에도 각 단계에 맞춰 시각화(COPY의 내용이 채워진다든지)
-# 실행하면 최소화. 끝나면 최대화 (옵션화)
-# 컨셉 : transfrom,flexible,pressed
 # Tree : inst 추가 삭제
-# Tree : Mouse,Key 토글 버튼으로 바꾸기
-# Tree : lock 기능 : locked 되면 실행시 돌지 않는다(일종의 주석처리)
-# Tree : group과 inst 앞에 서로 다른 아이콘, group은 대문자 G, inst는 문서그림
-# Tree-Grouping : 위계 문제. 체크박스처럼. 폴더+child일부 선택해도 폴더는 선택 안되도록
-# Tree-Groupring : 우클릭 context에 복수 선택 후 group 기능 추가
-# Tree-Groupring : 그룹 or inst 우클릭 -> 실행 # 그룹 + 그룹에속한 inst인 경우의 조건필요함
-# Ux : image 검색을 사용할 경우 region 영역 버튼도 활성화하기 default는 전체영역
-# Second : getpos 영역 확대하기 + 멀티모니터 사용 고려
-# Strategy : 실행 코드 작성 -> UX 개선 + region, image 탐색 기능 추가
-# Simulation : 시뮬레이션 기능 : pos를 클릭할 때 스크린샷도 같이
-# Tree : Image로 pos 찾기 : Image 등록된 경우 Image라는 폰트가 노란 2겹테두리, 글씨 검정색으로 바뀜
-# content 뒤에 sleep(delay) 넣기
-# pos 와 lineedit 통합
-# 0,0 에러 처리
+# Tree : Lock(실행시 제외)
+# Tree : Image로 Pos 찾기
+# Tree : Group,Ungroup,Copy,Paste
+# Opt_ : 시뮬레이션 기능. pos를 클릭할 때 스크린샷도 같이
+# Opt_ : image 검색 사용시 검색 영역 지정 기능 추가
+# Opt_ : getpos 영역 확대하기 + 멀티모니터 사용 고려
+# Opt_ : 실행시 최소화, 완료시 최대화
 
 # 진행
 # Tree : all 선택
-# Tree : typ,act combo 변경시도 undo 가능하게 : combo 박스 변경 후 treewidget을 찍어야만 undo가 가능한 문제
-# Tree : 그룹을 한단계 위로 이동시 그룹은 이동 안되고, inst는 top 바로 아래 depth2까지만 가능
-# Tree : Root 폴더는 건드리지 않기
-# Tree : Grouping
-# Tree : Check된 inst만 실행
 # Tree : 자기 자신에게 이동,종속시킬 때 에러
-
-
-# 완료
-# 기획 : mimedata encode, decode 할 지, selected items로 할지. 그리고 cbx를 새로 만들어줄지, deepcopy 할지
-# Tree : 이동하면 사라지고, 두번째부터 안됨 (복제,이동 둘다 onitem일 때 문제 발생)
-# Tree : 최상위 폴더로 이동, 복사 안되는 문제, 그룹이 inst 사이로 들어가는 문제 : 정렬은 순서대로 하기
-# Tree : Header 이동,사이즈 조절 가능
-# 선택한 것만 우측 context 메뉴로 execute하기
-# Tree : Content 적용하기
-# Tree : DropIndicatorPosition 적용해서, 위아래 이동복사 가능하도록 하기
-# Tree : ctrl 누른 상태에서는 선택된 아이템을 재클릭 후 release할 때 선택해제되도록 
-# Tree-Ungrouping : top을 ungroup할때 or ungroup 후 top으로 올라갈 때 widget 풀림
-# Func-Ctrl+Z : 매 동작마다 logsave를 해서 리스트 변수에 저장, 끝에 도달하면, undo 비활성화 redo 마찬가지
-# Tree : Copy,Paste by 키보드 : 다중선택이면 마지막으로 선택된 Item의 현재 경로에 복제
-# Tree : 다중선택 후 delete
-# Acting : Move 기능
-# Tree,Acting : Drag 기능
+# Tree : typ,act combo 변경시도 undo 가능하게 : combo 박스 변경 후 treewidget을 찍어야만 undo가 가능한 문제
+# Tree : Check된 inst만 실행
 # Tree : Ctrl+left click시 복사 붙여넣기 되도록 + 여러개 선택시 모두 복사 되기
 
-class resource_cl():
-    newid = itertools.count()
-    def __init__(self):
-        self.id = resource_cl.newid()
-
-#with open('ex.csv', 'rt') as f:
-#        reader = csv.reader(f)
-#        for row in reader:
-#            item = tr.TreeWidgetItem(row)#부모설정.결국
-#self.tw.itemChanged.connect(self.get_item)
+# 완료
+# Tree : Item 이동,삽입,삭제
+# Tree : Mouse,Key 토글 버튼으로 바꾸기
+# Tree : 우클릭 -> Context menu -> Delete
+# Tree : Icon 넣기
+# Func : Undo

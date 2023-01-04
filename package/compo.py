@@ -28,7 +28,7 @@ class TypBtn(QPushButton):
         self.prnt = parent
         self.setText(typ)
         self.clicked.connect(self.run)
-        if typ == "Mouse":
+        if typ == "M":
             self.setIcon(QIcon("src/cursor.png"))
         else:
             self.setIcon(QIcon("src/key.png"))
@@ -49,7 +49,7 @@ class ActBtn(QPushButton):
         QPushButton.__init__(self)
         self.setText(act)
         self.clicked.connect(self.run)
-        if act == "Mouse":
+        if act == "M":
             self.setIcon(QIcon("src/cursor.png"))
         else:
             self.setIcon(QIcon("src/key.png"))
