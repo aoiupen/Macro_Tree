@@ -19,8 +19,8 @@ class UI():
     def setup_ctr(self,MainWindow,app):
         self.app = app
         self.win = MainWindow
-        self.win.setWindowTitle("window title")
-        self.win.setGeometry(100,100,1000,400)
+        self.win.setWindowTitle("Macro")
+        self.win.setGeometry(100,100,500,400)
         self.ctr_wid = QWidget()
         self.ctr_lay = QHBoxLayout(self.ctr_wid)
         self.win.setCentralWidget(self.ctr_wid)
@@ -30,7 +30,7 @@ class UI():
         self.act_list = []
         self.act_info_list = [['Save','Ctrl+S','Save application',tw.save],
                          ['Load','Ctrl+O','Load application',tw.load],
-                         ['Execute','','Execute application',tw.exec_inst],
+                         #['Execute','','Execute application',tw.exec_inst],
                          ['Exit','Ctrl+Q','Exit application',tw.set_cls_win]]
         for act_info in self.act_info_list:
             act = QAction(act_info[ShortC.name.value],self.win)
@@ -56,7 +56,7 @@ class UI():
         col_num = 5
         self.tw = tr.TreeWidget(self)
         self.tw.setColumnCount(col_num)
-        self.tw.setHeaderLabels(["Name","Type","Act","Pos","Content"])
+        self.tw.setHeaderLabels(["Name","Type","Act","Value",""])
         self.ctr_lay.addWidget(self.tw)
         
         self.setup_top(self.tw)

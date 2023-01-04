@@ -46,7 +46,7 @@ class TreeWidgetItem(QTreeWidgetItem):
             self.setFlags(self.flags() ^ Qt.ItemIsDropEnabled)
             
             typ_txt,act_txt = self.row[2:4]
-            self.act_cb = cp.ActCb(typ_txt,act_txt)
+            self.act_cb = cp.ActCb(self.tw,typ_txt,act_txt)
             self.typ_btn = cp.TypBtn(self,typ_txt)
             self.act_cb.signal.connect(lambda:self.change_act())
             self.typ_btn.signal.connect(lambda:self.change_typ())
@@ -78,7 +78,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.act_cb.setCurrentIndex(0)
             
         if  typ_cur == "Key":
-            self.pos_cp = cp.PosWidget("0,0")
+            self.pos_cp = cp.PosWidget("0.0")
             self.pos_cp.btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
             self.tw.setItemWidget(self,Head.pos.value,self.pos_cp) # typ을 mouse로 변경시 - pos 연동 생성
             self.typ_btn.setText("Mouse")
@@ -109,7 +109,7 @@ class TreeUndoCommand(QUndoCommand):
         ix = self.stack.index()
         cmd = self.stack.command(ix-1)
         if not isinstance(cmd,NoneType):
-            self.tree.load_log(cmd.tr_str)
+            self.tree.load(cmd.tr_str)
         pass
 
 #https://stackoverflow.com/questions/25559221/qtreewidgetitem-issue-items-set-using-setwidgetitem-are-dispearring-after-movin        
@@ -136,7 +136,7 @@ class TreeWidget(QTreeWidget):
         self.undoStack.setIndex(0)
         self.cnt = 0
         self.header = [self.headerItem().text(col) for col in range(self.columnCount())]
-        self.act_items = {"Mouse":["Click","Double","Right","Drag","Move"], "Key":["Copy","Paste","Select_All"]}
+        self.act_items = {"Mouse":["Click","Double","Long","Center","Scroll","Right","Drag","Move"], "Key":["Copy","Paste","Select All","Typing"]}
         
     def mousePressEvent(self, event):
         if event.modifiers() == Qt.ControlModifier:
@@ -203,25 +203,35 @@ class TreeWidget(QTreeWidget):
             
             if len(row) >2:
                 con = row[5]
-                tw_it.setText(4,con)    
+                tw_it.setText(3,con)    
             self.insts.append(tw_it)
         self.itemChanged.connect(self.change_check)
 
-    def load(self):
+    def set_icon(self,it):
+        if self.isGroup(it):
+            it.setIcon(0,QIcon("src/bag.png"))
+        else:
+            it.setIcon(0,QIcon("src/inst.png")) 
+            
+
+    def load(self,mem=""):
+        self.inst_list = []
         self.disconnect()
         self.clear()
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
-        with open('ex.csv', 'rt') as f:
-            reader = csv.reader(f)
-            for _,row in enumerate(reader):
-                print(row)
+        if mem:
+            mem_list = mem.split("\n")
+            for ix,m in enumerate(mem_list):
+                mem_list[ix] = m.split(",")
+            for _,row in enumerate(mem_list):
                 p = ""
                 p_str = row[0]
                 name = row[1]
                 if p_str == 'top':
                     tw_it = tr.TreeWidgetItem(self,self,row)
                     tw_it.p_name = 'top'
+                    self.set_icon(tw_it)
                     tw_it.setText(0,name) # 없애보고 해보기
                 else:
                     for inst in self.inst_list:
@@ -229,6 +239,7 @@ class TreeWidget(QTreeWidget):
                             p = inst
                             tw_it = tr.TreeWidgetItem(self,p,row)
                             tw_it.p_name = p.text(0)
+                            self.set_icon(tw_it)
                             tw_it.setText(0,name) # 없애보고 해보기
                             break
                     
@@ -236,9 +247,39 @@ class TreeWidget(QTreeWidget):
                 # column에 widget이 들어가면 이 코드가 의미가 없을 듯
                 
                 if len(row) >2:
-                    content = row[5]
-                    tw_it.setText(4,content)    
+                    content = row[4]
+                    tw_it.setText(3,content)    
                 self.inst_list.append(tw_it)
+        else:
+            with open('ex.csv', 'rt') as f:
+                reader = csv.reader(f)
+                for _,row in enumerate(reader):
+                    print(row)
+                    p = ""
+                    p_str = row[0]
+                    name = row[1]
+                    if p_str == 'top':
+                        tw_it = tr.TreeWidgetItem(self,self,row)
+                        tw_it.p_name = 'top'
+                        self.set_icon(tw_it)
+                        tw_it.setText(0,name) # 없애보고 해보기
+                    else:
+                        for inst in self.inst_list:
+                            if inst.text(0) == p_str:
+                                p = inst
+                                tw_it = tr.TreeWidgetItem(self,p,row)
+                                tw_it.p_name = p.text(0)
+                                self.set_icon(tw_it)
+                                tw_it.setText(0,name) # 없애보고 해보기
+                                break
+                        
+                    # parent에 string이 들어가면 안되고,이 이름을 가지는 widget을 불러와야한다
+                    # column에 widget이 들어가면 이 코드가 의미가 없을 듯
+                    
+                    if len(row) >2:
+                        content = row[4]
+                        tw_it.setText(3,content)    
+                    self.inst_list.append(tw_it)
         self.itemChanged.connect(self.change_check)
 
     def set_cls_win(self):
@@ -249,12 +290,17 @@ class TreeWidget(QTreeWidget):
         for ix in range(parent.childCount()):
             ch = parent.child(ix)
             ch_vals = [ch.text(i) for i in range(self.columnCount())] 
-            if ch_vals[1]:
+            if ch.typ_btn:
+                ch_vals[1] = ch.typ_btn.text()
                 ch_vals[2] = ch.act_cb.currentText()
                 if ch_vals[1] == "Mouse":
-                    ch_vals[3] = "\"" + ch.pos_cp.coor.text() + "\""
-            ch_vals.insert(0,parent.text(0))   
-            self.log_txt += ','.join(ch_vals)
+                    ch_vals[3] = ch.pos_cp.coor.text()
+                elif ch_vals[1] == "Key":
+                    ch_vals[3] = ch.text(3)
+                    
+            ch_vals.insert(0,parent.text(0))
+            val_join = ','.join(ch_vals)
+            self.log_txt += val_join
             self.log_txt += '\n' #추후 widget으로 접근하는 방식도 고려
             if ch.childCount():
                 self.recur_log(ch)
@@ -343,8 +389,8 @@ class TreeWidget(QTreeWidget):
                 if act_cur == "Copy":
                     pag.hotkey('ctrl', 'c')
                 elif act_cur == "Paste":
-                    if inst.text(4):
-                        pag.write(inst.text(4))
+                    if inst.text(3):
+                        pag.write(inst.text(3))
                     else:
                         pag.hotkey('ctrl', 'v')
                 elif act_cur == "Select All":
@@ -444,7 +490,7 @@ class TreeWidget(QTreeWidget):
             # tar.insertChild(0,drag_item) # 인덱스는 임시로 0
         elif drag_item.text(1):
             drag_item.typ_btn = ps.TypBtn(self,drag_item.text(1))
-            drag_item.act_cb = ps.ActCb(drag_item.text(1),drag_item.text(2))
+            drag_item.act_cb = ps.ActCb(self,drag_item.text(1),drag_item.text(2))
             self.setItemWidget(drag_item, 1, drag_item.typ_btn)
             self.setItemWidget(drag_item, 2, drag_item.act_cb)
             if drag_item.text(1) == "Mouse":
@@ -618,29 +664,38 @@ class TreeWidget(QTreeWidget):
             writer = csv.writer(csvfile, dialect='excel', lineterminator='\n')
             # writer.writerow(self.header)
             insts = []
-            for ix in range(self.tw.topLevelItemCount()):
-                t_it = self.tw.topLevelItem(ix)
-                if t_it:
-                    insts.append(["top",t_it.text(0),"","","",""])
-                    if t_it.childCount():
-                        self.recur_get_info(insts,t_it)
+            for ix in range(self.topLevelItemCount()):
+                top_it = self.topLevelItem(ix)
+                if top_it:
+                    insts.append(["top",top_it.text(0),"","","",""])
+                    if top_it.childCount():
+                        self.recur_get_info(insts,top_it)
             
             for inst in insts:
                 writer.writerow(inst)
                 
         csvfile.close()
-                        
-    # top은 예외
-    # recur은 마지막에
+        
+    def save_as(self):
+        return
+    
+    # top은 예외 recur은 마지막에
     def recur_get_info(self,insts,parent):
         for ix in range(parent.childCount()):
+            inst = ["","","","",""]
             ch = parent.child(ix)
-            if ch.text(1):
-                ch.setText(2,ch.act_cb.currentText())
-                if ch.text(1) == "Mouse":
-                    ch.setText(3,ch.pos_cp.coor.text())
-            ch.setText(0,parent.text(0))
-            insts.append([ch.text(i) for i in range(self.tw.columnCount())])
+            print(type(ch))
+            inst[0] = parent.text(0)
+            inst[1] = ch.text(0)
+            if ch.typ_btn:
+                inst[2] = ch.typ_btn.text()
+                if inst[2] == "Mouse":
+                    inst[3] = ch.act_cb.currentText()
+                    inst[4] = ch.pos_cp.coor.text()
+                else:
+                    inst[3] = ch.act_cb.currentText()
+                    inst[4] = ch.text(3)
+            insts.append(inst)
             self.recur_get_info(insts,ch)
         return
     
