@@ -2,7 +2,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from package import tree as tr
-from package import func as fn
 import itertools
 from enum import Enum
         
