@@ -1,7 +1,7 @@
 # Insttree(=Instrcution Tree)
 #### Flexbile wide use macro
 
-## Screen Shot
+## Demo
 ![main](https://user-images.githubusercontent.com/110750614/211150674-dfd5aa99-2ea1-47f3-839d-2494f83ab985.gif)
 
 ## Main Function
