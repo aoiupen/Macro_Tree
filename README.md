@@ -1,4 +1,4 @@
-# Insttree(=Instrcution Tree)
+# Macro_Tree
 #### Flexbile wide use macro
 
 ## Demo
