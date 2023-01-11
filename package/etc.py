@@ -24,6 +24,12 @@ self.tw2.header().setSectionResizeMode(QHeaderView.ResizeToContents)
 #self.ctr_lay.addWidget(self.tw2)
 '''
 '''
+# selected items -> 마지막에 선택된 item의 부모 밑에 Group 폴더를 만듦
+# selected items는 기존의 위치에서 삭제됨
+# selected items들에서 item without parent 뽑아냄
+# 현재의 parent에서 새로 group 생성(생성후에 lineedit 수정 상태로)
+# 새로 생성한 group가 addchild(item without parent)하기
+
 def fillItem(self, inItem, outItem):
         for col in range(inItem.columnCount()):
             for key in range(Qt.UserRole):

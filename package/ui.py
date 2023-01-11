@@ -23,7 +23,7 @@ class UI():
         self.ctr_wid = QWidget()
         self.ctr_lay = QHBoxLayout(self.ctr_wid)
         self.win.setCentralWidget(self.ctr_wid)
-        self.dark = DarkTheme()
+        self.dark = DarkTheme(self.app)
     
     def setup_top(self,tw):
         #shortcut
@@ -66,6 +66,7 @@ class UI():
         self.tw = tr.TreeWidget(self)
         self.tw.setColumnCount(col_num)
         self.tw.setHeaderLabels(["Name","Type","Act","Value",""])
+        self.tw.setColumnWidth(1,10)
         self.ctr_lay.addWidget(self.tw)
         
         self.setup_top(self.tw)
@@ -75,7 +76,7 @@ class UI():
         self.tw.load()
 
 class DarkTheme(QObject):
-    def __init__(self):
+    def __init__(self,app):
         QObject.__init__(self)
         self.is_dark = 0
         self.palette = QPalette()
