@@ -396,11 +396,6 @@ class TreeWidget(QTreeWidget):
         self.exec_insts(self.selectedItems())
 
     def grouping(self,event):
-        # selected items -> 마지막에 선택된 item의 부모 밑에 Group 폴더를 만듦
-        # selected items는 기존의 위치에서 삭제됨
-        # selected items들에서 item without parent 뽑아냄
-        # 현재의 parent에서 새로 group 생성(생성후에 lineedit 수정 상태로)
-        # 새로 생성한 group가 addchild(item without parent)하기 
         pass
         
     # 나중에 sip 시도해보기
@@ -563,15 +558,27 @@ class TreeWidget(QTreeWidget):
             mod = event.keyboardModifiers()   
             items = self.selectedItems()    
             for it in items:
-                tar_p_lst.append(it.p_name)
                 all_lst.append(it.text(0))
                 
             for it in items:
                 if it.p_name not in all_lst:
                     node_lst.append(it)
 
+            temp_p = tar.parent()
+            while True:
+                if not temp_p:
+                    break
+                else:
+                    tar_p_lst.append(temp_p.name)
+                    temp_p = temp_p.parent()
+                    
+            for node in node_lst:
+                #print(tar.parent().name)
+                #print(node_lst[0].p_name)
+                if node.name in tar_p_lst:
+                    return
+                    
             for it in node_lst:
-                old_p = it.parent()
                 if indicator == Indi.md.value:
                     if self.isGroup(tar):
                         self.change_parent(it,tar,indicator,tar,mod)
