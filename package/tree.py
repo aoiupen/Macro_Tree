@@ -351,14 +351,14 @@ class TreeWidget(QTreeWidget):
         act_list = []
         delete_act = QAction('Delete',self)
         delete_act.triggered.connect(lambda:self.recur_delete(event))
-        #ungroup_act = QAction('Ungroup',self)
-        #ungroup_act.triggered.connect(lambda:self.ungrouping(event))
+        ungroup_act = QAction('Ungroup',self)
+        ungroup_act.triggered.connect(lambda:self.ungrouping(event))
         #group_act = QAction('Group',self)
         #group_act.triggered.connect(lambda:self.grouping(event))
         sel_exe = QAction('Execute',self)
         sel_exe.triggered.connect(lambda:self.excute_sel(event))
         self.menu.addAction(delete_act)
-        #self.menu.addAction(ungroup_act)
+        self.menu.addAction(ungroup_act)
         #self.menu.addAction(group_act)
         self.menu.addAction(sel_exe)
         self.menu.popup(QCursor.pos())
@@ -404,37 +404,28 @@ class TreeWidget(QTreeWidget):
         for item in self.selectedItems():
             (item.parent() or root).removeChild(item)
     
-    # cur의 child의 parent를 cur->cur.parent()로 바꾸기
-    # cur의 ix와 parent를 뽑기
     # child_without_parent를 parent.addChild로 더하기
     # ungrouping 한 후 widget 풀리는 현상 발생
-    def ungrouping(self,event):
+    def ungrouping(self,event): #item의 자식부모를 item->item.parent로
+        # inst에 대해서도 적용해야함
         self.save_push_log()
-        root = self.invisibleRootItem()
         for item in self.selectedItems():
-            # inst에 ungroup 하면 바깥으로 빠져나오는 기능 추가
-            if isinstance(item.typ_btn,NoneType): # btn 불안정
+            root = self.invisibleRootItem()
+            if isinstance(item.typ_btn,NoneType):
                 new_parent = item.parent()
                 child_cnt = item.childCount()
                 if child_cnt:
                     for idx in range(child_cnt):
-                        #child가 하나씩 사라지므로 마지막 idx일때 1개만 남음
-                        #그러므로 최신 child를 지우도록 인자를 0 둠
-                        item_without_parent = item.takeChild(0)
-                        #top일 때 nonetype이라 insertchild 안됨
-                        #child를 top으로 만들어줘야함. 복잡하네...
-                        if isinstance(new_parent,NoneType):
+                        child_item = item.takeChild(0) #child 하나씩 지워지므로 idx를 0으로 고정
+                        if self.isTop(item): #top으로 갈 경우(insert child 안됨)
                             ix = self.indexOfTopLevelItem(item)
-                            self.insertTopLevelItem(ix,item_without_parent)   
-                            item_without_parent.p_name = "top"
-                            self.move_itemwidget(self,item_without_parent,new_parent)
-                            #삭제하는법은?
-                            #move_item
-                            #item이 toplevel 몇번째인지
+                            self.insertTopLevelItem(ix,child_item)   
+                            child_item.p_name = "top"
+                            self.move_itemwidget(child_item,item)
                         else:
-                            new_parent.insertChild(idx,item_without_parent)
-                            item_without_parent.p_name = new_parent.text(0)
-                            self.move_itemwidget(self,item_without_parent,new_parent)
+                            new_parent.insertChild(idx,child_item)
+                            child_item.p_name = new_parent.text(0)
+                            self.move_itemwidget(child_item,item)
                 (new_parent or root).removeChild(item) # 오류 있을수도 있음
             
     # custom일경우(나중에 공부). 옆에는 적용되던데 왜지...
@@ -466,39 +457,41 @@ class TreeWidget(QTreeWidget):
         return mimetypes
 
     # 쓰이지 않음
-    def move_itemwidget(self,drag_item,tar,event=None):
+    def move_itemwidget(self,item,tar,event=None):
         if event != None:
             event.setDropAction(Qt.MoveAction)
-            # drag item이 inst이고, drop하려는 위치가 inst이면 return 시키기
+            # inst를 inst에 드롭하면 리턴시키기
             TreeWidget.dropEvent(self, event) # dropevent 이후 자식 사라짐
-        # *drop event로 Data를 먼저 옮기고, if문 이하에서 item setting
-        if not drag_item.text(1): # Group이면 부모 재설정 new_parent(tar)인자를 받아서
-            drag_item.p = tar
-            if isinstance(tar,NoneType):
-                drag_item.p_name = "top"
-            else:
-                drag_item.p_name = tar.text(0) 
-            # tar.insertChild(0,drag_item) # 인덱스는 임시로 0
-        elif drag_item.text(1):
-            drag_item.typ_btn = ps.TypBtn(self,drag_item.text(1))
-            drag_item.act_cb = ps.ActCb(self,drag_item.text(1),drag_item.text(2))
-            self.setItemWidget(drag_item, 1, drag_item.typ_btn)
-            self.setItemWidget(drag_item, 2, drag_item.act_cb)
-            if drag_item.text(1) == "M":
-                coor = drag_item.pos_cp.coor.text()
-                drag_item.pos_cp = ps.PosWidget(coor)
+        # drop event로 Data를 먼저 옮기고, if문 이하에서 item setting
+
+        if self.isGroup(item):
+            item.typ_btn = ps.TypBtn(self,item.text(1))
+            item.act_cb = ps.ActCb(self,item.text(1),item.text(2))
+            self.setItemWidget(item, 1, item.typ_btn)
+            self.setItemWidget(item, 2, item.act_cb)
+            if item.text(1) == "M":
+                coor = item.pos_cp.coor.text()
+                item.pos_cp = ps.PosWidget(coor)
                 # 이동해도, item을 새로 만드는 것이기 때문에, connect도 다시 해줘야한다
                 # 추후 class init할 때 connect 하도록 수정할 필요있음
-                drag_item.pos_cp.btn.clicked.connect(lambda ignore,f=drag_item.pos_cp.get_pos:f())                  
-                self.setItemWidget(drag_item, 3, drag_item.pos_cp)
-            drag_item.typ_btn.signal.connect(lambda:drag_item.change_typ())
-        child_cnt = drag_item.childCount()
+                item.pos_cp.btn.clicked.connect(lambda ignore,f=item.pos_cp.get_pos:f())                  
+                self.setItemWidget(item, 3, item.pos_cp)
+            item.typ_btn.signal.connect(lambda:item.change_typ())
+        else:
+            item.p = tar
+            if self.isTop(item):
+                item.p_name = "top"
+            else:
+                item.p_name = tar.text(0) 
+            # tar.insertChild(0,item) # 인덱스는 임시로 0
+            
+        child_cnt = item.childCount()
         # 단,group이어도 group 자신만 dropevent만하고, 자식들은 move_itemwidget 거치도록
         if child_cnt:
             for idx in range(child_cnt):
-                child = drag_item.child(idx)
+                child = item.child(idx)
                 #event를 param으로 넘겨도 되는지
-                self.move_itemwidget(self,child,drag_item,event)
+                self.move_itemwidget(child,item,event)
             
     def isGroup(self,it):
         return True if it.row[2] == "" else False
