@@ -404,29 +404,18 @@ class TreeWidget(QTreeWidget):
         for item in self.selectedItems():
             (item.parent() or root).removeChild(item)
     
-    # child_without_parent를 parent.addChild로 더하기
-    # ungrouping 한 후 widget 풀리는 현상 발생
-    def ungrouping(self,event): #item의 자식부모를 item->item.parent로
-        # inst에 대해서도 적용해야함
+    def ungrouping(self,event): 
+        # 옮길 때 selected item은 지워야함
+        # change parent 상황, ungrouping 상황 비교하기
         self.save_push_log()
-        for item in self.selectedItems():
-            root = self.invisibleRootItem()
-            if isinstance(item.typ_btn,NoneType):
-                new_parent = item.parent()
-                child_cnt = item.childCount()
-                if child_cnt:
-                    for idx in range(child_cnt):
-                        child_item = item.takeChild(0) #child 하나씩 지워지므로 idx를 0으로 고정
-                        if self.isTop(item): #top으로 갈 경우(insert child 안됨)
-                            ix = self.indexOfTopLevelItem(item)
-                            self.insertTopLevelItem(ix,child_item)   
-                            child_item.p_name = "top"
-                            self.move_itemwidget(child_item,item)
-                        else:
-                            new_parent.insertChild(idx,child_item)
-                            child_item.p_name = new_parent.text(0)
-                            self.move_itemwidget(child_item,item)
-                (new_parent or root).removeChild(item) # 오류 있을수도 있음
+        indicator = Indi.md.value
+        root = self.invisibleRootItem()
+        for it in self.selectedItems():
+            new_p = it.parent()
+            if self.isTop(it):
+                self.change_parent(it,"top",indicator,it)
+            else:
+                self.change_parent(it,new_p,indicator,it)
             
     # custom일경우(나중에 공부). 옆에는 적용되던데 왜지...
     def context_menu(self, pos):
@@ -462,36 +451,53 @@ class TreeWidget(QTreeWidget):
             event.setDropAction(Qt.MoveAction)
             # inst를 inst에 드롭하면 리턴시키기
             TreeWidget.dropEvent(self, event) # dropevent 이후 자식 사라짐
-        # drop event로 Data를 먼저 옮기고, if문 이하에서 item setting
-
-        if self.isGroup(item):
-            item.typ_btn = ps.TypBtn(self,item.text(1))
-            item.act_cb = ps.ActCb(self,item.text(1),item.text(2))
-            self.setItemWidget(item, 1, item.typ_btn)
-            self.setItemWidget(item, 2, item.act_cb)
-            if item.text(1) == "M":
-                coor = item.pos_cp.coor.text()
-                item.pos_cp = ps.PosWidget(coor)
-                # 이동해도, item을 새로 만드는 것이기 때문에, connect도 다시 해줘야한다
-                # 추후 class init할 때 connect 하도록 수정할 필요있음
-                item.pos_cp.btn.clicked.connect(lambda ignore,f=item.pos_cp.get_pos:f())                  
-                self.setItemWidget(item, 3, item.pos_cp)
-            item.typ_btn.signal.connect(lambda:item.change_typ())
-        else:
-            item.p = tar
-            if self.isTop(item):
-                item.p_name = "top"
-            else:
-                item.p_name = tar.text(0) 
-            # tar.insertChild(0,item) # 인덱스는 임시로 0
             
-        child_cnt = item.childCount()
-        # 단,group이어도 group 자신만 dropevent만하고, 자식들은 move_itemwidget 거치도록
-        if child_cnt:
-            for idx in range(child_cnt):
-                child = item.child(idx)
-                #event를 param으로 넘겨도 되는지
-                self.move_itemwidget(child,item,event)
+        new_p = tar.parent()
+        indicator = Indi.md.value
+        if indicator == Indi.md.value:
+            if self.isGroup(tar):
+                self.change_parent(item,tar,Indi.md.value,tar)
+            else:
+                return
+        else:
+            if self.isTop(tar):
+                self.change_parent(item,"top",Indi.md.value,tar)
+            else:
+                self.change_parent(item,new_p,Indi.md.value,tar)
+        # connect 잘 해줘야
+        # item.typ_btn.signal.connect(lambda:item.change_typ())
+        # 아이템이 그룹일 때
+        # - M일때/K일때
+        # 아이템이 명령일 떄
+        # -Top일 때/아닐 때
+        #if self.isGroup(item):
+        #    item.typ_btn = ps.TypBtn(self,item.text(1))
+        #    item.act_cb = ps.ActCb(self,item.text(1),item.text(2))
+        #    self.setItemWidget(item, 1, item.typ_btn)
+        #    self.setItemWidget(item, 2, item.act_cb)
+        #    if item.text(1) == "M":
+        #        coor = item.pos_cp.coor.text()
+        #        item.pos_cp = ps.PosWidget(coor)
+        #        # 이동해도, item을 새로 만드는 것이기 때문에, connect도 다시 해줘야한다
+        #        # 추후 class init할 때 connect 하도록 수정할 필요있음
+        #        item.pos_cp.btn.clicked.connect(lambda ignore,f=item.pos_cp.get_pos:f())                  
+        #        self.setItemWidget(item, 3, item.pos_cp)
+        #    item.typ_btn.signal.connect(lambda:item.change_typ())
+        #else:
+        #    item.p = tar
+        #    if self.isTop(item):
+        #        item.p_name = "top"
+        #    else:
+        #        item.p_name = tar.text(0) 
+        #    # tar.insertChild(0,item) # 인덱스는 임시로 0
+        #    
+        #child_cnt = item.childCount()
+        ## 단,group이어도 group 자신만 dropevent만하고, 자식들은 move_itemwidget 거치도록
+        #if child_cnt:
+        #    for idx in range(child_cnt):
+        #        child = item.child(idx)
+        #        #event를 param으로 넘겨도 되는지
+        #        self.move_itemwidget(child,item,event)
             
     def isGroup(self,it):
         return True if it.row[2] == "" else False
@@ -499,8 +505,9 @@ class TreeWidget(QTreeWidget):
     def isTop(self,it):
         return True if isinstance(it.parent(),NoneType) else False
     
-    def change_parent(self, it, new_p, indi, tar, mod):
+    def change_parent(self, it, new_p, indi, tar, mod=""):
         tw = self
+        print(1)
         # Step 01 : 독립 it 만들기
         if it.p_name == "top":
             old_p = self
