@@ -411,12 +411,25 @@ class TreeWidget(QTreeWidget):
         indicator = Indi.md.value
         root = self.invisibleRootItem()
         for it in self.selectedItems():
-            new_p = it.parent()
-            if self.isTop(it):
-                self.change_parent(it,"top",indicator,it)
-            else:
-                self.change_parent(it,new_p,indicator,it)
+            for ix in range(it.childCount()):
+                child = it.child(0) # change parent에서 takechild 수행하면서 child가 삭제되므로 0으로 받기
+                new_p = it.parent()
+                tar = it
+                if self.isTop(tar):
+                    self.change_parent(child, "top", Indi.md.value, tar)
+                else:
+                    self.change_parent(child, new_p, Indi.md.value, tar)
             
+            # child 옮긴 후 ungrouping 폴더 지우기
+            if it.p_name == "top":
+                old_p = self
+                ix = old_p.indexOfTopLevelItem(it)
+                new_it = old_p.takeTopLevelItem(ix)
+            else:
+                old_p = it.parent()
+                ix = old_p.indexOfChild(it)
+                new_it = old_p.takeChild(ix)
+                
     # custom일경우(나중에 공부). 옆에는 적용되던데 왜지...
     def context_menu(self, pos):
         index = self.indexAt(pos)
@@ -507,7 +520,6 @@ class TreeWidget(QTreeWidget):
     
     def change_parent(self, it, new_p, indi, tar, mod=""):
         tw = self
-        print(1)
         # Step 01 : 독립 it 만들기
         if it.p_name == "top":
             old_p = self
@@ -517,11 +529,13 @@ class TreeWidget(QTreeWidget):
             old_p = it.parent()
             ix = old_p.indexOfChild(it)
             new_it = old_p.takeChild(ix)
+            
         # Step 02 : new_p에 잇기, p_name 재설정
         if new_p == "top":
             new_it.p_name = new_p
-            if indi == Indi.md.value:
-                self.addTopLevelItem(new_it)
+            if indi == Indi.md.value: #ungroup에만 쓰이고, item move에 안쓰임
+                ix = self.indexOfTopLevelItem(tar)
+                self.insertTopLevelItem(ix,new_it)
             elif indi == Indi.up.value:
                 ix = self.indexOfTopLevelItem(tar)
                 self.insertTopLevelItem(ix,new_it)
@@ -585,10 +599,7 @@ class TreeWidget(QTreeWidget):
                     else:
                         return
                 else:
-                    if self.isTop(tar):
-                        self.change_parent(it,"top",indicator,tar,mod)
-                    else:
-                        self.change_parent(it,new_p,indicator,tar,mod)
+                    self.change_parent(it,new_p,indicator,tar,mod)
                         
                 event.acceptProposedAction()
             #if (modifiers & Qt.ControlModifier) and (modifiers & Qt.ShiftModifier):
