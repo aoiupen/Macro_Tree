@@ -159,11 +159,20 @@ class TreeWidget(QTreeWidget):
         for i in range(self.topLevelItemCount()):
             top_it = self.topLevelItem(i)
             if top_it:
-                self.log_txt += ','.join(["top",top_it.text(0),"","","",""])
+                if top_it.typ_btn:
+                    if top_it.typ_btn.text() == "M":
+                        three = top_it.pos_cp.coor.text()
+                    elif  top_it.typ_btn.text() == "K":
+                        three = top_it.text(3)
+                    self.log_txt += ','.join(["top",top_it.text(0),top_it.typ_btn.text()
+                                              ,top_it.act_cb.currentText(),three,""])
+                else:
+                    self.log_txt += ','.join(["top",top_it.text(0),"","","",""])
                 self.log_txt += '\n'
                 if top_it.childCount():
                     self.recur_log(top_it)
         self.log_txt = self.log_txt.rstrip('\n')
+        #print(self.log_txt)
         return self.log_txt
     
     def load_log(self,tr_str):
@@ -220,6 +229,8 @@ class TreeWidget(QTreeWidget):
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         if mem:
+            #print("-"*10)
+            #print(mem)
             mem_list = mem.split("\n")
             for ix,m in enumerate(mem_list):
                 mem_list[ix] = m.split(",")
@@ -253,7 +264,6 @@ class TreeWidget(QTreeWidget):
             with open('ex.csv', 'rt') as f:
                 reader = csv.reader(f)
                 for _,row in enumerate(reader):
-                    print(row)
                     p = ""
                     p_str = row[0]
                     name = row[1]
@@ -306,7 +316,10 @@ class TreeWidget(QTreeWidget):
                 self.recur_log(ch)
     
     def save_push_log(self):
-        tr_str = self.save_log() 
+        tr_str = self.save_log()
+        print("-"*10) 
+        print(tr_str)
+        print("-"*10) 
         cmd = TreeUndoCommand(self,tr_str,self.undoStack)
         self.undoStack.push(cmd)                    
                     
