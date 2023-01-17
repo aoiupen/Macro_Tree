@@ -53,7 +53,7 @@ class TreeWidgetItem(QTreeWidgetItem):
             tw.setItemWidget(self, 1, self.typ_btn)
             tw.setItemWidget(self, 2, self.act_cb)
             
-            pos = self.row[4]
+            pos = self.row[4] + "," + self.row[5]
             if self.row[2] == "M":
                 self.pos_cp = cp.PosWidget(pos)
                 self.pos_cp.btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
@@ -256,9 +256,8 @@ class TreeWidget(QTreeWidget):
                 # parent에 string이 들어가면 안되고,이 이름을 가지는 widget을 불러와야한다
                 # column에 widget이 들어가면 이 코드가 의미가 없을 듯
                 if len(row) >2:
-                    content = row[4]
                     if row[2] == "K":
-                        tw_it.setText(3,content)    
+                        tw_it.setText(3,row[4])    
                 self.inst_list.append(tw_it)
         else:
             with open('ex.csv', 'rt') as f:

@@ -78,7 +78,7 @@ class PosWidget(QWidget):
         self.widget_lay = QHBoxLayout(self)
         self.widget_lay.setContentsMargins(0,0,0,0)
         self.widget_lay.setSpacing(0)
-        self.coor = QLineEdit(pos,self)
+        self.coor = QLineEdit(pos.rstrip(","),self)
         self.coor.setFixedWidth(80)
         self.btn = cp.PosBtn("pos")
         self.btn.setIcon(QIcon("src/coor.png"))
