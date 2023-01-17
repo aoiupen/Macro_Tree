@@ -413,6 +413,7 @@ class TreeWidget(QTreeWidget):
         
     # 나중에 sip 시도해보기
     def recur_delete(self,event):
+        self.save_push_log()
         root = self.invisibleRootItem()
         for item in self.selectedItems():
             (item.parent() or root).removeChild(item)
