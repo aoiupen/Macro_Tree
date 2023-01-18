@@ -31,7 +31,7 @@ class UI():
         self.act_info_list = [['Save','Ctrl+S','Save application',tw.save],
                          ['Load','Ctrl+O','Load application',tw.load],
                          #['Execute','','Execute application',tw.exec_inst],
-                         ['Exit','Ctrl+Q','Exit application',tw.set_cls_win],
+                         ['Exit','Ctrl+Q','Exit application',qApp.quit],
                          ['Dark','Ctrl+D','Dark Theme',lambda:self.change_them(self.dark,self.app)]]
         for act_info in self.act_info_list:
             act = QAction(act_info[ShortC.name.value],self.win)
@@ -74,7 +74,15 @@ class UI():
         # finish
         #self.win.adjustSize()
         self.tw.load()
-
+        
+def change_them(dark,app):
+    if dark.is_dark:
+        app.setPalette(app.style().standardPalette())
+        dark.is_dark = 0
+    else:
+        app.setPalette(dark.palette)
+        dark.is_dark = 1
+        
 class DarkTheme(QObject):
     def __init__(self,app):
         QObject.__init__(self)
@@ -93,3 +101,4 @@ class DarkTheme(QObject):
         self.palette.setColor(QPalette.Link, QColor(42, 130, 218))
         self.palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
         self.palette.setColor(QPalette.HighlightedText, Qt.black)
+    

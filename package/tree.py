@@ -290,10 +290,6 @@ class TreeWidget(QTreeWidget):
                             tw_it.setText(3,content)       
                     self.inst_list.append(tw_it)
         self.itemChanged.connect(self.change_check)
-
-    def set_cls_win(self):
-        self.close() 
-        # 프로그램 자체를 닫게해야함
         
     def recur_log(self,parent):
         for ix in range(parent.childCount()):
