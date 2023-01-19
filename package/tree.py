@@ -572,6 +572,7 @@ class TreeWidget(QTreeWidget):
     def treeDropEvent(self, event):
         indicator = QAbstractItemView.dropIndicatorPosition(self)
         tar = self.itemAt(event.pos())
+        
         new_p = tar.parent()
 
         self.save_push_log()
@@ -586,14 +587,13 @@ class TreeWidget(QTreeWidget):
             for it in items:
                 if it.p_name not in all_lst:
                     node_lst.append(it)
-
-            temp_p = tar.parent()
+                    
             while True:
-                if not temp_p:
+                if not new_p:
                     break
                 else:
-                    tar_p_lst.append(temp_p.name)
-                    temp_p = temp_p.parent()
+                    tar_p_lst.append(new_p.name)
+                    new_p = new_p.parent()
                     
             for node in node_lst:
                 #print(tar.parent().name)
@@ -608,7 +608,10 @@ class TreeWidget(QTreeWidget):
                     else:
                         return
                 else:
-                    self.change_parent(it,new_p,indicator,tar,mod)
+                    if self.isTop(tar):
+                        self.change_parent(it,"top",indicator,tar,mod)
+                    else:
+                        self.change_parent(it,new_p,indicator,tar,mod)
                         
                 event.acceptProposedAction()
             #if (modifiers & Qt.ControlModifier) and (modifiers & Qt.ShiftModifier):
