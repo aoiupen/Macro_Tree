@@ -361,13 +361,13 @@ class TreeWidget(QTreeWidget):
         delete_act.triggered.connect(lambda:self.recur_delete(event))
         ungroup_act = QAction('Ungroup',self)
         ungroup_act.triggered.connect(lambda:self.ungrouping(event))
-        #group_act = QAction('Group',self)
-        #group_act.triggered.connect(lambda:self.grouping(event))
+        group_act = QAction('Group',self)
+        group_act.triggered.connect(lambda:self.grouping(event))
         sel_exe = QAction('Execute',self)
         sel_exe.triggered.connect(lambda:self.excute_sel(event))
         self.menu.addAction(delete_act)
         self.menu.addAction(ungroup_act)
-        #self.menu.addAction(group_act)
+        self.menu.addAction(group_act)
         self.menu.addAction(sel_exe)
         self.menu.popup(QCursor.pos())
     
@@ -403,9 +403,6 @@ class TreeWidget(QTreeWidget):
     def excute_sel(self,event):
         self.exec_insts(self.selectedItems())
 
-    def grouping(self,event):
-        pass
-        
     # 나중에 sip 시도해보기
     def recur_delete(self,event):
         self.save_push_log()
@@ -413,6 +410,21 @@ class TreeWidget(QTreeWidget):
         for item in self.selectedItems():
             (item.parent() or root).removeChild(item)
     
+    def grouping(self,event):
+        self.save_push_log()
+        root = self.invisibleRootItem()
+        
+        tar = self.currentItem()
+        new_p = tar.parent()
+        tar_p_lst, node_lst = [],[]
+        if self.get_node_list(new_p, tar_p_lst, node_lst):
+            return
+        # 현 위치에 부모 폴더 생김
+        # 마지막 선택되어있는 item과 parent 사이에 새로운 부모폴더를 생성해야함
+        # - selected items
+        # -- takechild로 child 제거해줘야함
+        # 그 부모 폴더 아래로 이동
+        
     def ungrouping(self,event): 
         # 옮길 때 selected item은 지워야함
         # change parent 상황, ungrouping 상황 비교하기
@@ -572,35 +584,16 @@ class TreeWidget(QTreeWidget):
     def treeDropEvent(self, event):
         indicator = QAbstractItemView.dropIndicatorPosition(self)
         tar = self.itemAt(event.pos())
-        
         new_p = tar.parent()
-
         self.save_push_log()
         
-        if event.source() == self: 
-            tar_p_lst, all_lst, node_lst = [],[],[]
-            mod = event.keyboardModifiers()   
-            items = self.selectedItems()    
-            for it in items:
-                all_lst.append(it.text(0))
-                
-            for it in items:
-                if it.p_name not in all_lst:
-                    node_lst.append(it)
-                    
-            while True:
-                if not new_p:
-                    break
-                else:
-                    tar_p_lst.append(new_p.name)
-                    new_p = new_p.parent()
-                    
-            for node in node_lst:
-                #print(tar.parent().name)
-                #print(node_lst[0].p_name)
-                if node.name in tar_p_lst:
-                    return
-                    
+        if event.source() == self:
+            mod = event.keyboardModifiers()
+            # node list 추출하기
+            tar_p_lst, node_lst = [],[]
+            if self.get_node_list(new_p, tar_p_lst, node_lst):
+                return
+            
             for it in node_lst:
                 if indicator == Indi.md.value:
                     if self.isGroup(tar):
@@ -619,6 +612,27 @@ class TreeWidget(QTreeWidget):
     # 문제 : group,inst가 위계없이 items에 다 들어가는 중. (왜냐하면, group,inst를 구분하는 코드는 없고, text(1)을 기준으로 나누기 때문에) 중복을 제외하고 넘기기
     # n,0 (role은 0으로  고정하고 n은 0~4)
     
+    def get_node_list(self,new_p,tar_p_lst,node_lst):
+        all_lst = []
+        items = self.selectedItems()
+        for it in items:
+            all_lst.append(it.text(0))
+            
+        for it in items:
+            if it.p_name not in all_lst:
+                node_lst.append(it)
+                
+        while True:
+            if not new_p:
+                break
+            else:
+                tar_p_lst.append(new_p.name)
+                new_p = new_p.parent()
+                    
+        for node in node_lst:
+            if node.name in tar_p_lst:
+                return False
+              
     @pyqtSlot(TreeWidgetItem, int)
     def onItemClicked(self, it, col):
         pass
