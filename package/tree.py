@@ -420,7 +420,29 @@ class TreeWidget(QTreeWidget):
         if self.get_node_list(new_p, tar_p_lst, node_lst):
             return
         # 현 위치에 부모 폴더 생김
-        # 마지막 선택되어있는 item과 parent 사이에 새로운 부모폴더를 생성해야함
+        new_row = [new_p,"New Group","","","","",]
+        if new_p == None:
+            new_row[0] = "top"
+        else:
+            new_row[0] = tar.p_name
+        
+        # 마지막 선택되어있는 item과 parent 사이에 새로운 부모폴더를 생성해야함    
+        # 끼워넣기
+        new_it = TreeWidgetItem(self,new_p,new_row)
+        indicator = Indi.md.value
+        #self.change_parent(new_it, new_p, indicator, tar, mod="")
+        
+        # Group이면 child 가져오고
+        # Child면 child만 가져온다
+        for it in self.selectedItems():
+            if self.isGroup(it):
+                for ix in range(it.childCount()):
+                    indicator = Indi.md.value
+                    self.change_parent_set(it, new_p, indicator, tar, mod="")
+            else:
+                indicator = Indi.md.value
+                self.change_parent_set(it, new_p, indicator, tar,mod="")               
+            
         # - selected items
         # -- takechild로 child 제거해줘야함
         # 그 부모 폴더 아래로 이동
@@ -539,6 +561,18 @@ class TreeWidget(QTreeWidget):
     def isTop(self,it):
         return True if isinstance(it.parent(),NoneType) else False
     
+    def change_parent_set(self, it, new_p, indicator, tar,mod=""):
+            if indicator == Indi.md.value:
+                if self.isGroup(tar):
+                    self.change_parent(it,tar,Indi.md.value,tar)
+                else:
+                    return
+            else:
+                if self.isTop(tar):
+                    self.change_parent(it,"top",Indi.md.value,tar)
+                else:
+                    self.change_parent(it,new_p,Indi.md.value,tar)         
+    
     def change_parent(self, it, new_p, indi, tar, mod=""):
         tw = self
         # Step 01 : 독립 it 만들기
@@ -591,7 +625,7 @@ class TreeWidget(QTreeWidget):
             mod = event.keyboardModifiers()
             # node list 추출하기
             tar_p_lst, node_lst = [],[]
-            if self.get_node_list(new_p, tar_p_lst, node_lst):
+            if not self.get_node_list(new_p, tar_p_lst, node_lst):
                 return
             
             for it in node_lst:
@@ -631,7 +665,7 @@ class TreeWidget(QTreeWidget):
                     
         for node in node_lst:
             if node.name in tar_p_lst:
-                return False
+                return True
               
     @pyqtSlot(TreeWidgetItem, int)
     def onItemClicked(self, it, col):
