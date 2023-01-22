@@ -10,7 +10,7 @@
 > #### Undo
 > #### Get Mouse Click Coordinate
 > #### CheckBox
-> #### Group,UnGroup
+> #### Group, UnGroup
 
 ## Ing
 > #### Dark Theme
