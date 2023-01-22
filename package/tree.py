@@ -34,6 +34,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.setText(0,self.name)
         #if len(self.row)>2: #그룹이 아닐 경우
         self.set_widget(self.tw)
+        self.set_icon()
 
         self.setFlags(self.flags()|Qt.ItemIsEditable) #editable
         self.setCheckState(0,Qt.Checked) #col,state
@@ -58,7 +59,18 @@ class TreeWidgetItem(QTreeWidgetItem):
                 self.pos_cp = cp.PosWidget(pos)
                 self.pos_cp.btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
                 tw.setItemWidget(self, 3, self.pos_cp)
-                
+    def isGroup(self):
+        return True if self.row[2] == "" else False
+    
+    def isTop(self):
+        return True if isinstance(self.parent(),NoneType) else False
+        
+    def set_icon(self):
+        if self.isGroup():
+            self.setIcon(0,QIcon("src/bag.png"))
+        else:
+            self.setIcon(0,QIcon("src/inst.png"))   
+                   
     def change_act(self):
         #self.tw.disconnect()
         #if act_cb.currentText() == "Double":
@@ -215,13 +227,6 @@ class TreeWidget(QTreeWidget):
             self.insts.append(tw_it)
         self.itemChanged.connect(self.change_check)
 
-    def set_icon(self,it):
-        if self.isGroup(it):
-            it.setIcon(0,QIcon("src/bag.png"))
-        else:
-            it.setIcon(0,QIcon("src/inst.png")) 
-            
-
     def load(self,mem=""):
         self.inst_list = []
         self.disconnect()
@@ -269,7 +274,6 @@ class TreeWidget(QTreeWidget):
                     if p_str == 'top':
                         tw_it = tr.TreeWidgetItem(self,self,row)
                         tw_it.p_name = 'top'
-                        self.set_icon(tw_it)
                         tw_it.setText(0,name) # 없애보고 해보기
                     else:
                         for inst in self.inst_list:
@@ -277,7 +281,6 @@ class TreeWidget(QTreeWidget):
                                 p = inst
                                 tw_it = tr.TreeWidgetItem(self,p,row)
                                 tw_it.p_name = p.text(0)
-                                self.set_icon(tw_it)
                                 tw_it.setText(0,name) # 없애보고 해보기
                                 break
                         
@@ -410,6 +413,7 @@ class TreeWidget(QTreeWidget):
         for item in self.selectedItems():
             (item.parent() or root).removeChild(item)
     
+    # 자료구조 heap으로 교체 예정
     def grouping(self,event):
         self.save_push_log()
         root = self.invisibleRootItem()
@@ -419,14 +423,14 @@ class TreeWidget(QTreeWidget):
         tar_p_lst, node_lst = [],[]
         if self.get_node_list(new_p, tar_p_lst, node_lst):
             return
-        # 현 위치에 부모 폴더 생김
+        # 현 위치의 위계의 최상위 index에 부모 폴더 생김
         new_row = [new_p,"New Group","","","","",]
         if new_p == None:
             new_row[0] = "top"
         else:
             new_row[0] = tar.p_name
         
-        # 마지막 선택되어있는 item과 parent 사이에 새로운 부모폴더를 생성해야함    
+        # 마지막 선택되어있는 item과 parent 사이에 새로운 부모폴더를 생성해야함
         # 끼워넣기
         new_it = TreeWidgetItem(self,new_p,new_row)
         indicator = Indi.md.value
@@ -435,13 +439,13 @@ class TreeWidget(QTreeWidget):
         # Group이면 child 가져오고
         # Child면 child만 가져온다
         for it in self.selectedItems():
-            if self.isGroup(it):
+            if it.isGroup():
                 for ix in range(it.childCount()):
                     indicator = Indi.md.value
-                    self.change_parent_set(it, new_p, indicator, tar, mod="")
+                    self.change_parent_set(it, new_p, indicator, new_it, mod="")
             else:
                 indicator = Indi.md.value
-                self.change_parent_set(it, new_p, indicator, tar,mod="")               
+                self.change_parent_set(it, new_p, indicator, new_it,mod="")               
             
         # - selected items
         # -- takechild로 child 제거해줘야함
@@ -458,7 +462,7 @@ class TreeWidget(QTreeWidget):
                 child = it.child(0) # change parent에서 takechild 수행하면서 child가 삭제되므로 0으로 받기
                 new_p = it.parent()
                 tar = it
-                if self.isTop(tar):
+                if tar.isTop():
                     self.change_parent(child, "top", Indi.md.value, tar)
                 else:
                     self.change_parent(child, new_p, Indi.md.value, tar)
@@ -511,12 +515,12 @@ class TreeWidget(QTreeWidget):
         new_p = tar.parent()
         indicator = Indi.md.value
         if indicator == Indi.md.value:
-            if self.isGroup(tar):
+            if tar.isGroup():
                 self.change_parent(item,tar,Indi.md.value,tar)
             else:
                 return
         else:
-            if self.isTop(tar):
+            if tar.isTop():
                 self.change_parent(item,"top",Indi.md.value,tar)
             else:
                 self.change_parent(item,new_p,Indi.md.value,tar)
@@ -555,20 +559,14 @@ class TreeWidget(QTreeWidget):
         #        #event를 param으로 넘겨도 되는지
         #        self.move_itemwidget(child,item,event)
             
-    def isGroup(self,it):
-        return True if it.row[2] == "" else False
-    
-    def isTop(self,it):
-        return True if isinstance(it.parent(),NoneType) else False
-    
     def change_parent_set(self, it, new_p, indicator, tar,mod=""):
             if indicator == Indi.md.value:
-                if self.isGroup(tar):
+                if tar.isGroup():
                     self.change_parent(it,tar,Indi.md.value,tar)
                 else:
                     return
             else:
-                if self.isTop(tar):
+                if tar.isGroup():
                     self.change_parent(it,"top",Indi.md.value,tar)
                 else:
                     self.change_parent(it,new_p,Indi.md.value,tar)         
@@ -630,12 +628,12 @@ class TreeWidget(QTreeWidget):
             
             for it in node_lst:
                 if indicator == Indi.md.value:
-                    if self.isGroup(tar):
+                    if tar.isGroup():
                         self.change_parent(it,tar,indicator,tar,mod)
                     else:
                         return
                 else:
-                    if self.isTop(tar):
+                    if tar.isTop():
                         self.change_parent(it,"top",indicator,tar,mod)
                     else:
                         self.change_parent(it,new_p,indicator,tar,mod)
