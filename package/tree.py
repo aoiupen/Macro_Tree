@@ -246,7 +246,7 @@ class TreeWidget(QTreeWidget):
                 if p_str == 'top':
                     tw_it = tr.TreeWidgetItem(self,self,row)
                     tw_it.p_name = 'top'
-                    self.set_icon(tw_it)
+                    tw_it.set_icon()
                     tw_it.setText(0,name) # 없애보고 해보기
                 else:
                     for inst in self.inst_list:
@@ -254,7 +254,7 @@ class TreeWidget(QTreeWidget):
                             p = inst
                             tw_it = tr.TreeWidgetItem(self,p,row)
                             tw_it.p_name = p.text(0)
-                            self.set_icon(tw_it)
+                            tw_it.set_icon()
                             tw_it.setText(0,name) # 없애보고 해보기
                             break
                     
