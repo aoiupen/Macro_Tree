@@ -623,7 +623,7 @@ class TreeWidget(QTreeWidget):
             mod = event.keyboardModifiers()
             # node list 추출하기
             tar_p_lst, node_lst = [],[]
-            if not self.get_node_list(new_p, tar_p_lst, node_lst):
+            if self.get_node_list(new_p, tar_p_lst, node_lst):
                 return
             
             for it in node_lst:
@@ -653,17 +653,16 @@ class TreeWidget(QTreeWidget):
         for it in items:
             if it.p_name not in all_lst:
                 node_lst.append(it)
-                
-        while True:
-            if not new_p:
-                break
-            else:
-                tar_p_lst.append(new_p.name)
-                new_p = new_p.parent()
-                    
+
+        if new_p:
+            tar_p_lst.append(new_p.name)
+            new_p = new_p.parent()
+
         for node in node_lst:
             if node.name in tar_p_lst:
                 return True
+  
+        return False
               
     @pyqtSlot(TreeWidgetItem, int)
     def onItemClicked(self, it, col):
