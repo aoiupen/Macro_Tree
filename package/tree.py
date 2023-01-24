@@ -414,6 +414,7 @@ class TreeWidget(QTreeWidget):
             (item.parent() or root).removeChild(item)
     
     # 자료구조 heap으로 교체 예정
+    # inst grouping시 밑으로 내려가는 문제
     def grouping(self,event):
         self.save_push_log()
         root = self.invisibleRootItem()
@@ -439,18 +440,19 @@ class TreeWidget(QTreeWidget):
         # Group이면 child 가져오고
         # Child면 child만 가져온다
         for it in self.selectedItems():
-            if it.isGroup():
+            if it.isGroup(): # error (맨 위 폴더로 올라감)
                 for ix in range(it.childCount()):
                     indicator = Indi.md.value
                     self.change_parent_set(it, new_p, indicator, new_it, mod="")
             else:
                 indicator = Indi.md.value
-                self.change_parent_set(it, new_p, indicator, new_it,mod="")               
+                self.change_parent_set(it, new_p, indicator, new_it,mod="")              
             
         # - selected items
         # -- takechild로 child 제거해줘야함
         # 그 부모 폴더 아래로 이동
-        
+    
+    # inst ungrouping시 사라지는 문제 : 부모와 바로 아래 형제로 insert 하기
     def ungrouping(self,event): 
         # 옮길 때 selected item은 지워야함
         # change parent 상황, ungrouping 상황 비교하기
@@ -458,24 +460,32 @@ class TreeWidget(QTreeWidget):
         indicator = Indi.md.value
         root = self.invisibleRootItem()
         for it in self.selectedItems():
-            for ix in range(it.childCount()):
-                child = it.child(0) # change parent에서 takechild 수행하면서 child가 삭제되므로 0으로 받기
-                new_p = it.parent()
-                tar = it
-                if tar.isTop():
-                    self.change_parent(child, "top", Indi.md.value, tar)
-                else:
-                    self.change_parent(child, new_p, Indi.md.value, tar)
-            
-            # child 옮긴 후 ungrouping 폴더 지우기
-            if it.p_name == "top":
-                old_p = self
-                ix = old_p.indexOfTopLevelItem(it)
-                new_it = old_p.takeTopLevelItem(ix)
+            if it.isGroup():
+                for ix in range(it.childCount()):
+                    child = it.child(0) # change parent에서 takechild 수행하면서 child가 삭제되므로 0으로 받기
+                    new_p = it.parent()
+                    tar = it
+                    if tar.isTop():
+                        self.change_parent(child, "top", Indi.md.value, tar)
+                    else:
+                        print(22)
+                        self.change_parent(child, new_p, Indi.dw.value, tar)
             else:
-                old_p = it.parent()
-                ix = old_p.indexOfChild(it)
-                new_it = old_p.takeChild(ix)
+                new_p = (it.parent()).parent()
+                tar = it.parent()
+                if tar.isTop():
+                    self.change_parent(it, "top", Indi.dw.value, tar) # new 개념
+                else:
+                    self.change_parent(it, new_p, Indi.dw.value, tar)
+            if it.isGroup():        
+                if it.p_name == "top":
+                    old_p = self
+                    ix = old_p.indexOfTopLevelItem(it)
+                    new_it = old_p.takeTopLevelItem(ix)
+                else:
+                    old_p = it.parent()
+                    ix = old_p.indexOfChild(it)
+                    new_it = old_p.takeChild(ix)
                 
     # custom일경우(나중에 공부). 옆에는 적용되던데 왜지...
     def context_menu(self, pos):
@@ -567,12 +577,13 @@ class TreeWidget(QTreeWidget):
                     return
             else:
                 if tar.isGroup():
-                    self.change_parent(it,"top",Indi.md.value,tar)
+                    self.change_parent(it,"top",indicator,tar)
                 else:
-                    self.change_parent(it,new_p,Indi.md.value,tar)         
+                    self.change_parent(it,new_p,indicator,tar)         
     
     def change_parent(self, it, new_p, indi, tar, mod=""):
         tw = self
+        print(444)
         # Step 01 : 독립 it 만들기
         if it.p_name == "top":
             old_p = self
@@ -585,6 +596,7 @@ class TreeWidget(QTreeWidget):
             
         # Step 02 : new_p에 잇기, p_name 재설정
         if new_p == "top":
+            print(323)
             new_it.p_name = new_p
             if indi == Indi.md.value: #ungroup에만 쓰이고, item move에 안쓰임
                 ix = self.indexOfTopLevelItem(tar)
@@ -599,8 +611,10 @@ class TreeWidget(QTreeWidget):
             ix = new_p.indexOfChild(tar)
             new_it.p_name = new_p.name
             if indi == Indi.up.value:
+                print(2323)
                 new_p.insertChild(ix,new_it)
             else:
+                print(111)
                 new_p.insertChild(ix+1,new_it)
                 
         self.recur_set_widget(new_it,tw)
