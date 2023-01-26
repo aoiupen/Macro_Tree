@@ -435,13 +435,13 @@ class TreeWidget(QTreeWidget):
         
         # 2. old_p와 it을 분리한다
         # 3. old_p 아래에 new_folder를 insert
-        self.change_parent(tar_p, folder, it, indicator, mod="")
+        self.change_parent_set(tar_p, tar, folder, indicator, mod="") # notype 에러
         # 4. new_folder 아래에 it을 insert
-        
+        # selected item, current item으로 나누기
         for it in self.selectedItems():
             indicator = Indi.md.value
             self.change_parent_set(tar_p, folder, it, indicator, mod="")
-         
+        
             
         # - selected items
         # -- takechild로 child 제거해줘야함
@@ -568,17 +568,16 @@ class TreeWidget(QTreeWidget):
         #        self.move_itemwidget(child,item,event)
             
     def change_parent_set(self, tar_p, tar, it, indicator,mod=""):
-            if indicator == Indi.md.value:
-                if tar.isGroup():
-                    print(1212)
-                    self.change_parent(tar,tar,it,indicator)
-                else:
-                    return
+        if indicator == Indi.md.value:
+            if tar.isGroup():
+                self.change_parent(tar,tar,it,indicator)
             else:
-                if tar.isGroup():
-                    self.change_parent("top",tar,it,indicator)
-                else:
-                    self.change_parent(tar_p,tar,it,indicator)         
+                return
+        else:
+            if tar.isGroup():
+                self.change_parent("top",tar,it,indicator)
+            else:
+                self.change_parent(tar_p,tar,it,indicator)         
     
     # it : 최종 child, tar : 최종 parent
     
@@ -613,12 +612,10 @@ class TreeWidget(QTreeWidget):
                 tar_p.insertChild(ix+1,indp_it) 
     
     def change_parent(self, tar_p, tar, it, indi, mod=""):
-        tw = self
         # Step 01 : 독립 it 만들기
         ix, indp_it = self.extract_item(it)
         # Step 02 : tar_p에 잇기
         self.connect_nodes(tar_p,tar,indp_it,indi)
-        
         # Step 03 : item 재정비
         self.recur_set_widget(indp_it)
         #mod == Qt.ControlModifier:
