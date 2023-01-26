@@ -471,13 +471,17 @@ class TreeWidget(QTreeWidget):
                         print(22)
                         self.change_parent(child, new_p, Indi.dw.value, tar)
             else:
-                new_p = (it.parent()).parent()
-                tar = it.parent()
-                if tar.isTop():
-                    self.change_parent(it, "top", Indi.dw.value, tar) # new 개념
+                if it.isTop():
+                    continue
                 else:
-                    self.change_parent(it, new_p, Indi.dw.value, tar)
-            if it.isGroup():        
+                    new_p = (it.parent()).parent()
+                    tar = it.parent()
+                    if tar.isTop():
+                        self.change_parent(it, "top", Indi.dw.value, tar) # new 개념
+                    else:
+                        self.change_parent(it, new_p, Indi.dw.value, tar)
+
+            if it.isGroup():
                 if it.p_name == "top":
                     old_p = self
                     ix = old_p.indexOfTopLevelItem(it)
