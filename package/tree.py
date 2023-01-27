@@ -414,50 +414,44 @@ class TreeWidget(QTreeWidget):
             (item.parent() or root).removeChild(item)
     
     # 자료구조 heap으로 교체 예정
-    def grouping(self,event):       
+    def grouping(self,event): # cur위에 추가하고 cur끊고 folder에 잇기    
         self.save_push_log()
-        indicator = Indi.md.value
+        
         root = self.invisibleRootItem()
-        tar = self.currentItem()
-        tar_p = tar.parent()
-        tar_p_lst, node_lst = [],[]
-        if self.get_node_list(tar_p, tar_p_lst, node_lst):
+        cur = self.currentItem()
+        cur_p = cur.parent()
+        cur_p_lst, node_lst = [],[]
+        if self.get_node_list(cur_p, cur_p_lst, node_lst):
             return
 
-        # 1. 자녀 생성
-        new_info = ["","New Group","","","","",]
-        if tar_p.isTop():
-            print(tar_p)
-            new_info[0] = "top"
-        else:
-            new_info[0] = tar.p_name
-        folder = TreeWidgetItem(self,tar_p,new_info)
+        # 1. 새 자녀 추가
+        new_info = []
+        if cur_p.isTop(): new_info = ["top","New Group","","","","",]
+        else: new_info = [cur.p_name,"New Group","","","","",]
+        folder = TreeWidgetItem(self,cur_p,new_info)
         
-        # 2. 부모 - 손자 Disconnect
-        # 3. 부모 - 자녀 Link
-        self.change_parent_set(tar_p, tar, folder, indicator, mod="") # notype 에러
-        # 4. 자녀 - 손자 Link
-        # selected item, current item으로 나누기
-        for it in self.selectedItems():
-            indicator = Indi.md.value
-            self.change_parent_set(tar_p, folder, it, indicator, mod="")
+        ix = cur_p.indexOfChild(cur)
+        folder.p_name = cur_p.name
+        cur_p.insertChild(ix-1,folder) # indicator = Indi.up.value 이므로
+        
+        # 2. 기존 자녀를 새 자녀의 밑으로
+        indicator = Indi.md.value
+        for node in node_lst:
+            self.change_parent(cur_p, node, folder, indicator)
+        #self.connect_nodes(cur_p, cur, folder, indicator)
            
         # - selected items
         # -- takechild로 child 제거해줘야함
         # 그 부모 폴더 아래로 이동
     
-    # inst ungrouping시 사라지는 문제 : 부모와 바로 아래 형제로 insert 하기
-    def ungrouping(self,event): 
-        # 옮길 때 selected item은 지워야함
-        # change parent 상황, ungrouping 상황 비교하기
+    def ungrouping(self,event): # 가운데 추출 후 양 쪽 잇기
         self.save_push_log()
         indicator = Indi.md.value
         root = self.invisibleRootItem()
         
         for it in self.selectedItems():
             # 부모 - 손자 Link (top inst면 실행 X)
-            if not self.extract_and_connect(it):
-                continue
+            if not self.extract_and_connect(it):continue
             # Ungroup된 폴더 삭제
             if it == self.currentItem():
                 self.extract_item(it)
@@ -544,7 +538,7 @@ class TreeWidget(QTreeWidget):
         #        #event를 param으로 넘겨도 되는지
         #        self.move_itemwidget(child,item,event)
             
-    def change_parent_set(self, tar_p, tar, it, indicator,mod=""):
+    def change_parent_plus(self, tar_p, tar, it, indicator,mod=""):
         if indicator == Indi.md.value:
             if tar.isFolder():
                 self.change_parent(tar,tar,it,indicator)
@@ -571,13 +565,14 @@ class TreeWidget(QTreeWidget):
             else:
                 it_gp = (it.parent()).parent()
                 it_p = it.parent()
-                self.change_parent(it_gp, it_p, it, indi) # inst 사라짐 error
+                self.change_parent(it_gp, it_p, it, indi)
         return True
     
+    #2. 부모 - 손자 Disconnect : folder는 기존 연결이 없어서 error 발생 
+    # + 부모 - 자녀 Link
     def change_parent(self, tar_p, tar, it, indi, mod=""):
         if tar.isTop():
             tar_p = "top"
- 
         # Step 01 : 독립 it 만들기
         ix, indp_it = self.extract_item(it)
         # Step 02 : tar_p에 잇기
@@ -610,14 +605,10 @@ class TreeWidget(QTreeWidget):
                 self.insertTopLevelItem(ix+1,indp_it)
         else:
             ix = tar_p.indexOfChild(tar)
-            print(tar.name)
-            print(tar_p.name)
-            print(indp_it)
             indp_it.p_name = tar_p.name
             if indi == Indi.up.value or Indi.md.value: 
                 tar_p.insertChild(ix,indp_it)
             else:
-                print(11)
                 tar_p.insertChild(ix+1,indp_it) 
 
     def recur_set_widget(self,it):
@@ -630,28 +621,18 @@ class TreeWidget(QTreeWidget):
     def treeDropEvent(self, event):
         indicator = QAbstractItemView.dropIndicatorPosition(self)
         tar = self.itemAt(event.pos())
-        new_p = tar.parent()
+        tar_p = tar.parent()
         self.save_push_log()
         
         if event.source() == self:
             mod = event.keyboardModifiers()
             # node list 추출하기
             tar_p_lst, node_lst = [],[]
-            if self.get_node_list(new_p, tar_p_lst, node_lst):
+            if self.get_node_list(tar_p, tar_p_lst, node_lst):
                 return
             
             for it in node_lst:
-                if indicator == Indi.md.value:
-                    if tar.isFolder():
-                        self.change_parent(tar,tar,it,indicator,mod)
-                    else:
-                        return
-                else:
-                    if tar.isTop():
-                        self.change_parent("top",tar,it,indicator,mod)
-                    else:
-                        self.change_parent(new_p,tar,it,indicator,mod)
-                        
+                self.change_parent_plus(tar_p, tar, it, indicator, mod)
                 event.acceptProposedAction()
             #if (modifiers & Qt.ControlModifier) and (modifiers & Qt.ShiftModifier):
             #    print("Control+Shift")   
