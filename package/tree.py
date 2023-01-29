@@ -435,16 +435,17 @@ class TreeWidget(QTreeWidget):
         
         # 2. Connect tar_p & new
         new = TreeWidgetItem(self,cur_p,new_info)
-        ix, indp_it = self.extract_item(new)
+        #ix, indp_it = self.extract_item(new)
         ix = cur_p.indexOfChild(cur)
         cur_p.insertChild(ix,new)
         
         for node_it in node_lst:
             # 3. Disconnect tar_p & tar
-            ix, indp_it = self.extract_item(node_it)
-            self.recur_set_widget(indp_it)
+            ix, node_it = self.extract_item(node_it)
             # 4. Connect new & tar
-            self.insert_child(ix, cur_p, indp_it, Indi.up.value)
+            # it.child(ix)
+            new.insertChild(ix,node_it)
+            self.recur_set_widget(node_it)
         
     def old_grouping(self,event): # cur위에 추가하고 cur끊고 new에 잇기    
         self.save_push_log()
@@ -614,7 +615,6 @@ class TreeWidget(QTreeWidget):
             
     def extract_item(self,it):
         # Step 01 : 독립 it 만들기
-        indp_it = -100
         if it.isTop():
             old_p = self
             ix = old_p.indexOfTopLevelItem(it)
