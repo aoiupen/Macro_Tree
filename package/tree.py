@@ -415,6 +415,7 @@ class TreeWidget(QTreeWidget):
             (item.parent() or root).removeChild(item)
     
     # 자료구조 heap으로 교체 예정
+    # Grouping : 
     def grouping(self,event): # cur위에 추가하고 cur끊고 new에 잇기    
         self.save_push_log()
         root = self.invisibleRootItem()
@@ -422,11 +423,10 @@ class TreeWidget(QTreeWidget):
         cur_p = cur.parent()
         
         # 0. Node List
-        tar_p_lst, node_lst = [],[]
-        if self.get_node_list(cur_p, tar_p_lst, node_lst):
-            return
-
-        # 1. Create New new
+        node_lst = []
+        if self.get_node_list(cur_p, node_lst): return
+        
+        # 1. Create New
         new_info = []
         if cur.isTop():
             new_info = ["top","New Group","","","","",]
@@ -435,9 +435,12 @@ class TreeWidget(QTreeWidget):
         
         # 2. Connect tar_p & new
         new = TreeWidgetItem(self,cur_p,new_info)
+        ix = cur_p.indexOfChild(new)
+        indp_it = cur_p.takeChild(ix)
+
         #ix, indp_it = self.extract_item(new)
         ix = cur_p.indexOfChild(cur)
-        cur_p.insertChild(ix,new)
+        cur_p.insertChild(ix,indp_it)
         
         for node_it in node_lst:
             # 3. Disconnect tar_p & tar
@@ -455,7 +458,7 @@ class TreeWidget(QTreeWidget):
         
         # 0. Node List
         tar_p_lst, node_lst = [],[]
-        if self.get_node_list(tar_p, tar_p_lst, node_lst):
+        if self.get_node_list(tar_p,node_lst):
             return
 
         # 1. Create New new
@@ -675,7 +678,7 @@ class TreeWidget(QTreeWidget):
             mod = event.keyboardModifiers()
             # node_it list 추출하기
             tar_p_lst, node_lst = [],[]
-            if self.get_node_list(tar_p, tar_p_lst, node_lst):
+            if self.get_node_list(tar_p, node_lst):
                 return
             
             for it in node_lst:
@@ -686,24 +689,13 @@ class TreeWidget(QTreeWidget):
     # 문제 : group,inst가 위계없이 items에 다 들어가는 중. (왜냐하면, group,inst를 구분하는 코드는 없고, text(1)을 기준으로 나누기 때문에) 중복을 제외하고 넘기기
     # n,0 (role은 0으로  고정하고 n은 0~4)
     
-    def get_node_list(self,new_p,tar_p_lst,node_lst):
-        all_lst = []
+    def get_node_list(self,new_p,node_lst):
         items = self.selectedItems()
-        for it in items:
-            all_lst.append(it.text(0))
-            
-        for it in items:
-            if it.p_name not in all_lst:
-                node_lst.append(it)
-
-        if new_p:
-            tar_p_lst.append(new_p.name)
-            new_p = new_p.parent()
-
+        sel_lst = [it.name for it in items]
+        node_lst = [it for it in items if it.p_name not in sel_lst]
         for node_it in node_lst:
-            if node_it.name in tar_p_lst:
+            if node_it.name == new_p.name:
                 return True
-  
         return False
               
     @pyqtSlot(TreeWidgetItem, int)
