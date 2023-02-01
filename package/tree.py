@@ -456,7 +456,7 @@ class TreeWidget(QTreeWidget):
         cur = self.currentItem()
         tar_p = cur.parent()
         
-        # 0. Node List
+        # 0. Node List#
         tar_p_lst, node_lst = [],[]
         if self.get_node_list(tar_p,node_lst):
             return
