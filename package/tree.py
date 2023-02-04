@@ -450,7 +450,7 @@ class TreeWidget(QTreeWidget):
             new.insertChild(ix,node_it)
             self.recur_set_widget(node_it)
         
-    def old_grouping(self,event): # cur위에 추가하고 cur끊고 new에 잇기    
+    def old_grouping(self,event): # cur위에 추가하고 cur끊고 new에 잇기
         self.save_push_log()
         root = self.invisibleRootItem()
         cur = self.currentItem()
