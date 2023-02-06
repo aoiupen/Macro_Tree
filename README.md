@@ -10,10 +10,10 @@
 > #### Undo
 > #### Get Mouse Click Coordinate
 > #### CheckBox
-> #### Group, UnGroup
 
 ## Ing
 > #### Dark Theme
 > #### Add, Copy, Paste
 > #### Execute
 > #### Lock
+> #### Group, UnGroup
