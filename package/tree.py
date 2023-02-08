@@ -22,7 +22,7 @@ class Head(Enum):
     pos = 3
     
 class TreeWidgetItem(QTreeWidgetItem):
-    def __init__(self,tw,parent,row=""):
+    def __init__(self,tw,parent=None,row=""):
         QTreeWidgetItem.__init__(self, parent) # 부모 지정하는 단계
         self.tw = tw
         self.row = row
@@ -437,23 +437,27 @@ class TreeWidget(QTreeWidget):
         new = TreeWidgetItem(self,cur_p,new_info)
         ix = cur_p.indexOfChild(new)
         new = cur_p.takeChild(ix)
+        print(new.parent())
 
         #ix, indp_it = self.extract_item(new) : OK
         ix = cur_p.indexOfChild(cur)
         cur_p.insertChild(ix,new)
-        
+
         for node_it in node_lst:
             # 3. Disconnect tar_p & tar
             #ix, node_it = self.extract_item(node_it)
+
             if node_it.isTop():
-                ix = self.indexOfTopLevelItem((node_it))
+                ix = self.indexOfTopLevelItem(node_it)
                 node_it = self.takeTopLevelItem(ix)
             else:
                 ix = node_it.parent().indexOfChild(node_it)
                 node_it = node_it.parent().takeChild(ix)
+            
             # 4. Connect new & tar
             # it.child(ix)
-            new.insertChild(ix,node_it)
+            new.addChild(node_it)
+            new.setExpanded(True)
             self.recur_set_widget(node_it)
     #    
     def old_grouping(self,event): # cur위에 추가하고 cur끊고 new에 잇기
@@ -698,7 +702,10 @@ class TreeWidget(QTreeWidget):
     def get_node_list(self,new_p,node_lst):
         items = self.selectedItems()
         sel_lst = [it.name for it in items]
-        node_lst = [it for it in items if it.p_name not in sel_lst]
+        for it in items:
+            if it.p_name not in sel_lst:
+                node_lst.append(it)
+
         for node_it in node_lst:
             if node_it.name == new_p.name:
                 return True
