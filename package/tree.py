@@ -416,7 +416,7 @@ class TreeWidget(QTreeWidget):
     
     # 자료구조 heap으로 교체 예정
     # Grouping : 
-    def grouping(self,event): # cur위에 추가하고 cur끊고 new에 잇기    
+    def grouping(self,event): # cur위에 추가하고 cur끊고 new에 잇기 
         self.save_push_log()
         root = self.invisibleRootItem()
         cur = self.currentItem()
@@ -436,15 +436,21 @@ class TreeWidget(QTreeWidget):
         # 2. Connect tar_p & new
         new = TreeWidgetItem(self,cur_p,new_info)
         ix = cur_p.indexOfChild(new)
-        indp_it = cur_p.takeChild(ix)
+        new = cur_p.takeChild(ix)
 
-        #ix, indp_it = self.extract_item(new)
+        #ix, indp_it = self.extract_item(new) : OK
         ix = cur_p.indexOfChild(cur)
-        cur_p.insertChild(ix,indp_it)
+        cur_p.insertChild(ix,new)
         
         for node_it in node_lst:
             # 3. Disconnect tar_p & tar
-            ix, node_it = self.extract_item(node_it)
+            #ix, node_it = self.extract_item(node_it)
+            if node_it.isTop():
+                ix = self.indexOfTopLevelItem((node_it))
+                node_it = self.takeTopLevelItem(ix)
+            else:
+                ix = node_it.parent().indexOfChild(node_it)
+                node_it = node_it.parent().takeChild(ix)
             # 4. Connect new & tar
             # it.child(ix)
             new.insertChild(ix,node_it)
