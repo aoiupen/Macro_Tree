@@ -434,14 +434,22 @@ class TreeWidget(QTreeWidget):
             new_info = [cur.p_name,"New Group","","","","",]
         
         # 2. Connect tar_p & new
+        ix = 0
         new = TreeWidgetItem(self,cur_p,new_info)
-        ix = cur_p.indexOfChild(new)
-        new = cur_p.takeChild(ix)
-        print(new.parent())
-
-        #ix, indp_it = self.extract_item(new) : OK
-        ix = cur_p.indexOfChild(cur)
-        cur_p.insertChild(ix,new)
+        if isinstance(cur_p,NoneType):
+            pass
+        else:
+            ix = cur_p.indexOfChild(new)
+            new = cur_p.takeChild(ix)
+            print(new.parent())
+        
+        if isinstance(cur_p,NoneType):
+            ix = self.indexOfTopLevelItem(cur)
+            self.insertTopLevelItem(ix,new)
+        else:
+            #ix, indp_it = self.extract_item(new) : OK
+            ix = cur_p.indexOfChild(cur)
+            cur_p.insertChild(ix,new)
 
         for node_it in node_lst:
             # 3. Disconnect tar_p & tar
@@ -706,9 +714,13 @@ class TreeWidget(QTreeWidget):
             if it.p_name not in sel_lst:
                 node_lst.append(it)
 
-        for node_it in node_lst:
-            if node_it.name == new_p.name:
-                return True
+        # new_p == nonetype
+        if isinstance(new_p,NoneType):
+            return False
+        else:
+            for node_it in node_lst:
+                if node_it.name == new_p.name:
+                    return True
         return False
               
     @pyqtSlot(TreeWidgetItem, int)
