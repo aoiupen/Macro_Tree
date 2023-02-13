@@ -55,11 +55,12 @@ class TreeWidgetItem(QTreeWidgetItem):
             tw.setItemWidget(self, 1, self.typ_btn)
             tw.setItemWidget(self, 2, self.act_cb)
             
-            pos = self.row[4] + "," + self.row[5]
+            pos = self.row[4] + ","
             if self.row[2] == "M":
                 self.pos_cp = cp.PosWidget(pos)
                 self.pos_cp.btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
                 tw.setItemWidget(self, 3, self.pos_cp)
+                
     def isnew(self):
         return True if self.row[2] == "" else False
     
@@ -91,7 +92,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.act_cb.setCurrentIndex(0)
             
         if  typ_cur == "K":
-            self.pos_cp = cp.PosWidget("0.0")
+            self.pos_cp = cp.PosWidget("0,0")
             self.pos_cp.btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
             self.tw.setItemWidget(self,Head.pos.value,self.pos_cp) # typ을 M로 변경시 - pos 연동 생성
             self.typ_btn.setText("M")

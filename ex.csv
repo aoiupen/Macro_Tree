@@ -1,7 +1,7 @@
 top,GroupG,,,,
 GroupG,SaveImg,M,Click,"259,12"
 GroupG,FileName,M,Click,"318,15"
-GroupG,Content,K,Copy,C:\abc\abcd
+GroupG,Content,K,Copy,"C:\abc\abcd"
 top,GroupB,,,,
 GroupB,gr_b1,,,
 gr_b1,SaveImg,M,Click,"997,360"
