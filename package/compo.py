@@ -64,7 +64,7 @@ class ActCb(QComboBox):
         for a in act_lst:
             self.addItem(a)
         self.setCurrentIndex(ix)
-        #self.setStyleSheet("background-color: rgb(250,250,250);")
+        ##self.setStyleSheet("background-color: rgb(250,250,250);")
         self.currentIndexChanged.connect(self.run)
         
     def run(self):
