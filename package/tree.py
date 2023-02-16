@@ -50,8 +50,8 @@ class TreeWidgetItem(QTreeWidgetItem):
             
             typ_txt,act_txt = self.row[2:4]
             #self.key_tog_btn = cp.ActCb(self.tw,typ_txt,act_txt)
-            self.key_tog_btn = cp.KeyTogBtn(self,typ_txt)
-            self.mouse_tog_btn = cp.MouseTogBtn(self,typ_txt)
+            self.key_tog_btn = cp.KeyTogBtn(self,typ_txt,self.row[2])
+            self.mouse_tog_btn = cp.MouseTogBtn(self,typ_txt,self.row[2])
             self.key_tog_btn.signal.connect(lambda:self.change_key())
             self.mouse_tog_btn.signal.connect(lambda:self.change_mouse())
             tw.setItemWidget(self, 1, self.mouse_tog_btn)
@@ -214,12 +214,13 @@ class TreeWidget(QTreeWidget):
             top_it = self.topLevelItem(i)
             if top_it:
                 if top_it.mouse_tog_btn:
+                    three = ""
                     if top_it.mouse_tog_btn.text() == "M":
                         three = top_it.pos_cp.coor.text()
                     elif  top_it.mouse_tog_btn.text() == "K":
                         three = top_it.text(3)
                     self.log_txt += ','.join(["top",top_it.text(0),top_it.mouse_tog_btn.text()
-                                              ,top_it.key_tog_btn.currentText(),three,""])
+                                              ,top_it.key_tog_btn.cur_typ,three,""])
                 else:
                     self.log_txt += ','.join(["top",top_it.text(0),"","","",""])
                 self.log_txt += '\n'

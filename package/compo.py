@@ -23,12 +23,16 @@ class RegBtn(QPushButton):
 
 class MouseTogBtn(QPushButton):
     signal = pyqtSignal()
-    def __init__(self,parent,typ):
+    def __init__(self,parent,typ,cur):
         QPushButton.__init__(self)
         self.setFixedWidth(30)
         self.prnt = parent
         #self.setText(typ)
         self.cur_typ = "C1"
+        if cur:
+            self.cur_typ = cur
+            self.setStyleSheet("background-color: #B4EEB4")
+            
         self.clicked.connect(self.run)
         if typ == "C1":
             self.setIcon(QIcon("src/cursor.png"))
@@ -40,12 +44,15 @@ class MouseTogBtn(QPushButton):
 
 class KeyTogBtn(QPushButton):
     signal = pyqtSignal()
-    def __init__(self,parent,typ):
+    def __init__(self,parent,typ,cur):
         QPushButton.__init__(self)
         self.setFixedWidth(30)
         self.prnt = parent
         self.cur_typ = "T"
-        #self.setText(typ)
+        if cur:
+            self.cur_typ = cur
+            self.setStyleSheet("background-color: #B4EEB4")
+        
         self.clicked.connect(self.run)
         if typ == "C":
             self.setIcon(QIcon("src/copy.png"))
