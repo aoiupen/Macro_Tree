@@ -29,7 +29,7 @@ class UI():
         #shortcut
         self.act_list = []
         self.act_info_list = [['Save','Ctrl+S','Save application',tw.save],
-                         ['Load','Ctrl+O','Load application',tw.load],
+                         ['Load','Ctrl+L','Load application',tw.load],
                          #['Execute','','Execute application',tw.exec_inst],
                          ['Exit','Ctrl+Q','Exit application',qApp.quit],
                          ['Dark','Ctrl+D','Dark Theme',lambda:self.change_them(self.dark,self.app)]]

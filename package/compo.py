@@ -21,6 +21,40 @@ class RegBtn(QPushButton):
         self.setFixedSize(QSize(50,20))
         self.setStyleSheet("color:red")
 
+class MouseTogBtn(QPushButton):
+    signal = pyqtSignal()
+    def __init__(self,parent,typ):
+        QPushButton.__init__(self)
+        self.prnt = parent
+        self.setText(typ)
+        self.clicked.connect(self.run)
+        if typ == "C1":
+            self.setIcon(QIcon("src/cursor.png"))
+        else:
+            self.setIcon(QIcon("src/cursor2.png"))
+
+    def run(self):
+        self.signal.emit()
+
+class KeyTogBtn(QPushButton):
+    signal = pyqtSignal()
+    def __init__(self,parent,typ):
+        QPushButton.__init__(self)
+        self.prnt = parent
+        self.setText(typ)
+        self.clicked.connect(self.run)
+        if typ == "C":
+            self.setIcon(QIcon("src/copy.png"))
+        elif typ == "P":
+            self.setIcon(QIcon("src/paste.png"))
+        elif typ == "A":
+            self.setIcon(QIcon("src/all.png"))
+        else:
+            self.setIcon(QIcon("src/key.png"))
+
+    def run(self):
+        self.signal.emit()
+
 class TypBtn(QPushButton):
     signal = pyqtSignal()
     def __init__(self,parent,typ):
@@ -35,25 +69,6 @@ class TypBtn(QPushButton):
 
     def run(self):
         self.signal.emit()
-
-class ActBtnSet(QObject):
-    def __init__(self,tw,typ,act):
-        self.tw = tw
-        self.l_btn = ActBtn(self.tw,act)
-        self.r_btn = ActBtn(self.tw,act)
-        return
-
-class ActBtn(QPushButton):
-    signal = pyqtSignal()
-    def __init__(self,tw,typ,act):
-        QPushButton.__init__(self)
-        self.setText(act)
-        self.clicked.connect(self.run)
-        if act == "M":
-            self.setIcon(QIcon("src/cursor.png"))
-        else:
-            self.setIcon(QIcon("src/key.png"))
-        return
 
 class ActCb(QComboBox):
     signal = pyqtSignal()

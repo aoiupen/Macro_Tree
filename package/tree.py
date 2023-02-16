@@ -368,12 +368,9 @@ class TreeWidget(QTreeWidget):
         ungroup_act.triggered.connect(lambda:self.ungrouping(event))
         group_act = QAction('Group',self)
         group_act.triggered.connect(lambda:self.grouping(event))
-        sel_exe = QAction('Execute',self)
-        sel_exe.triggered.connect(lambda:self.excute_sel(event))
         self.menu.addAction(delete_act)
         self.menu.addAction(ungroup_act)
         self.menu.addAction(group_act)
-        self.menu.addAction(sel_exe)
         self.menu.popup(QCursor.pos())
     
     def exec_insts(self, inst_lst):      
