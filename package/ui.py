@@ -4,7 +4,7 @@ from PyQt5.QtGui import *
 from package import tree as tr
 import itertools
 from enum import Enum
-        
+
 class ShortC(Enum):
     name = 0
     key = 1
@@ -33,6 +33,7 @@ class UI():
                          #['Execute','','Execute application',tw.exec_inst],
                          ['Exit','Ctrl+Q','Exit application',qApp.quit],
                          ['Dark','Ctrl+D','Dark Theme',lambda:self.change_them(self.dark,self.app)]]
+        
         for act_info in self.act_info_list:
             act = QAction(act_info[ShortC.name.value],self.win)
             act.setShortcut(act_info[ShortC.key.value])
@@ -65,7 +66,7 @@ class UI():
         col_num = 5
         self.tw = tr.TreeWidget(self)
         self.tw.setColumnCount(col_num)
-        self.tw.setHeaderLabels(["Name","Type","Act","Value",""])
+        self.tw.setHeaderLabels(["Name","M","K","Value",""])
         self.tw.setColumnWidth(1,10)
         self.ctr_lay.addWidget(self.tw)
         

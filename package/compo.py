@@ -25,8 +25,10 @@ class MouseTogBtn(QPushButton):
     signal = pyqtSignal()
     def __init__(self,parent,typ):
         QPushButton.__init__(self)
+        self.setFixedWidth(30)
         self.prnt = parent
-        self.setText(typ)
+        #self.setText(typ)
+        self.cur_typ = "C1"
         self.clicked.connect(self.run)
         if typ == "C1":
             self.setIcon(QIcon("src/cursor.png"))
@@ -40,8 +42,10 @@ class KeyTogBtn(QPushButton):
     signal = pyqtSignal()
     def __init__(self,parent,typ):
         QPushButton.__init__(self)
+        self.setFixedWidth(30)
         self.prnt = parent
-        self.setText(typ)
+        self.cur_typ = "T"
+        #self.setText(typ)
         self.clicked.connect(self.run)
         if typ == "C":
             self.setIcon(QIcon("src/copy.png"))
@@ -95,9 +99,9 @@ class PosWidget(QWidget):
         self.widget_lay.setSpacing(0)
         self.coor = QLineEdit(pos.rstrip(","),self)
         self.coor.setFixedWidth(80)
-        self.btn = cp.PosBtn("pos")
+        self.btn = cp.PosBtn("")
         self.btn.setIcon(QIcon("src/coor.png"))
-        self.btn.setFixedWidth(50)
+        self.btn.setFixedWidth(30)
         self.widget_lay.addWidget(self.coor)
         self.widget_lay.addWidget(self.btn)
         self.btn.clicked.connect(self.run)
