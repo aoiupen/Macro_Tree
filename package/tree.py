@@ -230,47 +230,45 @@ class TreeWidget(QTreeWidget):
         #print(self.log_txt)
         return self.log_txt
     
-    def load_log(self,tr_str):
+    def load_log(self, tr_str):
         self.disconnect()
         self.clear()
-        reader = list(tr_str.split('\n'))
-        for i,row in enumerate(reader):
+        reader = tr_str.split('\n')
+        for i, row in enumerate(reader):
             row = row.split(',')
             if len(row) == 7:
-                row[4] = (row[4]+","+row[5]).strip("\"")
+                row[4] = (row[4] + "," + row[5]).strip("\"")
                 row[5] = ""
                 row.pop()
             reader[i] = row
-        self.insts=[]
-        
-        for idx,row in enumerate(reader):
+        self.insts = []
+
+        for row in reader:
             parent = ""
             parent_str = row[0]
             name = row[1]
             if parent_str == 'top':
                 parent = self
-                tw_it = TreeWidgetItem(self,parent,row)
+                tw_it = TreeWidgetItem(self, parent, row)
                 tw_it.p_name = 'top'
-                tw_it.setText(0,name)
+                tw_it.setText(0, name)
             else:
                 for inst in self.insts:
-                    if inst.text(0) == parent_str:   
-                        parent = inst                        
-                        tw_it = TreeWidgetItem(self,parent,row)
+                    if inst.text(0) == parent_str:
+                        parent = inst
+                        tw_it = TreeWidgetItem(self, parent, row)
                         tw_it.p_name = parent.text(0)
-                        tw_it.setText(0,name)
+                        tw_it.setText(0, name)
                         break
-            
-            #parent에 string이 들어가면 안되고,이 이름을 가지는 widget을 불러와야한다
-            #column에 widget이 들어가면 이 코드가 의미가 없을 듯
-            
-            if len(row) >2:
+
+            if len(row) > 2:
                 con = row[5]
-                tw_it.setText(3,con)    
+                tw_it.setText(3, con)
             self.insts.append(tw_it)
         self.itemChanged.connect(self.change_check)
 
     def load(self, mem=""):
+        print(111)
         self.inst_list = []
         self.disconnect()
         self.clear()
