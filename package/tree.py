@@ -230,54 +230,57 @@ class TreeWidget(QTreeWidget):
         #print(self.log_txt)
         return self.log_txt
     
-    def load_log(self,tr_str):
+    def load_log(self, tr_str):
         self.disconnect()
         self.clear()
-        reader = list(tr_str.split('\n'))
-        for i,row in enumerate(reader):
+        reader = tr_str.split('\n')
+        for i, row in enumerate(reader):
             row = row.split(',')
             if len(row) == 7:
-                row[4] = (row[4]+","+row[5]).strip("\"")
+                row[4] = (row[4] + "," + row[5]).strip("\"")
                 row[5] = ""
                 row.pop()
             reader[i] = row
-        self.insts=[]
-        
-        for idx,row in enumerate(reader):
+        self.insts = []
+
+        for row in reader:
             parent = ""
             parent_str = row[0]
             name = row[1]
             if parent_str == 'top':
                 parent = self
-                tw_it = TreeWidgetItem(self,parent,row)
+                tw_it = TreeWidgetItem(self, parent, row)
                 tw_it.p_name = 'top'
-                tw_it.setText(0,name)
+                tw_it.setText(0, name)
             else:
                 for inst in self.insts:
-                    if inst.text(0) == parent_str:   
-                        parent = inst                        
-                        tw_it = TreeWidgetItem(self,parent,row)
+                    if inst.text(0) == parent_str:
+                        parent = inst
+                        tw_it = TreeWidgetItem(self, parent, row)
                         tw_it.p_name = parent.text(0)
-                        tw_it.setText(0,name)
+                        tw_it.setText(0, name)
                         break
-            
-            #parent에 string이 들어가면 안되고,이 이름을 가지는 widget을 불러와야한다
-            #column에 widget이 들어가면 이 코드가 의미가 없을 듯
-            
-            if len(row) >2:
+
+            if len(row) > 2:
                 con = row[5]
-                tw_it.setText(3,con)    
+                tw_it.setText(3, con)
             self.insts.append(tw_it)
         self.itemChanged.connect(self.change_check)
 
+<<<<<<< HEAD
     def load(self,mem=""):
         print(112)
+=======
+    def load(self, mem=""):
+        print(111)
+>>>>>>> master
         self.inst_list = []
         self.disconnect()
         self.clear()
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         if mem:
+<<<<<<< HEAD
             mem_list = mem.split("\n")
             for ix,m in enumerate(mem_list):
                 mem_list[ix] = m.split(",")
@@ -307,36 +310,33 @@ class TreeWidget(QTreeWidget):
                     if row[2] == "K":
                         tw_it.setText(3,row[4])    
                 self.inst_list.append(tw_it)
+=======
+            mem_list = [m.split(",") for m in mem.split("\n")]
+>>>>>>> master
         else:
             with open('ex.csv', 'rt') as f:
-                reader = csv.reader(f)
-                for _,row in enumerate(reader):
-                    p = ""
-                    p_str = row[0]
-                    name = row[1]
-                    if p_str == 'top':
-                        tw_it = tr.TreeWidgetItem(self,self,row)
-                        tw_it.p_name = 'top'
-                        tw_it.setText(0,name) # 없애보고 해보기
-                    else:
-                        for inst in self.inst_list:
-                            if inst.text(0) == p_str:
-                                p = inst
-                                tw_it = tr.TreeWidgetItem(self,p,row)
-                                tw_it.p_name = p.text(0)
-                                tw_it.setText(0,name) # 없애보고 해보기
-                                break
-                        
-                    # parent에 string이 들어가면 안되고,이 이름을 가지는 widget을 불러와야한다
-                    # column에 widget이 들어가면 이 코드가 의미가 없을 듯
-                    
-                    if len(row) >2:
-                        content = row[4]
-                        if row[2] == "K":
-                            tw_it.setText(3,content)       
-                    self.inst_list.append(tw_it)
+                mem_list = list(csv.reader(f))
+        for ix, row in enumerate(mem_list):
+            p = ""
+            p_str = row[0]
+            name = row[1]
+            if p_str == 'top':
+                tw_it = tr.TreeWidgetItem(self, self, row)
+            else:
+                p = next((inst for inst in self.inst_list if inst.text(0) == p_str), None)
+                tw_it = tr.TreeWidgetItem(self, p, row) if p else None
+            if tw_it:
+                tw_it.p_name = p.text(0) if p else 'top'
+                tw_it.set_icon()
+                tw_it.setText(0, name)
+                if len(row) > 2 and row[2] == "K":
+                    tw_it.setText(3, row[4])
+                self.inst_list.append(tw_it)
         self.itemChanged.connect(self.change_check)
-        
+
+        # parent에 string이 들어가면 안되고,이 이름을 가지는 widget을 불러와야한다
+        # column에 widget이 들어가면 이 코드가 의미가 없을 듯
+                        
     def recur_log(self,parent):
         for ix in range(parent.childCount()):
             ch = parent.child(ix)
