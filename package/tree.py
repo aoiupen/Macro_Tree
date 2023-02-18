@@ -271,14 +271,13 @@ class TreeWidget(QTreeWidget):
         self.itemChanged.connect(self.change_check)
 
     def load(self,mem=""):
+        print(112)
         self.inst_list = []
         self.disconnect()
         self.clear()
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         if mem:
-            #print("-"*10)
-            #print(mem)
             mem_list = mem.split("\n")
             for ix,m in enumerate(mem_list):
                 mem_list[ix] = m.split(",")
@@ -295,6 +294,7 @@ class TreeWidget(QTreeWidget):
                     for inst in self.inst_list:
                         if inst.text(0) == p_str:
                             p = inst
+                            print(12121212)
                             tw_it = tr.TreeWidgetItem(self,p,row)
                             tw_it.p_name = p.text(0)
                             tw_it.set_icon()
