@@ -267,80 +267,39 @@ class TreeWidget(QTreeWidget):
             self.insts.append(tw_it)
         self.itemChanged.connect(self.change_check)
 
-<<<<<<< HEAD
     def load(self,mem=""):
         print(112)
-=======
+
     def load(self, mem=""):
-        print(111)
->>>>>>> master
         self.inst_list = []
         self.disconnect()
         self.clear()
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
+
         if mem:
-<<<<<<< HEAD
-            mem_list = mem.split("\n")
-            for ix,m in enumerate(mem_list):
-                mem_list[ix] = m.split(",")
-            for _,row in enumerate(mem_list):
-                p = ""
-                p_str = row[0]
-                name = row[1]
-                if p_str == 'top':
-                    tw_it = tr.TreeWidgetItem(self,self,row)
-                    tw_it.p_name = 'top'
-                    tw_it.set_icon()
-                    tw_it.setText(0,name) # 없애보고 해보기
-                else:
-                    for inst in self.inst_list:
-                        if inst.text(0) == p_str:
-                            p = inst
-                            print(12121212)
-                            tw_it = tr.TreeWidgetItem(self,p,row)
-                            tw_it.p_name = p.text(0)
-                            tw_it.set_icon()
-                            tw_it.setText(0,name) # 없애보고 해보기
-                            break
-                    
-                # parent에 string이 들어가면 안되고,이 이름을 가지는 widget을 불러와야한다
-                # column에 widget이 들어가면 이 코드가 의미가 없을 듯
-                if len(row) >2:
-                    if row[2] == "K":
-                        tw_it.setText(3,row[4])    
-                self.inst_list.append(tw_it)
-=======
             mem_list = [m.split(",") for m in mem.split("\n")]
->>>>>>> master
         else:
             with open('ex.csv', 'rt') as f:
                 mem_list = list(csv.reader(f))
-        for ix, row in enumerate(mem_list):
-            p = ""
-            p_str = row[0]
-            name = row[1]
-            if p_str == 'top':
-                tw_it = tr.TreeWidgetItem(self, self, row)
-            else:
-                p = next((inst for inst in self.inst_list if inst.text(0) == p_str), None)
-                tw_it = tr.TreeWidgetItem(self, p, row) if p else None
-            if tw_it:
-                tw_it.p_name = p.text(0) if p else 'top'
-                tw_it.set_icon()
-                tw_it.setText(0, name)
-                if len(row) > 2 and row[2] == "K":
-                    tw_it.setText(3, row[4])
-                self.inst_list.append(tw_it)
-        self.itemChanged.connect(self.change_check)
 
-        # parent에 string이 들어가면 안되고,이 이름을 가지는 widget을 불러와야한다
-        # column에 widget이 들어가면 이 코드가 의미가 없을 듯
-                        
-    def recur_log(self,parent):
+        for row in mem_list:
+            p_str, name, *rest = row
+            p = next((inst for inst in self.inst_list if inst.text(0) == p_str), None)
+            tw_it = tr.TreeWidgetItem(self, p, row) if p else tr.TreeWidgetItem(self, self, row)
+            tw_it.p_name = p.text(0) if p else 'top'
+            tw_it.set_icon()
+            tw_it.setText(0, name)
+            if len(rest) > 1 and rest[0] == "K":
+                tw_it.setText(3, rest[1])
+            self.inst_list.append(tw_it)
+
+        self.itemChanged.connect(self.change_check)
+               
+    def recur_log(self, parent):
         for ix in range(parent.childCount()):
             ch = parent.child(ix)
-            ch_vals = [ch.text(i) for i in range(self.columnCount())] 
+            ch_vals = [ch.text(i) for i in range(self.columnCount())]
             if ch.mouse_tog_btn:
                 ch_vals[1] = ch.mouse_tog_btn.text()
                 ch_vals[2] = ch.key_tog_btn.text()
@@ -348,13 +307,13 @@ class TreeWidget(QTreeWidget):
                     ch_vals[3] = ch.pos_cp.coor.text()
                 elif ch_vals[1] == "K":
                     ch_vals[3] = ch.text(3)
-                    
-            ch_vals.insert(0,parent.text(0))
-            val_join = ','.join(ch_vals)
+
+            ch_vals.insert(0, parent.text(0))
+            val_join = ",".join(ch_vals) + "\n"
             self.log_txt += val_join
-            self.log_txt += '\n' #추후 widget으로 접근하는 방식도 고려
             if ch.childCount():
                 self.recur_log(ch)
+
     
     def save_push_log(self):
         tr_str = self.save_log()
@@ -366,34 +325,24 @@ class TreeWidget(QTreeWidget):
                     
     def keyPressEvent(self, event):
         root = self.invisibleRootItem()
-        if event.key() == Qt.Key_Delete:  
+        if event.key() == Qt.Key_Delete:
             self.save_push_log()
-            cur_its = self.selectedItems()
-            for cur_it in cur_its:
-                (cur_it.parent() or root).removeChild(cur_it)
+            for item in self.selectedItems():
+                (item.parent() or root).removeChild(item)
         elif event.matches(QKeySequence.Copy):
             self.copy_buf = self.selectedItems()
-            p_lst = []
-            for item in self.copy_buf:
-                p_lst.append(item.p_name)
-            name_lst = []
-            for item in self.copy_buf:
-                name_lst.append(item.text(0))
-            main_lst = []
-            for item in self.copy_buf:
-                if item.p_name not in name_lst:
-                    main_lst.append(item)
-            self.copy_buf = main_lst
+            p_lst = [item.p_name for item in self.copy_buf]
+            name_lst = [item.text(0) for item in self.copy_buf]
+            self.copy_buf = [item for item in self.copy_buf if item.p_name not in name_lst]
         elif event.matches(QKeySequence.Paste):
             self.save_push_log()
-            tar = self.currentItem()
-            if tar.mouse_tog_btn == None: # 다시
-                for it in self.copy_buf:
-                    # QTree->TreeWidgetItem?
-                    new_it = TreeWidgetItem(self,tar)
-                    new_it.pos_cp = it.pos_cp
-                    new_it.key_tog_btn = it.key_tog_btn
-                    new_it.mouse_tog_btn = it.mouse_tog_btn
+            target = self.currentItem()
+            if target.mouse_tog_btn is None:
+                for item in self.copy_buf:
+                    new_item = TreeWidgetItem(self, target)
+                    new_item.pos_cp = item.pos_cp
+                    new_item.key_tog_btn = item.key_tog_btn
+                    new_item.mouse_tog_btn = item.mouse_tog_btn
                 print("Paste")
         elif event.matches(QKeySequence.Undo):
             self.undoStack.undo()
@@ -401,47 +350,47 @@ class TreeWidget(QTreeWidget):
             super().keyPressEvent(event)
             
     def contextMenuEvent(self,event):
-        self.menu = QMenu(self)
-        act_list = []
-        delete_act = QAction('Delete',self)
-        delete_act.triggered.connect(lambda:self.recur_delete(event))
-        ungroup_act = QAction('Ungroup',self)
-        ungroup_act.triggered.connect(lambda:self.ungrouping(event))
-        group_act = QAction('Group',self)
-        group_act.triggered.connect(lambda:self.grouping(event))
-        self.menu.addAction(delete_act)
-        self.menu.addAction(ungroup_act)
-        self.menu.addAction(group_act)
+        self.menu = QMenu(self) # self. 떼도 되나?
+        delete_action = QAction('Delete',self)
+        delete_action.triggered.connect(lambda:self.recur_delete(event))
+        ungroup_action = QAction('Ungroup',self)
+        ungroup_action.triggered.connect(lambda:self.ungroup_selected_items(event))
+        group_action = QAction('Group',self)
+        group_action.triggered.connect(lambda:self.group_selected_items(event))
+        self.menu.addActions([delete_action, ungroup_action, group_action]) # 일일이 add 안해도 됨
         self.menu.popup(QCursor.pos())
     
-    def exec_insts(self, inst_lst):      
-        # inst_list 실행
+    def exec_insts(self, inst_lst):
         for inst in inst_lst:
             typ_cur = inst.mouse_tog_btn.Text()
             act_cur = inst.key_tog_btn.currentText()
+
             if typ_cur == "M":
-                x,y = inst.pos_cp.coor.text().split(',')
+                x, y = map(int, inst.pos_cp.coor.text().split(','))
                 if act_cur == "Click":
-                    pag.click(x=int(x),y=int(y),clicks=1)
+                    pag.click(x=x, y=y, clicks=1)
                 elif act_cur == "Right":
-                    pag.rightClick(x=int(x),y=int(y))
+                    pag.rightClick(x=x, y=y)
                 elif act_cur == "Double":
-                    pag.click(x=int(x),y=int(y),clicks=3,interval=0.1) 
+                    pag.click(x=x, y=y, clicks=3, interval=0.1)
                 elif act_cur == "Drag":
-                    pag.moveTo(x=1639,y=259) # region으로 해야할 듯
-                    pag.dragTo(int(x),int(y),0.2)
+                    pag.moveTo(x=1639, y=259)  # region으로 해야할 듯
+                    pag.dragTo(x, y, 0.2)
                 elif act_cur == "Move":
-                    pag.moveTo(x=int(x),y=int(y))
+                    pag.moveTo(x=x, y=y)
+
             elif typ_cur == "K":
                 if act_cur == "Copy":
                     pag.hotkey('ctrl', 'c')
                 elif act_cur == "Paste":
-                    if inst.text(3):
-                        pag.write(inst.text(3))
+                    text = inst.text(3)
+                    if text:
+                        pag.write(text)
                     else:
                         pag.hotkey('ctrl', 'v')
                 elif act_cur == "Select All":
                     pag.hotkey('ctrl', 'a')
+
                     
     def excute_sel(self,event):
         self.exec_insts(self.selectedItems())
@@ -454,8 +403,8 @@ class TreeWidget(QTreeWidget):
             (item.parent() or root).removeChild(item)
     
     # 자료구조 heap으로 교체 예정
-    # Grouping : 
-    def grouping(self,event): # cur위에 추가하고 cur끊고 new에 잇기 
+    # group_selected_items : 
+    def group_selected_items(self,event): # cur위에 추가하고 cur끊고 new에 잇기 
         self.save_push_log()
         root = self.invisibleRootItem()
         cur = self.currentItem()
@@ -507,7 +456,7 @@ class TreeWidget(QTreeWidget):
             new.setExpanded(True)
             self.recur_set_widget(node_it)
     #    
-    def old_grouping(self,event): # cur위에 추가하고 cur끊고 new에 잇기
+    def old_group_selected_items(self,event): # cur위에 추가하고 cur끊고 new에 잇기
         self.save_push_log()
         root = self.invisibleRootItem()
         cur = self.currentItem()
@@ -538,7 +487,7 @@ class TreeWidget(QTreeWidget):
             self.change_parent(tar_p, indp_it, new, indi)
         
         # 4. Connect new & tar    
-    def ungrouping(self,event): # 가운데 추출 후 양 쪽 잇기
+    def ungroup_selected_items(self,event): # 가운데 추출 후 양 쪽 잇기
         self.save_push_log()
         indi = Indi.md.value
         root = self.invisibleRootItem()
