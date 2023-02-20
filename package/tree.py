@@ -821,13 +821,14 @@ class TreeWidget(QTreeWidget):
     
     def recur_child_exec(self,parent,lst):
         for ix in range(parent.childCount()):
-            ch = parent.child(ix)
-            if ch.checkState(0) == Qt.Checked: # Check 된 것만 돌기
-                if ch.text(1): # type 존재할 때
-                    lst.append(ch)
-                else:
-                    if ch.childCount():
-                        self.recur_child_exec(ch,lst)
+            child = parent.child(ix)
+            if child.checkState(0) != Qt.Checked:
+                continue
+            
+            if child.text(1):  # type exists
+                lst.append(child)
+            elif child.childCount():
+                self.recur_child_exec(child, lst)
                         
             #if event.mimeData().hasFormat(TreeWidget.customMimeType):
             #    encoded = event.mimeData().data(TreeWidget.customMimeType)
