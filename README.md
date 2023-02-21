@@ -17,5 +17,4 @@
 > #### Dark Theme
 > #### Add, Copy, Paste
 > #### Execute
-> #### Lock
 > #### Ctrl+C,V
