@@ -492,12 +492,13 @@ class TreeWidget(QTreeWidget):
         indi = Indi.md.value
         root = self.invisibleRootItem()
         
-        for it in self.selectedItems():
-            # 부모 - 손자 Link (top inst면 실행 X)
-            if not self.extract_and_connect(it):continue
-            # Ungroup된 폴더 삭제
-            if it == self.currentItem():
-                self.extract_item(it)
+        for item in self.selectedItems():
+            # Skip if top inst
+            if not self.extract_and_connect(item):
+                continue
+            # Remove ungrouped folder
+            if item == self.currentItem():
+                self.extract_item(item)
                 
     # custom일경우(나중에 공부). 옆에는 적용되던데 왜지...
     def context_menu(self, pos):
@@ -513,8 +514,9 @@ class TreeWidget(QTreeWidget):
         #action = menu.exec_(self.mapToGlobal(pos))
         #if action == quitAction:
         #    qApp.quit()
-        action = menu.addAction("action")
-        action = menu.addAction(name)
+        menu = QMenu()
+        menu.addAction("action")
+        menu.addAction(name)
         menu.addSeparator()
         action_1 = menu.addAction("Choix 1") # 뒤에 함수 param
         action_2 = menu.addAction("Choix 2")
@@ -675,20 +677,20 @@ class TreeWidget(QTreeWidget):
             self.recur_set_widget(ch)
 
     def treeDropEvent(self, event):
-        indi = QAbstractItemView.dropIndicatorPosition(self)
+        indi = self.dropIndicatorPosition()
         tar = self.itemAt(event.pos())
         tar_p = tar.parent()
         self.save_push_log()
-        
+
         if event.source() == self:
             mod = event.keyboardModifiers()
-            # node_it list 추출하기
-            tar_p_lst, node_lst = [],[]
+            # Extract node_it list
+            tar_p_lst, node_lst = [], []
             if self.get_node_list(tar_p, node_lst):
                 return
-            
-            for it in node_lst:
-                self.change_parent_plus(tar_p, tar, it, indi, mod)
+
+            for item in node_lst:
+                self.change_parent_plus(tar_p, tar, item, indi, mod)
                 event.acceptProposedAction()
             #if (modifiers & Qt.ControlModifier) and (modifiers & Qt.ShiftModifier):
             #    print("Control+Shift")   
@@ -730,24 +732,25 @@ class TreeWidget(QTreeWidget):
                             self.recur_child_exec(t_it,inst_lst)
         self.exec_insts(inst_lst)
         
-    def check_child(self,cur,col):
+    def check_child(self, cur, col):
         if col == 0:
             for num in range(cur.childCount()):
-                cur.child(num).setCheckState(0, Qt.Checked)
-                self.check_child(cur.child(num),col)
+                child = cur.child(num)
+                child.setCheckState(0, Qt.Checked)
+                self.check_child(child, col)
 
-    def uncheck_child(self,cur,col):
+    def uncheck_child(self, cur, col):
         if col == 0:
             for num in range(cur.childCount()):
-                ch = cur.child(num)
-                ch.setCheckState(0, Qt.Unchecked)
-                self.uncheck_child(ch,col)
+                child = cur.child(num)
+                child.setCheckState(0, Qt.Unchecked)
+                self.uncheck_child(child, col)
 
-    def uncheck_parent(self,cur,col):
-        p = cur.parent()
-        if p:
-            p.setCheckState(0, Qt.Unchecked)
-            self.uncheck_parent(p,col)
+    def uncheck_parent(self, cur, col):
+        parent = cur.parent()
+        if parent:
+            parent.setCheckState(0, Qt.Unchecked)
+            self.uncheck_parent(parent, col)
 
     def check_parent(self,cur,col):
         # 추가 조건 : 나와 동료가 full check -> 부모도 check
@@ -783,14 +786,13 @@ class TreeWidget(QTreeWidget):
             # writer.writerow(self.header)
             insts = []
             for ix in range(self.topLevelItemCount()):
-                top_it = self.topLevelItem(ix)
-                if top_it:
-                    insts.append(["top",top_it.text(0),"","","",""])
-                    if top_it.childCount():
-                        self.recur_get_info(insts,top_it)
-            
-            for inst in insts:
-                writer.writerow(inst)
+                top_item = self.topLevelItem(ix)
+                if top_item:
+                    insts.append(["top", top_item.text(0), "", "", "", ""])
+                    if top_item.childCount():
+                        self.recur_get_info(insts, top_item)
+                
+            writer.writerow(insts)
                 
         csvfile.close()
         
@@ -819,13 +821,14 @@ class TreeWidget(QTreeWidget):
     
     def recur_child_exec(self,parent,lst):
         for ix in range(parent.childCount()):
-            ch = parent.child(ix)
-            if ch.checkState(0) == Qt.Checked: # Check 된 것만 돌기
-                if ch.text(1): # type 존재할 때
-                    lst.append(ch)
-                else:
-                    if ch.childCount():
-                        self.recur_child_exec(ch,lst)
+            child = parent.child(ix)
+            if child.checkState(0) != Qt.Checked:
+                continue
+            
+            if child.text(1):  # type exists
+                lst.append(child)
+            elif child.childCount():
+                self.recur_child_exec(child, lst)
                         
             #if event.mimeData().hasFormat(TreeWidget.customMimeType):
             #    encoded = event.mimeData().data(TreeWidget.customMimeType)

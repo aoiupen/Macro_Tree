@@ -1,13 +1,11 @@
 import sys
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from package import ui
+from PyQt5.QtWidgets import QApplication, QMainWindow
+from package.ui import UI
 
 class MainWindow(QMainWindow):
     def __init__(self,app):
         super().__init__()
-        main_ui = ui.UI()
+        main_ui = UI()
         main_ui.setup_ui(self,app)
         
 if __name__ == "__main__":
@@ -15,3 +13,4 @@ if __name__ == "__main__":
     main = MainWindow(app)
     main.show()
     app.exec_()
+    sys.exit(app.exec_())
