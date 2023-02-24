@@ -14,17 +14,22 @@ class Second(QWidget):
         self.res_w = m.width
         self.res_h = m.height
         
-        self.shocut_dict = [('ESC',self.cls_win),('Ctrl+M',self.max_win),('Ctrl+S',self.min_win)]
-        self.shocut_list = []
-        for shocut_d in self.shocut_dict:
-            shocut = QShortcut(QKeySequence(shocut_d[0]), self)
-            shocut.activated.connect(shocut_d[1])
-            self.shocut_list.append(shocut)
+        # Set up shortcuts
+        #self.shortcut = [('ESC', self.cls_win),('Ctrl+M', self.max_win),('Ctrl+S', self.min_win)]
+        self.shortcut_list = []
+        for shortcut_d in self.shortcut_dict:
+            shortcut = QShortcut(QKeySequence(shortcut_d[0]), self)
+            shortcut.activated.connect(shortcut_d[1])
+            self.shortcut_list.append(shortcut)
         
-        self.setGraphicsEffect(QGraphicsOpacityEffect(self))
+        # Set up opacity and background color
+        opacity = QGraphicsOpacityEffect(self)
+        self.setGraphicsEffect(opacity)
         self.setAutoFillBackground(True)
         self.setWindowOpacity(0.1)
         self.setStyleSheet("background-color: white;")
+            
+        # Maximize the window and set the button
         self.max_win()
         self.btn = btn
         
