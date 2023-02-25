@@ -83,7 +83,6 @@ class Second(QWidget):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setPen(QPen(Qt.green, 8, Qt.SolidLine))
-        # db.inst_dict
         painter.drawEllipse(40, 40, 40, 40)
         return
         

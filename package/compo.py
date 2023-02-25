@@ -6,7 +6,7 @@ from package import compo as cp
 
 class PosBtn(QPushButton):
     double_signal = pyqtSignal()
-    def __init__(self,name):
+    def __init__(self, name):
         super().__init__()
         self.setText(name)
         self.clicked.connect(self.run)
@@ -14,7 +14,7 @@ class PosBtn(QPushButton):
         self.double_signal.emit()
 
 class RegBtn(QPushButton):
-    def __init__(self,name):
+    def __init__(self, name):
         super().__init__()
         self.setText(name)
         self.pos_pair = []
@@ -23,28 +23,25 @@ class RegBtn(QPushButton):
 
 class MouseTogBtn(QPushButton):
     signal = pyqtSignal()
-    def __init__(self,parent,typ,cur):
+    def __init__(self, parent, typ, cur):
         QPushButton.__init__(self)
         self.setFixedWidth(30)
         self.prnt = parent
-        #self.setText(typ)
         self.cur_typ = "C1"
         if cur:
             self.cur_typ = cur
             self.setStyleSheet("background-color: #B4EEB4")
             
         self.clicked.connect(self.run)
-        if typ == "C1":
-            self.setIcon(QIcon("src/cursor.png"))
-        else:
-            self.setIcon(QIcon("src/cursor2.png"))
+        icon = QIcon("src/cursor.png" if typ == "C1" else "src/cursor2.png")
+        self.setIcon(icon)
 
     def run(self):
         self.signal.emit()
 
 class KeyTogBtn(QPushButton):
     signal = pyqtSignal()
-    def __init__(self,parent,typ,cur):
+    def __init__(self, parent, typ, cur):
         QPushButton.__init__(self)
         self.setFixedWidth(30)
         self.prnt = parent
@@ -54,41 +51,36 @@ class KeyTogBtn(QPushButton):
             self.setStyleSheet("background-color: #B4EEB4")
         
         self.clicked.connect(self.run)
-        if typ == "C":
-            self.setIcon(QIcon("src/copy.png"))
-        elif typ == "P":
-            self.setIcon(QIcon("src/paste.png"))
-        elif typ == "A":
-            self.setIcon(QIcon("src/all.png"))
-        else:
-            self.setIcon(QIcon("src/key.png"))
+        icon = {
+            "C": "src/copy.png",
+            "P": "src/paste.png",
+            "A": "src/all.png",
+        }.get(typ, "src/key.png")
+        self.setIcon(QIcon(icon))
 
     def run(self):
         self.signal.emit()
 
 class TypBtn(QPushButton):
     signal = pyqtSignal()
-    def __init__(self,parent,typ):
-        QPushButton.__init__(self)
+    def __init__(self, parent, typ):
+        super().__init__(self)
         self.prnt = parent
         self.setText(typ)
         self.clicked.connect(self.run)
-        if typ == "M":
-            self.setIcon(QIcon("src/cursor.png"))
-        else:
-            self.setIcon(QIcon("src/key.png"))
+        icon = "src/cursor.png" if typ == "M" else "src/key.png"
+        self.setIcon(QIcon(icon))
 
     def run(self):
         self.signal.emit()
 
 class ActCb(QComboBox):
     signal = pyqtSignal()
-    def __init__(self,tw,typ,act):
+    def __init__(self, tw, typ, act):
         QComboBox.__init__(self)
         act_lst = tw.act_items[typ]
         ix = act_lst.index(act)
-        for a in act_lst:
-            self.addItem(a)
+        self.addItems(act_lst) # remember this way!
         self.setCurrentIndex(ix)
         ##self.setStyleSheet("background-color: rgb(250,250,250);")
         self.currentIndexChanged.connect(self.run)
@@ -98,9 +90,8 @@ class ActCb(QComboBox):
 
 class PosWidget(QWidget):
     signal = pyqtSignal()
-    def __init__(self,pos):
+    def __init__(self, pos):
         QWidget.__init__(self)
-        self.minimumSize().height()
         self.widget_lay = QHBoxLayout(self)
         self.widget_lay.setContentsMargins(0,0,0,0)
         self.widget_lay.setSpacing(0)
@@ -117,6 +108,6 @@ class PosWidget(QWidget):
         self.signal.emit()
 
     def get_pos(self):
-        self.second = ps.Second(self,self.btn)
+        self.second = ps.Second(self, self. btn)
         self.second.show()
     
