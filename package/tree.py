@@ -163,6 +163,7 @@ class TreeUndoCommand(QUndoCommand):
         ix = self.stack.index()
         cmd = self.stack.command(ix-1)
         if not isinstance(cmd,NoneType):
+            print(cmd.tr_str)
             self.tree.load(cmd.tr_str)
         pass
 
@@ -266,9 +267,6 @@ class TreeWidget(QTreeWidget):
                 tw_it.setText(3, con)
             self.insts.append(tw_it)
         self.itemChanged.connect(self.change_check)
-
-    def load(self,mem=""):
-        print(112)
 
     def load(self, mem=""):
         self.inst_list = []

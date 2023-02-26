@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from package.ui import UI
-
+#
 class MainWindow(QMainWindow):
     def __init__(self,app):
         super().__init__()
