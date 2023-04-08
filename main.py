@@ -5,8 +5,7 @@ from package.ui import UI
 class MainWindow(QMainWindow):
     def __init__(self,app):
         super().__init__()
-        main_ui = UI()
-        main_ui.setup_ui(self,app)
+        main_ui = UI(self,app)
         
 if __name__ == "__main__":
     app = QApplication(sys.argv)
