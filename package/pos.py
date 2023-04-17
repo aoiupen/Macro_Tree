@@ -15,9 +15,9 @@ class Second(QWidget):
         self.res_h = m.height
         
         # Set up shortcuts
-        #self.shortcut = [('ESC', self.cls_win),('Ctrl+M', self.max_win),('Ctrl+S', self.min_win)]
+        self.shortcut = [('ESC', self.cls_win),('Ctrl+M', self.max_win),('Ctrl+S', self.min_win)]
         self.shortcut_list = []
-        for shortcut_d in self.shortcut_dict:
+        for shortcut_d in self.shortcut:
             shortcut = QShortcut(QKeySequence(shortcut_d[0]), self)
             shortcut.activated.connect(shortcut_d[1])
             self.shortcut_list.append(shortcut)

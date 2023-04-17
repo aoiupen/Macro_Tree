@@ -28,7 +28,7 @@ class MouseTogBtn(QPushButton):
         self.setFixedWidth(30)
         self.prnt = parent
         self.cur_typ = "C1"
-        if cur:
+        if cur == "C1":
             self.cur_typ = cur
             self.setStyleSheet("background-color: #B4EEB4")
             
@@ -46,7 +46,8 @@ class KeyTogBtn(QPushButton):
         self.setFixedWidth(30)
         self.prnt = parent
         self.cur_typ = "T"
-        if cur:
+        if cur == "C":
+            print(cur)
             self.cur_typ = cur
             self.setStyleSheet("background-color: #B4EEB4")
         
@@ -102,11 +103,8 @@ class PosWidget(QWidget):
         self.btn.setFixedWidth(30)
         self.widget_lay.addWidget(self.coor)
         self.widget_lay.addWidget(self.btn)
-        self.btn.clicked.connect(self.run)
-
-    def run(self):
-        self.signal.emit()
-
+        self.btn.clicked.connect(lambda ignore,f=self.get_pos:f())
+    
     def get_pos(self):
         self.second = ps.Second(self, self. btn)
         self.second.show()

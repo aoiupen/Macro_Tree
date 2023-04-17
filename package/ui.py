@@ -11,7 +11,6 @@ class UI():
         self.setup_ctr()
         self.setup_tree()
         self.setup_menubar(self.tw)
-        self.dark = DarkTheme(self.app) # 추후 정리
         self.tw.load()
         
     def setup_win(self,Mainwindow,app):
@@ -29,7 +28,7 @@ class UI():
         col_num = 5 # ui_prefer 3
         self.tw = tr.TreeWidget(self)
         self.tw.setColumnCount(col_num)
-        self.tw.setHeaderLabels(["Name","Mouse","Key","Value",""]) # ui_prefer 4
+        self.tw.setHeaderLabels(["Name","M","K","Value",""]) # ui_prefer 4
         self.tw.setColumnWidth(1,10) # ui_prefer 5
         self.ctr_lay.addWidget(self.tw)
 
@@ -48,5 +47,5 @@ class UI():
         for file_act_info in self.file_act_info_list:
             file_act = QAction(file_act_info[0],self.win)
             file_act.setShortcut(file_act_info[1])
-            file_act.triggered.connect(file_act_info[3])
+            file_act.triggered.connect(file_act_info[2])
             self.menubar_file.addAction(file_act)

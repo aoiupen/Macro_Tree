@@ -26,57 +26,57 @@ class TreeWidgetItem(QTreeWidgetItem):
         QTreeWidgetItem.__init__(self, parent) # 부모 지정하는 단계
         self.tw = tw
         self.row = row
-        self.p_name = row[0]
-        self.name = row[1]
+        self.p_name,self.name = self.row[0:2]
+        self.typ,self.act = self.row[2:4]
+        self.pos = self.row[4]
+
         self.tog_num = "M"
         self.mouse_tog_btn = None
         self.key_tog_btn = None
         self.pos_cp = None
-        self.setText(0,self.name)
+        
         #if len(self.row)>2: #그룹이 아닐 경우
+        self.setText(0,self.name)
         self.set_widget(self.tw)
         self.set_icon()
-
+        
         self.setFlags(self.flags()|Qt.ItemIsEditable) #editable
         self.setCheckState(0,Qt.Checked) #col,state
         self.setExpanded(True)
         
     #group을 지웠을 때 child가 윗계층으로 올라가기
     def set_widget(self,tw):
-        if self.row[2]:
+        if self.typ:
             # ~ : 가능
             # ^ : 불가능
             self.setFlags(self.flags() ^ Qt.ItemIsDropEnabled)
             
-            typ_txt,act_txt = self.row[2:4]
             #self.key_tog_btn = cp.ActCb(self.tw,typ_txt,act_txt)
-            self.key_tog_btn = cp.KeyTogBtn(self,typ_txt,self.row[2])
-            self.mouse_tog_btn = cp.MouseTogBtn(self,typ_txt,self.row[2])
-            self.key_tog_btn.signal.connect(lambda:self.change_key())
-            self.mouse_tog_btn.signal.connect(lambda:self.change_mouse())
+            self.key_tog_btn = cp.KeyTogBtn(self,self.typ,self.typ)
+            self.mouse_tog_btn = cp.MouseTogBtn(self,self.typ,self.typ)
+            self.key_tog_btn.signal.connect(lambda:self.toggle_typ_key())
+            self.mouse_tog_btn.signal.connect(lambda:self.toggle_typ_mouse())
             tw.setItemWidget(self, 1, self.mouse_tog_btn)
             tw.setItemWidget(self, 2, self.key_tog_btn)
-            
-            pos = self.row[4] + ","
-            if self.row[2] == "C1" or self.row[2] == "C2":
-                self.pos_cp = cp.PosWidget(pos)
-                self.pos_cp.btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
+   
+            if "C1" in self.typ or "C2" in self.typ: #23_04_18 "C" 바꿔야함
+                self.pos_cp = cp.PosWidget(self.pos)
                 tw.setItemWidget(self, 3, self.pos_cp)
                 
-    def isnew(self):
-        return True if self.row[2] == "" else False
+    def isGroup(self):
+        return True if self.typ == "" else False
     
     def isTop(self):
         return True if isinstance(self.parent(),NoneType) else False
         
     def set_icon(self):
-        if self.isnew():
-            self.setIcon(0,QIcon("src/bag.png"))
-        else:
-            self.setIcon(0,QIcon("src/inst.png"))   
-                   
-    def change_key(self):
-        #tog키 카운트
+        icon_imgs = ["src/bag.png","src/inst.png"]
+        self.setIcon(0,QIcon(icon_imgs[self.isGroup()]))
+        
+    #23_04_18               
+    def toggle_typ_key(self):
+        #tog키 카운트 (순환구조로 바꾸기)
+        #cnt를 저장해야함
         if self.tog_num == "M":
             pass
         else:
@@ -109,7 +109,7 @@ class TreeWidgetItem(QTreeWidgetItem):
      
     #signal의 class가 qobject를 상속할 때만 @pyqtSlot()을 달아주고, 아니면 달지 않는다
     #https://stackoverflow.com/questions/40325953/why-do-i-need-to-decorate-connected-slots-with-pyqtslot/40330912#40330912       
-    def change_mouse(self):
+    def toggle_typ_mouse(self):
         #self.key_tog_btn.clear()
         if self.tog_num == "K":
             pass
@@ -122,23 +122,19 @@ class TreeWidgetItem(QTreeWidgetItem):
             #for item in self.tw.act_items[new_typ]:
             #    self.key_tog_btn.addItem(item)
             #self.key_tog_btn.setCurrentIndex(0)
-                
-        if  self.mouse_tog_btn.cur_typ == "C1":
+        if "C" in self.mouse_tog_btn.cur_typ:
             self.pos_cp = cp.PosWidget("0,0")
             self.pos_cp.btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
             self.tw.setItemWidget(self,Head.pos.value,self.pos_cp) # typ을 M로 변경시 - pos 연동 생성
-            #self.mouse_tog_btn.setText("C2")
-            self.mouse_tog_btn.setIcon(QIcon("src/cursor.png"))
-        elif self.mouse_tog_btn.cur_typ == "C2":
-            self.pos_cp = cp.PosWidget("0,0")
-            self.pos_cp.btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
-            self.tw.setItemWidget(self,Head.pos.value,self.pos_cp) # typ을 M로 변경시 - pos 연동 생성
-            #self.mouse_tog_btn.setText("C2")
-            self.mouse_tog_btn.setIcon(QIcon("src/cursor2.png"))
+            if self.mouse_tog_btn.cur_typ == "C1":
+                self.mouse_tog_btn.setIcon(QIcon("src/cursor.png"))                        
+            elif self.mouse_tog_btn.cur_typ == "C2":
+                self.mouse_tog_btn.setIcon(QIcon("src/cursor2.png"))
                 
         self.tog_num = "M"
         self.mouse_tog_btn.setStyleSheet("background-color: #B4EEB4")
         self.key_tog_btn.setStyleSheet("background-color: light gray")
+        
         self.tw.save_push_log()
         self.tw.disconnect()        
         self.tw.itemChanged.connect(self.tw.change_check) # typ을 key로 변경시 - pos 연동 삭제
@@ -537,7 +533,7 @@ class TreeWidget(QTreeWidget):
         new_p = tar.parent()
         indi = Indi.md.value
         if indi == Indi.md.value:
-            if tar.isnew():
+            if tar.isGroup():
                 self.change_parent(tar,tar,item,Indi.md.value)
             else:
                 return
@@ -547,12 +543,12 @@ class TreeWidget(QTreeWidget):
             else:
                 self.change_parent(new_p,tar,item,Indi.md.value)
         # connect 잘 해줘야
-        # item.mouse_tog_btn.signal.connect(lambda:item.change_mouse())
+        # item.mouse_tog_btn.signal.connect(lambda:item.toggle_typ_mouse())
         # 아이템이 그룹일 때
         # - M일때/K일때
         # 아이템이 명령일 떄
         # -Top일 때/아닐 때
-        #if self.isnew(item):
+        #if self.isGroup(item):
         #    item.mouse_tog_btn = ps.TypBtn(self,item.text(1))
         #    item.key_tog_btn = ps.ActCb(self,item.text(1),item.text(2))
         #    self.setItemWidget(item, 1, item.mouse_tog_btn)
@@ -564,7 +560,7 @@ class TreeWidget(QTreeWidget):
         #        # 추후 class init할 때 connect 하도록 수정할 필요있음
         #        item.pos_cp.btn.clicked.connect(lambda ignore,f=item.pos_cp.get_pos:f())                  
         #        self.setItemWidget(item, 3, item.pos_cp)
-        #    item.mouse_tog_btn.signal.connect(lambda:item.change_mouse())
+        #    item.mouse_tog_btn.signal.connect(lambda:item.toggle_typ_mouse())
         #else:
         #    item.p = tar
         #    if self.isTop(item):
@@ -583,7 +579,7 @@ class TreeWidget(QTreeWidget):
             
     def change_parent_plus(self, tar_p, tar, it, indi,mod=""):
         if indi == Indi.md.value:
-            if tar.isnew():
+            if tar.isGroup():
                 self.change_parent(tar,tar,it,indi)
             else:
                 return
@@ -597,7 +593,7 @@ class TreeWidget(QTreeWidget):
     
     def extract_and_connect(self,it):
         indi = Indi.dw.value
-        if it.isnew():
+        if it.isGroup():
             for ix in range(it.childCount()):
                 it_ch = it.child(0) # change parent에서 takechild 수행하면서 child가 삭제되므로 0으로 받기
                 it_p = it.parent()

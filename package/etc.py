@@ -56,7 +56,7 @@ def fillItem(self, inItem, outItem):
                 # 추후 class init할 때 connect 하도록 수정할 필요있음
                 outItem.pos_cp.btn.clicked.connect(lambda ignore,f=outItem.pos_cp.get_pos:f())                  
                 self.setItemWidget(outItem, 3, outItem.pos_cp)
-            outItem.typ_cb.signal.connect(lambda:outItem.change_mouse())
+            outItem.typ_cb.signal.connect(lambda:outItem.toggle_mouse())
         child_cnt = outItem.childCount()
         # 단,group이어도 group 자신만 dropevent만하고, 자식들은 move_itemwidget 거치도록       
 
