@@ -31,6 +31,10 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.pos = self.row[4]
 
         self.tog_num = "M"
+        self.tog_key_list = ["T","C","P","A"]
+        self.tog_mouse_list = ["C1","C2"]
+        self.tog_icon_dict = {"T":"src/key.png","C":"src/copy.png","P":"src/paste.png","A":"src/all.png"
+                              ,"C1":"src/cursor.png","C2":"src/cursor2.png"}
         self.mouse_tog_btn = None
         self.key_tog_btn = None
         self.pos_cp = None
@@ -72,69 +76,41 @@ class TreeWidgetItem(QTreeWidgetItem):
     def set_icon(self):
         icon_imgs = ["src/bag.png","src/inst.png"]
         self.setIcon(0,QIcon(icon_imgs[self.isGroup()]))
-        
-    #23_04_18               
+             
     def toggle_typ_key(self):
-        #tog키 카운트 (순환구조로 바꾸기)
-        #cnt를 저장해야함
-        if self.tog_num == "M":
-            pass
-        else:
-            if self.key_tog_btn.cur_typ == "T":
-                self.key_tog_btn.cur_typ = "C"
-            elif self.key_tog_btn.cur_typ == "C":
-                self.key_tog_btn.cur_typ = "P"
-            elif self.key_tog_btn.cur_typ == "P":
-                self.key_tog_btn.cur_typ = "A"
-            else:
-                self.key_tog_btn.cur_typ = "T"
+        if self.tog_num == "K":
+            idx = self.tog_key_list.index(self.key_tog_btn.cur_typ)
+            idx = (idx+1)%len(self.tog_key_list)
+            self.key_tog_btn.cur_typ = self.tog_key_list[idx]
         
         self.tog_num = "K"
-        self.mouse_tog_btn.setStyleSheet("background-color: light gray")
-        self.key_tog_btn.setStyleSheet("background-color: #B4EEB4")
-        #self.tw.disconnect()
-        #if key_tog_btn.currentText() == "Double":
-        #키보드로 바꿀 때            
         self.tw.removeItemWidget(self,Head.pos.value)
-        #self.mouse_tog_btn.setText("C1")
-        if self.key_tog_btn.cur_typ == "T":
-            self.key_tog_btn.setIcon(QIcon("src/key.png"))    
-        elif self.key_tog_btn.cur_typ == "C":
-            self.key_tog_btn.setIcon(QIcon("src/copy.png"))  
-        elif self.key_tog_btn.cur_typ == "P":
-            self.key_tog_btn.setIcon(QIcon("src/paste.png"))  
-        else:
-            self.key_tog_btn.setIcon(QIcon("src/all.png"))
-        pass
+        icon_path = self.tog_icon_dict[self.key_tog_btn.cur_typ]
+        self.key_tog_btn.setIcon(QIcon(icon_path))
+        
+        self.mouse_tog_btn.setStyleSheet("background-color: light gray")
+        self.key_tog_btn.setStyleSheet("background-color: #B4EEB4")       
      
     #signal의 class가 qobject를 상속할 때만 @pyqtSlot()을 달아주고, 아니면 달지 않는다
     #https://stackoverflow.com/questions/40325953/why-do-i-need-to-decorate-connected-slots-with-pyqtslot/40330912#40330912       
     def toggle_typ_mouse(self):
-        #self.key_tog_btn.clear()
-        if self.tog_num == "K":
-            pass
-        else:
-            if self.mouse_tog_btn.cur_typ == "C1":
-                self.mouse_tog_btn.cur_typ = "C2"
-            else:
-                self.mouse_tog_btn.cur_typ = "C1"
-                
-            #for item in self.tw.act_items[new_typ]:
-            #    self.key_tog_btn.addItem(item)
-            #self.key_tog_btn.setCurrentIndex(0)
-        if "C" in self.mouse_tog_btn.cur_typ:
-            self.pos_cp = cp.PosWidget("0,0")
-            self.pos_cp.btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
-            self.tw.setItemWidget(self,Head.pos.value,self.pos_cp) # typ을 M로 변경시 - pos 연동 생성
-            if self.mouse_tog_btn.cur_typ == "C1":
-                self.mouse_tog_btn.setIcon(QIcon("src/cursor.png"))                        
-            elif self.mouse_tog_btn.cur_typ == "C2":
-                self.mouse_tog_btn.setIcon(QIcon("src/cursor2.png"))
-                
+        if self.tog_num == "M":
+            idx = self.tog_mouse_list.index(self.mouse_tog_btn.cur_typ)
+            idx = (idx+1)%len(self.tog_mouse_list)
+            self.mouse_tog_btn.cur_typ = self.tog_mouse_list[idx]
+        
+        # cp를 생성하는게 맞는지 고민 
+        self.pos_cp = cp.PosWidget("0,0")
+        self.pos_cp.btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
+        self.tw.setItemWidget(self,Head.pos.value,self.pos_cp) # typ을 M로 변경시 - pos 연동 생성되는 코드
+        icon_path = self.tog_icon_dict[self.mouse_tog_btn.cur_typ]
+        self.mouse_tog_btn.setIcon(QIcon(icon_path))
+        
         self.tog_num = "M"
         self.mouse_tog_btn.setStyleSheet("background-color: #B4EEB4")
         self.key_tog_btn.setStyleSheet("background-color: light gray")
         
+        # toggle_typ_key에는 왜 안넣는지?
         self.tw.save_push_log()
         self.tw.disconnect()        
         self.tw.itemChanged.connect(self.tw.change_check) # typ을 key로 변경시 - pos 연동 삭제
