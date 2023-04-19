@@ -5,21 +5,20 @@ from package import compo as cp
 from screeninfo import get_monitors
 
 class Second(QWidget):
-    def __init__(self,ui,btn):
+    def __init__(self,pos_wgt):
         super().__init__()
-        self.ui = ui
-        self.setWindowTitle("Test")
+        self.pos_wgt = pos_wgt
         self.setWindowFlags(Qt.FramelessWindowHint)
-        m = get_monitors()[0]
-        self.res_w = m.width
-        self.res_h = m.height
+        self.m = get_monitors()[0]
         
         # Set up shortcuts
-        self.shortcut = [('ESC', self.cls_win),('Ctrl+M', self.max_win),('Ctrl+S', self.min_win)]
+        self.shortcut_info_list = [('ESC', self.cls_win),
+                         ('Ctrl+M', self.max_win),
+                         ('Ctrl+S', self.min_win)]
         self.shortcut_list = []
-        for shortcut_d in self.shortcut:
-            shortcut = QShortcut(QKeySequence(shortcut_d[0]), self)
-            shortcut.activated.connect(shortcut_d[1])
+        for shortcut_info in self.shortcut_info_list:
+            shortcut = QShortcut(QKeySequence(shortcut_info[0]), self)
+            shortcut.activated.connect(shortcut_info[1])
             self.shortcut_list.append(shortcut)
         
         # Set up opacity and background color
@@ -31,41 +30,38 @@ class Second(QWidget):
             
         # Maximize the window and set the button
         self.max_win()
-        self.btn = btn
+        self.pos_wgt.coor_btn
         
     def min_win(self):
         self.setGeometry(0, 0, 20, 20)
  
     def max_win(self):
-        self.setGeometry(0, 0, self.res_w,self.res_h)
-    
-    def input_coor_to_btn(self,str):
-        pass
-    
+        self.setGeometry(0, 0, self.m.width,self.m.height)
+
     # pos -> treewidgetitem에 저장
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self.offset = event.pos()
-            x= str(self.offset.x())
-            y= str(self.offset.y())
+            x = str(event.pos().x())
+            y = str(event.pos().y())
             coor = x + "," + y
-            # treewidgetitem->poswidget->cp.PosBtn
-            if isinstance(self.btn,cp.PosBtn):
-                self.btn.pos = coor
-                self.btn.parent().coor.setText(coor)
-                self.btn.setStyleSheet("color:black")               
+            
+            # treewidgetitem->pos_wgt->cp.PosBtn
+            if isinstance(self.pos_wgt.coor_btn,cp.PosBtn):
+                self.pos_wgt.coor_btn.pos = coor
+                self.pos_wgt.coor_btn.setStyleSheet("color:black")       
+                self.pos_wgt.ledit_coor.setText(coor)
                 self.close()
             else:
-                pos_pair = self.btn.pos_pair
-                if len(pos_pair) == 2:
-                    pos_pair = []
+                pos_pair = self.coor_btn.pos_pair
                 pos_pair.append(coor)
+
                 if len(pos_pair) == 2:
-                    self.btn.setStyleSheet("color:black")
+                    self.pos_wgt.coor_btn.setStyleSheet("color:black")
                     self.close()
+                    pos_pair.clear()
         else:
             super().mousePressEvent(event)
-            
+
     def mouseMoveEvent(self, event):
         if self.offset is not None and event.buttons() == Qt.LeftButton:
             self.move(self.pos() + event.pos() - self.offset)

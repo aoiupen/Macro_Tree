@@ -80,16 +80,22 @@ class TreeWidgetItem(QTreeWidgetItem):
     def toggle_typ_key(self):
         if self.tog_num == "K":
             idx = self.tog_key_list.index(self.key_tog_btn.cur_typ)
-            idx = (idx+1)%len(self.tog_key_list)
+            idx = (idx+1)%len(self.tog_key_list) # next?로 구현 가능할지
             self.key_tog_btn.cur_typ = self.tog_key_list[idx]
         
         self.tog_num = "K"
         self.tw.removeItemWidget(self,Head.pos.value)
+        
         icon_path = self.tog_icon_dict[self.key_tog_btn.cur_typ]
         self.key_tog_btn.setIcon(QIcon(icon_path))
         
         self.mouse_tog_btn.setStyleSheet("background-color: light gray")
         self.key_tog_btn.setStyleSheet("background-color: #B4EEB4")       
+        
+        self.tw.save_push_log()
+        self.tw.disconnect()        
+        self.tw.itemChanged.connect(self.tw.change_check) # typ을 key로 변경시 - pos 연동 삭제
+        self.tw.setFocus()
      
     #signal의 class가 qobject를 상속할 때만 @pyqtSlot()을 달아주고, 아니면 달지 않는다
     #https://stackoverflow.com/questions/40325953/why-do-i-need-to-decorate-connected-slots-with-pyqtslot/40330912#40330912       
@@ -110,7 +116,6 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.mouse_tog_btn.setStyleSheet("background-color: #B4EEB4")
         self.key_tog_btn.setStyleSheet("background-color: light gray")
         
-        # toggle_typ_key에는 왜 안넣는지?
         self.tw.save_push_log()
         self.tw.disconnect()        
         self.tw.itemChanged.connect(self.tw.change_check) # typ을 key로 변경시 - pos 연동 삭제
@@ -134,11 +139,9 @@ class TreeUndoCommand(QUndoCommand):
         # 그러므로 load_log에 들어갈 인자는 stack에서 꺼낸 tree여야한다
         ix = self.stack.index()
         cmd = self.stack.command(ix-1)
-        if not isinstance(cmd,NoneType):
-            print(cmd.tr_str)
+        if not isinstance(cmd, NoneType):
             self.tree.load(cmd.tr_str)
-        pass
-
+            
 #https://stackoverflow.com/questions/25559221/qtreewidgetitem-issue-items-set-using-setwidgetitem-are-dispearring-after-movin        
 class TreeWidget(QTreeWidget):
     customMimeType = "application/x-customTreeWidgetdata"
@@ -147,14 +150,14 @@ class TreeWidget(QTreeWidget):
         self.win = parent
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
-        self.dropEvent = self.treeDropEvent
         self.setEditTriggers(QAbstractItemView.DoubleClicked)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        self.header().setSectionResizeMode(QHeaderView.ResizeToContents)#adjust
+        self.dropEvent = self.treeDropEvent
+        self.header().setSectionResizeMode(QHeaderView.ResizeToContents) #adjust
         self.header().setCascadingSectionResizes(True)
+        self.customContextMenuRequested.connect(self.context_menu)
         #self.header().setSectionResizeMode(5,QHeaderView.Stretch)#movable True
         #self.setContextMenuPolicy(Qt.CustomContextMenu) #비활성화시키면 contextmenuevent 동작됨
-        self.customContextMenuRequested.connect(self.context_menu)
         self.copy_buf = []
         self.log_lst = []
         self.log_txt = ""
@@ -163,12 +166,10 @@ class TreeWidget(QTreeWidget):
         self.undoStack.setIndex(0)
         self.cnt = 0
         self.header = [self.headerItem().text(col) for col in range(self.columnCount())]
-        #self.act_items = {"M":["Click","Double","Long","Center","Scroll","Right","Drag","Move"], "K":["Copy","Paste","Select All","Typing"]}
         
     def mousePressEvent(self, event):
-        if event.modifiers() == Qt.ControlModifier:
-            return
-        return super().mousePressEvent(event)
+        if event.modifiers() != Qt.ControlModifier:
+            return super().mousePressEvent(event)
     
     def mouseReleaseEvent(self, event):
         if event.modifiers() == Qt.ControlModifier:
@@ -177,10 +178,9 @@ class TreeWidget(QTreeWidget):
             items = self.currentItem()
             if items:
                 self.setCurrentItem(items)
-            else:
-                pass
         return super().mouseReleaseEvent(event)
 
+    #SQL
     def save_log(self):
         self.log_txt = ""
         for i in range(self.topLevelItemCount()):
@@ -283,8 +283,7 @@ class TreeWidget(QTreeWidget):
             self.log_txt += val_join
             if ch.childCount():
                 self.recur_log(ch)
-
-    
+                
     def save_push_log(self):
         tr_str = self.save_log()
         print("-"*10) 
