@@ -33,8 +33,12 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.tog_num = "M"
         self.tog_key_list = ["T","C","P","A"]
         self.tog_mouse_list = ["C1","C2"]
-        self.tog_icon_dict = {"T":"src/key.png","C":"src/copy.png","P":"src/paste.png","A":"src/all.png"
-                              ,"C1":"src/cursor.png","C2":"src/cursor2.png"}
+        self.tog_icon_dict = {"T":"src/key.png",
+                              "C":"src/copy.png",
+                              "P":"src/paste.png",
+                              "A":"src/all.png",
+                              "C1":"src/cursor.png",
+                              "C2":"src/cursor2.png"}
         self.mouse_tog_btn = None
         self.key_tog_btn = None
         self.pos_cp = None
@@ -56,8 +60,8 @@ class TreeWidgetItem(QTreeWidgetItem):
             self.setFlags(self.flags() ^ Qt.ItemIsDropEnabled)
             
             #self.key_tog_btn = cp.ActCb(self.tw,typ_txt,act_txt)
-            self.key_tog_btn = cp.KeyTogBtn(self,self.typ,self.typ)
-            self.mouse_tog_btn = cp.MouseTogBtn(self,self.typ,self.typ)
+            self.key_tog_btn = cp.KeyTogBtn(self,self.typ,self.typ) #매번 생성하는 것은 문제. group일때는 버튼을 비활성화+색상변경
+            self.mouse_tog_btn = cp.MouseTogBtn(self,self.typ,self.typ) #매번 생성하는 것은 문제
             self.key_tog_btn.signal.connect(lambda:self.toggle_typ_key())
             self.mouse_tog_btn.signal.connect(lambda:self.toggle_typ_mouse())
             tw.setItemWidget(self, 1, self.mouse_tog_btn)
@@ -68,59 +72,64 @@ class TreeWidgetItem(QTreeWidgetItem):
                 tw.setItemWidget(self, 3, self.pos_cp)
                 
     def isGroup(self):
-        return True if self.typ == "" else False
+        return True if self.typ == "" else False #mariaDB 활용해야
     
     def isTop(self):
         return True if isinstance(self.parent(),NoneType) else False
         
     def set_icon(self):
-        icon_imgs = ["src/bag.png","src/inst.png"]
+        icon_imgs = ["src/bag.png","src/inst.png"] #공통정보
         self.setIcon(0,QIcon(icon_imgs[self.isGroup()]))
              
-    def toggle_typ_key(self):
-        if self.tog_num == "K":
+    def toggle_typ_key(self): #key 코글을 눌렀을 때의 함수.(복잡한 듯)
+        if self.tog_num == "K": #isKeyboard 등의 함수로 변형해야함
             idx = self.tog_key_list.index(self.key_tog_btn.cur_typ)
             idx = (idx+1)%len(self.tog_key_list) # next?로 구현 가능할지
             self.key_tog_btn.cur_typ = self.tog_key_list[idx]
         
-        self.tog_num = "K"
-        self.tw.removeItemWidget(self,Head.pos.value)
-        
-        icon_path = self.tog_icon_dict[self.key_tog_btn.cur_typ]
+        #tog_key_on 함수로 묶기  
+        self.tog_num = "K" # 함수로 바꾸는게 나을지
+        icon_path = self.tog_icon_dict[self.key_tog_btn.cur_typ] #공통정보로 한번에 가져다 쓰도록.key인거 알기 때문에, cur_typ을 넣어서 idx를 뽑을 필요없이 직접 이미지를 지정해주면 됨
         self.key_tog_btn.setIcon(QIcon(icon_path))
+        self.key_tog_btn.setStyleSheet("background-color: #B4EEB4") #key 색상 on,    
         
-        self.mouse_tog_btn.setStyleSheet("background-color: light gray")
-        self.key_tog_btn.setStyleSheet("background-color: #B4EEB4")       
+        #tog_mouse_off 함수로 묶기
+        self.tw.removeItemWidget(self,Head.pos.value) #key로 바꿨기 때문에 pos를 지움
+        self.mouse_tog_btn.setStyleSheet("background-color: light gray") #mouse 색상 off, pos 삭제 등을 하나로 묶어서
         
-        self.tw.save_push_log()
-        self.tw.disconnect()        
-        self.tw.itemChanged.connect(self.tw.change_check) # typ을 key로 변경시 - pos 연동 삭제
-        self.tw.setFocus()
-     
+        #마무리 작업
+        self.finish_toggle_typ()
+    
     #signal의 class가 qobject를 상속할 때만 @pyqtSlot()을 달아주고, 아니면 달지 않는다
     #https://stackoverflow.com/questions/40325953/why-do-i-need-to-decorate-connected-slots-with-pyqtslot/40330912#40330912       
     def toggle_typ_mouse(self):
-        if self.tog_num == "M":
+        if self.tog_num == "M": #mouse 토글을 눌렀을 때의 함수.(복잡한 듯)
             idx = self.tog_mouse_list.index(self.mouse_tog_btn.cur_typ)
             idx = (idx+1)%len(self.tog_mouse_list)
             self.mouse_tog_btn.cur_typ = self.tog_mouse_list[idx]
         
-        # cp를 생성하는게 맞는지 고민 
+        # 매번 cp를 생성하지 말고, 숨기고 드러내는 방식으로 변경해야함
+        # tog_mouse_on 함수
         self.pos_cp = cp.PosWidget("0,0")
         self.pos_cp.btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
         self.tw.setItemWidget(self,Head.pos.value,self.pos_cp) # typ을 M로 변경시 - pos 연동 생성되는 코드
         icon_path = self.tog_icon_dict[self.mouse_tog_btn.cur_typ]
         self.mouse_tog_btn.setIcon(QIcon(icon_path))
-        
-        self.tog_num = "M"
         self.mouse_tog_btn.setStyleSheet("background-color: #B4EEB4")
+        
+        #tog_key_off 함수
+        self.tog_num = "M"
         self.key_tog_btn.setStyleSheet("background-color: light gray")
         
+        #마무리 작업
+        self.finish_toggle_typ()
+    
+    def finish_toggle_typ(self):
         self.tw.save_push_log()
         self.tw.disconnect()        
         self.tw.itemChanged.connect(self.tw.change_check) # typ을 key로 변경시 - pos 연동 삭제
         self.tw.setFocus()
-        
+                
 class TreeUndoCommand(QUndoCommand):
     def __init__(self,tree,tr_str,stack):
         super().__init__()

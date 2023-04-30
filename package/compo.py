@@ -102,7 +102,6 @@ class PosWidget(QWidget):
         self.coor_btn.setIcon(QIcon("src/coor.png"))
         self.coor_btn.setFixedWidth(30)
         self.widget_lay.addWidget(self.coor_btn)
-        self.widget_lay.addWidget(self.coor_btn)
         self.coor_btn.clicked.connect(lambda ignore,f=self.get_pos:f())
     
     def get_pos(self):
