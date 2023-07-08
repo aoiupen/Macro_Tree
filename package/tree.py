@@ -33,7 +33,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.tog_num = "M"
         self.tog_key_list = ["T","C","P","A"]
         self.tog_mouse_list = ["C1","C2"]
-        self.tog_icon_dict = {"T":"src/key.png",
+        self.tog_icon_src_dict = {"T":"src/key.png",
                               "C":"src/copy.png",
                               "P":"src/paste.png",
                               "A":"src/all.png",
@@ -68,7 +68,8 @@ class TreeWidgetItem(QTreeWidgetItem):
             tw.setItemWidget(self, 2, self.key_tog_btn)
    
             if "C1" in self.typ or "C2" in self.typ: #23_04_18 "C" 바꿔야함
-                self.pos_cp = cp.PosWidget(self.pos)
+                x,y = self.pos.split(",")
+                self.pos_cp = cp.PosWidget(x,y)
                 tw.setItemWidget(self, 3, self.pos_cp)
                 
     def isGroup(self):
@@ -89,7 +90,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         
         #tog_key_on 함수로 묶기  
         self.tog_num = "K" # 함수로 바꾸는게 나을지
-        icon_path = self.tog_icon_dict[self.key_tog_btn.cur_typ] #공통정보로 한번에 가져다 쓰도록.key인거 알기 때문에, cur_typ을 넣어서 idx를 뽑을 필요없이 직접 이미지를 지정해주면 됨
+        icon_path = self.tog_icon_src_dict[self.key_tog_btn.cur_typ] #공통정보로 한번에 가져다 쓰도록.key인거 알기 때문에, cur_typ을 넣어서 idx를 뽑을 필요없이 직접 이미지를 지정해주면 됨
         self.key_tog_btn.setIcon(QIcon(icon_path))
         self.key_tog_btn.setStyleSheet("background-color: #B4EEB4") #key 색상 on,    
         
@@ -110,10 +111,10 @@ class TreeWidgetItem(QTreeWidgetItem):
         
         # 매번 cp를 생성하지 말고, 숨기고 드러내는 방식으로 변경해야함
         # tog_mouse_on 함수
-        self.pos_cp = cp.PosWidget("0,0")
+        self.pos_cp = cp.PosWidget(0,0)
         self.pos_cp.btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
         self.tw.setItemWidget(self,Head.pos.value,self.pos_cp) # typ을 M로 변경시 - pos 연동 생성되는 코드
-        icon_path = self.tog_icon_dict[self.mouse_tog_btn.cur_typ]
+        icon_path = self.tog_icon_src_dict[self.mouse_tog_btn.cur_typ]
         self.mouse_tog_btn.setIcon(QIcon(icon_path))
         self.mouse_tog_btn.setStyleSheet("background-color: #B4EEB4")
         
@@ -369,7 +370,6 @@ class TreeWidget(QTreeWidget):
                 elif act_cur == "Select All":
                     pag.hotkey('ctrl', 'a')
 
-                    
     def excute_sel(self,event):
         self.exec_insts(self.selectedItems())
 
