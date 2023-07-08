@@ -102,7 +102,6 @@ class TreeWidgetItem(QTreeWidgetItem):
         if self.tog_num == "M":
             self.subact_iter = iter(rs.resrc["mouse_acts"])
         else:
-            self.tog_key_list = ["typing","copy","paste"]
             self.subact_iter = iter(rs.resrc["key_acts"])
         self.act_tog.setIcon(QIcon(rs.resrc[next(self.subact_iter)]))
         
@@ -116,14 +115,11 @@ class TreeWidgetItem(QTreeWidgetItem):
             if self.tog_num == "M":
                 self.subact_iter = iter(rs.resrc["mouse_acts"])
             else:
-                self.tog_key_list = ["typing","copy","paste"]
                 self.subact_iter = iter(rs.resrc["key_acts"])
             self.act_tog.cur_type = next(self.subact_iter)
         self.act_tog.setIcon(QIcon(rs.resrc[self.act_tog.cur_type]))
         # 마무리 작업
         self.finish_toggle_typ()
-    
-
     
     def finish_toggle_typ(self):
         self.tw.save_push_log()
@@ -202,6 +198,7 @@ class TreeWidget(QTreeWidget):
                         three = top_it.pos_cp.coor.text()
                     elif  top_it.input_tog.text() == "K":
                         three = top_it.text(3)
+                    # 수정해야함
                     self.log_txt += ','.join(["top",top_it.text(0),top_it.input_tog.text()
                                               ,top_it.act_tog.cur_type,three,""])
                 else:
