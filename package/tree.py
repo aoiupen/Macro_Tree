@@ -32,12 +32,12 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.input_type,self.sub_act = self.row[2:4]
         self.pos = self.row[4]
         
-        self.tog_num = "M"
+        self.isMouse = True
         self.subact_iter = iter(rs.resrc["mouse_acts"])
 
         self.input_tog = None
         self.act_tog = None
-        self.pos_cp = None
+        self.pos_wid = None
         
         #if len(self.row)>2: #그룹이 아닐 경우
         self.setText(0, self.name)
@@ -55,18 +55,17 @@ class TreeWidgetItem(QTreeWidgetItem):
             self.setFlags(self.flags() ^ Qt.ItemIsDropEnabled) # Item Drop 불가
             
             # Init ItemWidget
-            self.act_tog = cp.SubActionTogBtn(self,self.input_type) # 매번 생성하는 것은 문제. group일때는 버튼을 비활성화+색상변경
             self.input_tog = cp.InputDeviceTogBtn(self,self.input_type) # 매번 생성하는 것은 문제
-            self.act_tog.signal.connect(lambda:self.toggle_subact())
             self.input_tog.signal.connect(lambda:self.toggle_input())
+            self.act_tog = cp.SubActionTogBtn(self,self.input_type) # 매번 생성하는 것은 문제. group일때는 버튼을 비활성화+색상변경
+            self.act_tog.signal.connect(lambda:self.toggle_subact())
             
-            # Set ItemWidget in Col
+            # Set Item Widget in Col
             tw.setItemWidget(self, 1, self.input_tog)
-            if "M" == self.input_type:
+            if self.isMouse:
                 x,y = self.pos.split(",")
-                self.pos_cp = cp.PosWidget(x,y)
-                tw.setItemWidget(self, 2, self.pos_cp)
-                
+                self.pos_wid = cp.PosWidget(x,y)
+                tw.setItemWidget(self, 2, self.pos_wid)
             tw.setItemWidget(self, 3, self.act_tog)
             
     def isGroup(self):
@@ -82,40 +81,29 @@ class TreeWidgetItem(QTreeWidgetItem):
     #signal의 class가 qobject를 상속할 때만 @pyqtSlot()을 달아주고, 아니면 달지 않는다
     #https://stackoverflow.com/questions/40325953/why-do-i-need-to-decorate-connected-slots-with-pyqtslot/40330912#40330912       
     def toggle_input(self):
-        if self.tog_num == "M":
-            self.subact_iter = iter(rs.resrc["mouse_acts"])
-        else:
-            self.subact_iter = iter(rs.resrc["key_acts"])
-        
         # 매번 cp를 생성하지 말고, 숨기고 드러내는 방식으로 변경해야함
-        if self.tog_num == "K": # tog_mouse_on
-            self.tog_num = "M"
-            self.pos_cp = cp.PosWidget(0,0)
-            self.tw.setItemWidget(self,Head.pos.value,self.pos_cp) # typ을 M로 변경시 - pos 연동 생성되는 코드
-        else: #tog_key_off 함수
-            self.tog_num = "K"
+        if self.isMouse: #tog_key_off 함수
             self.tw.removeItemWidget(self,Head.pos.value) # key로 바꿨기 때문에 pos를 지움
+        else:
+            self.pos_wid = cp.PosWidget(0,0)
+            self.tw.setItemWidget(self,Head.pos.value,self.pos_wid) # typ을 M로 변경시 - pos 연동 생성되는 코드
             
-        self.input_tog.setIcon(QIcon(rs.resrc[self.tog_num]))
+        self.isMouse = not self.isMouse
+        self.input_tog.setIcon(QIcon(rs.resrc["M" if self.isMouse else "K"]))
     
         # Changing Subact
-        if self.tog_num == "M":
-            self.subact_iter = iter(rs.resrc["mouse_acts"])
-        else:
-            self.subact_iter = iter(rs.resrc["key_acts"])
+        self.subact_iter = iter(rs.resrc["mouse_acts"]) if self.isMouse else iter(rs.resrc["key_acts"])
         self.act_tog.setIcon(QIcon(rs.resrc[next(self.subact_iter)]))
         
         #마무리 작업
         self.finish_toggle_typ()
                  
     def toggle_subact(self):
+        # 난독 코드 가능성. 수정 필요
         try:
             self.act_tog.cur_type = next(self.subact_iter)
         except:
-            if self.tog_num == "M":
-                self.subact_iter = iter(rs.resrc["mouse_acts"])
-            else:
-                self.subact_iter = iter(rs.resrc["key_acts"])
+            self.subact_iter = iter(rs.resrc["mouse_acts"]) if self.isMouse else iter(rs.resrc["key_acts"])
             self.act_tog.cur_type = next(self.subact_iter)
         self.act_tog.setIcon(QIcon(rs.resrc[self.act_tog.cur_type]))
         # 마무리 작업
@@ -195,7 +183,7 @@ class TreeWidget(QTreeWidget):
                 if top_it.input_tog:
                     three = ""
                     if top_it.input_tog.text() == "M":
-                        three = top_it.pos_cp.coor.text()
+                        three = top_it.pos_wid.coor.text()
                     elif  top_it.input_tog.text() == "K":
                         three = top_it.text(3)
                     # 수정해야함
@@ -281,7 +269,7 @@ class TreeWidget(QTreeWidget):
                 ch_vals[1] = ch.input_tog.text()
                 ch_vals[2] = ch.act_tog.text()
                 if ch_vals[1] == "M":
-                    ch_vals[3] = ch.pos_cp.coor.text()
+                    ch_vals[3] = ch.pos_wid.coor.text()
                 elif ch_vals[1] == "K":
                     ch_vals[3] = ch.text(3)
 
@@ -316,7 +304,7 @@ class TreeWidget(QTreeWidget):
             if target.input_tog is None:
                 for item in self.copy_buf:
                     new_item = TreeWidgetItem(self, target)
-                    new_item.pos_cp = item.pos_cp
+                    new_item.pos_wid = item.pos_wid
                     new_item.act_tog = item.act_tog
                     new_item.input_tog = item.input_tog
                 print("Paste")
@@ -342,7 +330,7 @@ class TreeWidget(QTreeWidget):
             act_cur = inst.act_tog.currentText()
 
             if typ_cur == "M":
-                x, y = map(int, inst.pos_cp.coor.text().split(','))
+                x, y = map(int, inst.pos_wid.coor.text().split(','))
                 if act_cur == "Click":
                     pag.click(x=x, y=y, clicks=1)
                 elif act_cur == "Right":
@@ -535,12 +523,12 @@ class TreeWidget(QTreeWidget):
         #    self.setItemWidget(item, 1, item.input_tog)
         #    self.setItemWidget(item, 2, item.act_tog)
         #    if item.text(1) == "M":
-        #        coor = item.pos_cp.coor.text()
-        #        item.pos_cp = ps.PosWidget(coor)
+        #        coor = item.pos_wid.coor.text()
+        #        item.pos_wid = ps.PosWidget(coor)
         #        # 이동해도, item을 새로 만드는 것이기 때문에, connect도 다시 해줘야한다
         #        # 추후 class init할 때 connect 하도록 수정할 필요있음
-        #        item.pos_cp.btn.clicked.connect(lambda ignore,f=item.pos_cp.get_pos:f())                  
-        #        self.setItemWidget(item, 3, item.pos_cp)
+        #        item.pos_wid.btn.clicked.connect(lambda ignore,f=item.pos_wid.get_pos:f())                  
+        #        self.setItemWidget(item, 3, item.pos_wid)
         #    item.input_tog.signal.connect(lambda:item.toggle_input())
         #else:
         #    item.p = tar
@@ -786,7 +774,7 @@ class TreeWidget(QTreeWidget):
                 inst[2] = ch.input_tog.text()
                 if inst[2] == "M":
                     inst[3] = ch.act_tog.currentText()
-                    inst[4] = ch.pos_cp.coor.text()
+                    inst[4] = ch.pos_wid.coor.text()
                 else:
                     inst[3] = ch.act_tog.currentText()
                     inst[4] = ch.text(3)

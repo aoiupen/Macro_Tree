@@ -15,7 +15,7 @@ resrc["coor"] = "src/coor.png"
 
 # subaction icon (key)
 resrc["click"] = "src/mouse.png"
-resrc["double"] = "src/cursor2.png"
+resrc["double"] = "src/double.png"
 #resrc["press"] = 
 
 # subaction icon (key)
@@ -25,7 +25,7 @@ resrc["paste"] = "src/paste.png"
 resrc["all"] = "src/all.png"
 
 # tree icon
-resrc["group"] = "src/bag.png"
+resrc["group"] = "src/group.png"
 resrc["inst"] = "src/inst.png"
 
 # mainwin shortcut
