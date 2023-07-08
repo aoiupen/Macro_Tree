@@ -26,21 +26,20 @@ class InputDeviceTogBtn(QPushButton):
     signal = pyqtSignal()
     def __init__(self, parent, input_type):
         QPushButton.__init__(self)
-        self.setFixedWidth(30)
         self.prnt = parent
+        self.setFixedWidth(30)
         self.clicked.connect(self.run)
-        icon = QIcon(rs.resrc[input_type])
-        self.setIcon(icon)
+        self.setIcon(QIcon(rs.resrc[input_type]))
 
     def run(self):
         self.signal.emit()
-
+        
 class SubActionTogBtn(QPushButton):
     signal = pyqtSignal()
     def __init__(self, parent, action_type):
         QPushButton.__init__(self)
-        self.setFixedWidth(30)
         self.prnt = parent
+        self.setFixedWidth(30)
         self.clicked.connect(self.run)
         self.setIcon(QIcon(rs.resrc[action_type]))
 
@@ -55,7 +54,6 @@ class ActCb(QComboBox):
         ix = act_lst.index(act)
         self.addItems(act_lst) # remember this way!
         self.setCurrentIndex(ix)
-        ##self.setStyleSheet("background-color: rgb(250,250,250);")
         self.currentIndexChanged.connect(self.run)
         
     def run(self):
@@ -65,38 +63,37 @@ class PosWidget(QWidget):
     signal = pyqtSignal()
     def __init__(self, coor_x_val, coor_y_val):
         QWidget.__init__(self)
-        self.widget_lay = QHBoxLayout(self)
-        self.widget_lay.setContentsMargins(0,0,0,0)
-        self.widget_lay.setSpacing(0)
+        self.h_lay = QHBoxLayout(self)
+        self.h_lay.setContentsMargins(0,0,0,0)
+        self.h_lay.setSpacing(0)
         
         # Size of widget
         self.edit_width = 40
-        self.lbl_width = 10
+        self.lbl_width = 5
         self.btn_width = 30
-        
-        # Image source of widget
-        self.coor_btn_icon_src = "src/coor.png"
         
         # Displaying coordinate value
         self.coor_x_edit = QLineEdit(str(coor_x_val), self)
         self.coor_x_edit.setFixedWidth(self.edit_width)
+        self.coor_x_edit.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.coor_lbl = QLabel(",")
         self.coor_lbl.setAlignment(Qt.AlignCenter)
         self.coor_lbl.setFixedWidth(self.lbl_width)
         self.coor_y_edit = QLineEdit(str(coor_y_val), self)
         self.coor_y_edit.setFixedWidth(self.edit_width)
+        self.coor_y_edit.setAlignment(Qt.AlignmentFlag.AlignRight)
         
         # Button for getting coordinate
         self.coor_btn = cp.PosBtn("")
-        self.coor_btn.setIcon(QIcon(self.coor_btn_icon_src))
+        self.coor_btn.setIcon(QIcon(rs.resrc["coor"]))
         self.coor_btn.setFixedWidth(self.btn_width)
-        self.coor_btn.clicked.connect(lambda ignore, f = self.get_pos : f())
+        self.coor_btn.clicked.connect(lambda ignore,f=self.get_pos:f())
         
         # Adding widgets to layout
-        self.widget_lay.addWidget(self.coor_x_edit)
-        self.widget_lay.addWidget(self.coor_lbl)
-        self.widget_lay.addWidget(self.coor_y_edit)
-        self.widget_lay.addWidget(self.coor_btn)
+        self.h_lay.addWidget(self.coor_x_edit)
+        self.h_lay.addWidget(self.coor_lbl)
+        self.h_lay.addWidget(self.coor_y_edit)
+        self.h_lay.addWidget(self.coor_btn)
     
     def get_pos(self):
         self.poswin = ps.PosWin(self)

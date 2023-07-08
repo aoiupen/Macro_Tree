@@ -20,6 +20,7 @@ class PosWin(QWidget):
         self.shortcut_info_dict = {'ESC' : self.cls_win,
                                 'Ctrl+M' : self.max_win,
                                 'Ctrl+S' : self.min_win}
+        
         self.shortcut_list = []
         for key_sq_name, key_sq_func in self.shortcut_info_dict.items():
             shortcut = QShortcut(QKeySequence(key_sq_name), self)
@@ -29,12 +30,10 @@ class PosWin(QWidget):
         # Set up opacity val and bg color
         effect = QGraphicsOpacityEffect(self)
         alpha = 0.1
-        color = "white"
         self.setGraphicsEffect(effect)
         self.setAutoFillBackground(True)
         self.setWindowOpacity(alpha)
-        self.setStyleSheet("background-color:{bg_color};".format(bg_color = color))
-            
+        
         # Maximize the window and set the button
         self.max_win()
         

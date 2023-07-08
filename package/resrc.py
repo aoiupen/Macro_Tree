@@ -3,11 +3,14 @@
 resrc = {}
 
 # inputdevice icon
-resrc["mouse"] = "src/mouse.png"
-resrc["key"] = "src/key.png"
+resrc["M"] = "src/mouse.png"
+resrc["K"] = "src/key.png"
+
+# getting coor icon
+resrc["coor"] = "src/coor.png"
 
 # subaction icon (key)
-resrc["click"] = "src/cursor.png"
+resrc["click"] = "src/mouse.png"
 resrc["double"] = "src/cursor2.png"
 #resrc["press"] = 
 

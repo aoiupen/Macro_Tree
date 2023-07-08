@@ -9,6 +9,7 @@ from package import tree as tr
 from types import NoneType
 from enum import Enum
 from copy import deepcopy
+from package import resrc as rs
 
 class Indi(Enum):
     md = 0
@@ -18,29 +19,25 @@ class Indi(Enum):
 class Head(Enum):
     non = 0
     typ = 1
-    act = 2
-    pos = 3
+    pos = 2
+    act = 3
     
 class TreeWidgetItem(QTreeWidgetItem):
     def __init__(self,tw,parent=None,row=""):
         QTreeWidgetItem.__init__(self, parent) # 부모 지정하는 단계
         self.tw = tw
         self.row = row
+        
         self.p_name,self.name = self.row[0:2]
-        self.typ,self.act = self.row[2:4]
+        self.input_type,self.act = self.row[2:4]
         self.pos = self.row[4]
-
+        
         self.tog_num = "M"
-        self.tog_key_list = ["T","C","P","A"]
-        self.tog_mouse_list = ["C1","C2"]
-        self.tog_icon_src_dict = {"T":"src/key.png",
-                              "C":"src/copy.png",
-                              "P":"src/paste.png",
-                              "A":"src/all.png",
-                              "C1":"src/cursor.png",
-                              "C2":"src/cursor2.png"}
-        self.mouse_tog_btn = None
-        self.key_tog_btn = None
+        self.tog_mouse_list = ["click","double"]
+        self.subact_iter = iter(self.tog_mouse_list)
+
+        self.input_tog = None
+        self.act_tog = None
         self.pos_cp = None
         
         #if len(self.row)>2: #그룹이 아닐 경우
@@ -54,77 +51,74 @@ class TreeWidgetItem(QTreeWidgetItem):
         
     #group을 지웠을 때 child가 윗계층으로 올라가기
     def set_widget(self,tw):
-        if self.typ:
-            # ~ : 가능
-            # ^ : 불가능
+        if self.input_type:
+            # ~ : 가능/ ^ : 불가능
             self.setFlags(self.flags() ^ Qt.ItemIsDropEnabled) # Item Drop 불가
             
             # Init ItemWidget
-            self.key_tog_btn = cp.SubActionTogBtn(self,self.typ,self.typ) # 매번 생성하는 것은 문제. group일때는 버튼을 비활성화+색상변경
-            self.mouse_tog_btn = cp.InputDeviceTogBtn(self,self.typ,self.typ) # 매번 생성하는 것은 문제
-            self.key_tog_btn.signal.connect(lambda:self.toggle_typ_key())
-            self.mouse_tog_btn.signal.connect(lambda:self.toggle_typ_mouse())
+            self.act_tog = cp.SubActionTogBtn(self,self.input_type) # 매번 생성하는 것은 문제. group일때는 버튼을 비활성화+색상변경
+            self.input_tog = cp.InputDeviceTogBtn(self,self.input_type) # 매번 생성하는 것은 문제
+            self.act_tog.signal.connect(lambda:self.toggle_subact())
+            self.input_tog.signal.connect(lambda:self.toggle_input())
             
             # Set ItemWidget in Col
-            tw.setItemWidget(self, 1, self.mouse_tog_btn)
-            if "C1" in self.typ or "C2" in self.typ: #23_04_18 "C" 바꿔야함
+            tw.setItemWidget(self, 1, self.input_tog)
+            if "M" == self.input_type:
                 x,y = self.pos.split(",")
                 self.pos_cp = cp.PosWidget(x,y)
                 tw.setItemWidget(self, 2, self.pos_cp)
-            tw.setItemWidget(self, 3, self.key_tog_btn)
+                
+            tw.setItemWidget(self, 3, self.act_tog)
             
     def isGroup(self):
-        return True if self.typ == "" else False # mariaDB 활용해야
+        return True if self.input_type == "" else False # mariaDB 활용해야
     
     def isTop(self):
-        return True if isinstance(self.parent(),NoneType) else False
+        return True if isinstance(self.parent(), NoneType) else False
         
     def set_icon(self):
-        icon_imgs = ["src/bag.png","src/inst.png"] #공통정보
-        self.setIcon(0,QIcon(icon_imgs[self.isGroup()]))
-             
-    def toggle_typ_key(self): #key 코글을 눌렀을 때의 함수.(복잡한 듯)
-        if self.tog_num == "K": #isKeyboard 등의 함수로 변형해야함
-            idx = self.tog_key_list.index(self.key_tog_btn.cur_type)
-            idx = (idx+1)%len(self.tog_key_list) # next?로 구현 가능할지
-            self.key_tog_btn.cur_type = self.tog_key_list[idx]
+        item_type = "group" if self.isGroup() else "inst"
+        self.setIcon(0, QIcon(rs.resrc[item_type]))
         
-        #tog_key_on 함수로 묶기  
-        self.tog_num = "K" # 함수로 바꾸는게 나을지
-        icon_path = self.tog_icon_src_dict[self.key_tog_btn.cur_type] #공통정보로 한번에 가져다 쓰도록.key인거 알기 때문에, cur_typ을 넣어서 idx를 뽑을 필요없이 직접 이미지를 지정해주면 됨
-        self.key_tog_btn.setIcon(QIcon(icon_path))
-        self.key_tog_btn.setStyleSheet("background-color: #B4EEB4") #key 색상 on,    
-        
-        #tog_mouse_off 함수로 묶기
-        self.tw.removeItemWidget(self,Head.pos.value) #key로 바꿨기 때문에 pos를 지움
-        self.mouse_tog_btn.setStyleSheet("background-color: light gray") #mouse 색상 off, pos 삭제 등을 하나로 묶어서
-        
-        #마무리 작업
-        self.finish_toggle_typ()
-    
     #signal의 class가 qobject를 상속할 때만 @pyqtSlot()을 달아주고, 아니면 달지 않는다
     #https://stackoverflow.com/questions/40325953/why-do-i-need-to-decorate-connected-slots-with-pyqtslot/40330912#40330912       
-    def toggle_typ_mouse(self):
-        if self.tog_num == "M": #mouse 토글을 눌렀을 때의 함수.(복잡한 듯)
-            idx = self.tog_mouse_list.index(self.mouse_tog_btn.cur_type)
-            idx = (idx+1)%len(self.tog_mouse_list)
-            self.mouse_tog_btn.cur_type = self.tog_mouse_list[idx]
+    def toggle_input(self):
+        if self.tog_num == "M":
+            self.tog_mouse_list = ["click","double"]
+            self.subact_iter = iter(self.tog_mouse_list)
+        else:
+            self.tog_key_list = ["typing","copy","paste"]
+            self.subact_iter = iter(self.tog_key_list)
         
         # 매번 cp를 생성하지 말고, 숨기고 드러내는 방식으로 변경해야함
-        # tog_mouse_on 함수
-        self.pos_cp = cp.PosWidget(0,0)
-        self.pos_cp.btn.clicked.connect(lambda ignore,f=self.pos_cp.get_pos:f())
-        self.tw.setItemWidget(self,Head.pos.value,self.pos_cp) # typ을 M로 변경시 - pos 연동 생성되는 코드
-        icon_path = self.tog_icon_src_dict[self.mouse_tog_btn.cur_type]
-        self.mouse_tog_btn.setIcon(QIcon(icon_path))
-        self.mouse_tog_btn.setStyleSheet("background-color: #B4EEB4")
-        
-        #tog_key_off 함수
-        self.tog_num = "M"
-        self.key_tog_btn.setStyleSheet("background-color: light gray")
+        if self.tog_num == "K": # tog_mouse_on
+            self.tog_num = "M"
+            self.pos_cp = cp.PosWidget(0,0)
+            self.tw.setItemWidget(self,Head.pos.value,self.pos_cp) # typ을 M로 변경시 - pos 연동 생성되는 코드
+        else: #tog_key_off 함수
+            self.tog_num = "K"
+            self.tw.removeItemWidget(self,Head.pos.value) # key로 바꿨기 때문에 pos를 지움
+            
+        self.input_tog.setIcon(QIcon(rs.resrc[self.tog_num]))
         
         #마무리 작업
+        self.finish_toggle_typ()         
+    def toggle_subact(self):
+        try:
+            self.act_tog.cur_type = next(self.subact_iter)
+        except:
+            if self.tog_num == "M":
+                self.tog_mouse_list = ["click","double"]
+                self.subact_iter = iter(self.tog_mouse_list)
+            else:
+                self.tog_key_list = ["typing","copy","paste"]
+                self.subact_iter = iter(self.tog_key_list)
+            self.act_tog.cur_type = next(self.subact_iter)
+        self.act_tog.setIcon(QIcon(rs.resrc[self.act_tog.cur_type]))
+        # 마무리 작업
         self.finish_toggle_typ()
+    
+
     
     def finish_toggle_typ(self):
         self.tw.save_push_log()
@@ -197,14 +191,14 @@ class TreeWidget(QTreeWidget):
         for i in range(self.topLevelItemCount()):
             top_it = self.topLevelItem(i)
             if top_it:
-                if top_it.mouse_tog_btn:
+                if top_it.input_tog:
                     three = ""
-                    if top_it.mouse_tog_btn.text() == "M":
+                    if top_it.input_tog.text() == "M":
                         three = top_it.pos_cp.coor.text()
-                    elif  top_it.mouse_tog_btn.text() == "K":
+                    elif  top_it.input_tog.text() == "K":
                         three = top_it.text(3)
-                    self.log_txt += ','.join(["top",top_it.text(0),top_it.mouse_tog_btn.text()
-                                              ,top_it.key_tog_btn.cur_type,three,""])
+                    self.log_txt += ','.join(["top",top_it.text(0),top_it.input_tog.text()
+                                              ,top_it.act_tog.cur_type,three,""])
                 else:
                     self.log_txt += ','.join(["top",top_it.text(0),"","","",""])
                 self.log_txt += '\n'
@@ -281,9 +275,9 @@ class TreeWidget(QTreeWidget):
         for ix in range(parent.childCount()):
             ch = parent.child(ix)
             ch_vals = [ch.text(i) for i in range(self.columnCount())]
-            if ch.mouse_tog_btn:
-                ch_vals[1] = ch.mouse_tog_btn.text()
-                ch_vals[2] = ch.key_tog_btn.text()
+            if ch.input_tog:
+                ch_vals[1] = ch.input_tog.text()
+                ch_vals[2] = ch.act_tog.text()
                 if ch_vals[1] == "M":
                     ch_vals[3] = ch.pos_cp.coor.text()
                 elif ch_vals[1] == "K":
@@ -317,12 +311,12 @@ class TreeWidget(QTreeWidget):
         elif event.matches(QKeySequence.Paste):
             self.save_push_log()
             target = self.currentItem()
-            if target.mouse_tog_btn is None:
+            if target.input_tog is None:
                 for item in self.copy_buf:
                     new_item = TreeWidgetItem(self, target)
                     new_item.pos_cp = item.pos_cp
-                    new_item.key_tog_btn = item.key_tog_btn
-                    new_item.mouse_tog_btn = item.mouse_tog_btn
+                    new_item.act_tog = item.act_tog
+                    new_item.input_tog = item.input_tog
                 print("Paste")
         elif event.matches(QKeySequence.Undo):
             self.undoStack.undo()
@@ -342,8 +336,8 @@ class TreeWidget(QTreeWidget):
     
     def exec_insts(self, inst_lst):
         for inst in inst_lst:
-            typ_cur = inst.mouse_tog_btn.Text()
-            act_cur = inst.key_tog_btn.currentText()
+            typ_cur = inst.input_tog.Text()
+            act_cur = inst.act_tog.currentText()
 
             if typ_cur == "M":
                 x, y = map(int, inst.pos_cp.coor.text().split(','))
@@ -528,16 +522,16 @@ class TreeWidget(QTreeWidget):
             else:
                 self.change_parent(new_p,tar,item,Indi.md.value)
         # connect 잘 해줘야
-        # item.mouse_tog_btn.signal.connect(lambda:item.toggle_typ_mouse())
+        # item.input_tog.signal.connect(lambda:item.toggle_input())
         # 아이템이 그룹일 때
         # - M일때/K일때
         # 아이템이 명령일 떄
         # -Top일 때/아닐 때
         #if self.isGroup(item):
-        #    item.mouse_tog_btn = ps.TypeBtn(self,item.text(1))
-        #    item.key_tog_btn = ps.ActCb(self,item.text(1),item.text(2))
-        #    self.setItemWidget(item, 1, item.mouse_tog_btn)
-        #    self.setItemWidget(item, 2, item.key_tog_btn)
+        #    item.input_tog = ps.TypeBtn(self,item.text(1))
+        #    item.act_tog = ps.ActCb(self,item.text(1),item.text(2))
+        #    self.setItemWidget(item, 1, item.input_tog)
+        #    self.setItemWidget(item, 2, item.act_tog)
         #    if item.text(1) == "M":
         #        coor = item.pos_cp.coor.text()
         #        item.pos_cp = ps.PosWidget(coor)
@@ -545,7 +539,7 @@ class TreeWidget(QTreeWidget):
         #        # 추후 class init할 때 connect 하도록 수정할 필요있음
         #        item.pos_cp.btn.clicked.connect(lambda ignore,f=item.pos_cp.get_pos:f())                  
         #        self.setItemWidget(item, 3, item.pos_cp)
-        #    item.mouse_tog_btn.signal.connect(lambda:item.toggle_typ_mouse())
+        #    item.input_tog.signal.connect(lambda:item.toggle_input())
         #else:
         #    item.p = tar
         #    if self.isTop(item):
@@ -786,13 +780,13 @@ class TreeWidget(QTreeWidget):
             print(type(ch))
             inst[0] = parent.text(0)
             inst[1] = ch.text(0)
-            if ch.mouse_tog_btn:
-                inst[2] = ch.mouse_tog_btn.text()
+            if ch.input_tog:
+                inst[2] = ch.input_tog.text()
                 if inst[2] == "M":
-                    inst[3] = ch.key_tog_btn.currentText()
+                    inst[3] = ch.act_tog.currentText()
                     inst[4] = ch.pos_cp.coor.text()
                 else:
-                    inst[3] = ch.key_tog_btn.currentText()
+                    inst[3] = ch.act_tog.currentText()
                     inst[4] = ch.text(3)
             insts.append(inst)
             self.recur_get_info(insts,ch)
