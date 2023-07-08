@@ -72,6 +72,7 @@ class PosWin(QWidget):
         else:
             super().mousePressEvent(event)
 
+    # 코드 이해 안감
     def mouseMoveEvent(self, event):
         if self.offset is not None and event.buttons() == Qt.LeftButton:
             self.move(self.pos() + event.pos() - self.offset)

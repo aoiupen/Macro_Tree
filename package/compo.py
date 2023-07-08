@@ -3,6 +3,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from package import pos as ps
 from package import compo as cp
+from package import resrc as rs
 
 class PosBtn(QPushButton):
     double_signal = pyqtSignal()
@@ -21,56 +22,27 @@ class RegBtn(QPushButton):
         self.setFixedSize(QSize(50,20))
         self.setStyleSheet("color:red")
 
-class MouseTogBtn(QPushButton):
+class InputDeviceTogBtn(QPushButton):
     signal = pyqtSignal()
-    def __init__(self, parent, typ, cur):
+    def __init__(self, parent, input_type):
         QPushButton.__init__(self)
         self.setFixedWidth(30)
         self.prnt = parent
-        self.cur_typ = "C1"
-        if cur == "C1":
-            self.cur_typ = cur
-            self.setStyleSheet("background-color: #B4EEB4")
-            
         self.clicked.connect(self.run)
-        icon = QIcon("src/cursor.png" if typ == "C1" else "src/cursor2.png")
+        icon = QIcon(rs.resrc[input_type])
         self.setIcon(icon)
 
     def run(self):
         self.signal.emit()
 
-class KeyTogBtn(QPushButton):
+class SubActionTogBtn(QPushButton):
     signal = pyqtSignal()
-    def __init__(self, parent, typ, cur):
+    def __init__(self, parent, action_type):
         QPushButton.__init__(self)
         self.setFixedWidth(30)
         self.prnt = parent
-        self.cur_typ = "T"
-        if cur == "C":
-            print(cur)
-            self.cur_typ = cur
-            self.setStyleSheet("background-color: #B4EEB4")
-        
         self.clicked.connect(self.run)
-        icon = {
-            "C": "src/copy.png",
-            "P": "src/paste.png",
-            "A": "src/all.png",
-        }.get(typ, "src/key.png")
-        self.setIcon(QIcon(icon))
-
-    def run(self):
-        self.signal.emit()
-
-class TypBtn(QPushButton):
-    signal = pyqtSignal()
-    def __init__(self, parent, typ):
-        super().__init__(self)
-        self.prnt = parent
-        self.setText(typ)
-        self.clicked.connect(self.run)
-        icon = "src/cursor.png" if typ == "M" else "src/key.png"
-        self.setIcon(QIcon(icon))
+        self.setIcon(QIcon(rs.resrc[action_type]))
 
     def run(self):
         self.signal.emit()

@@ -28,7 +28,7 @@ class UI():
         col_num = 5 # ui_prefer 3
         self.tw = tr.TreeWidget(self)
         self.tw.setColumnCount(col_num)
-        self.tw.setHeaderLabels(["Name","M","K","Value",""]) # ui_prefer 4
+        self.tw.setHeaderLabels(["Name","M/K","Value","Act",""]) # ui_prefer 4
         self.tw.setColumnWidth(1,10) # ui_prefer 5
         self.ctr_lay.addWidget(self.tw)
 
