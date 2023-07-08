@@ -2,6 +2,9 @@
 # setter getter
 resrc = {}
 
+# inputdevice
+resrc["mouse_acts"] = ["click","double"]
+resrc["key_acts"] = ["typing","copy","paste"]
 # inputdevice icon
 resrc["M"] = "src/mouse.png"
 resrc["K"] = "src/key.png"
@@ -15,6 +18,7 @@ resrc["double"] = "src/cursor2.png"
 #resrc["press"] = 
 
 # subaction icon (key)
+resrc["typing"] = "src/typing.png"
 resrc["copy"] = "src/copy.png"
 resrc["paste"] = "src/paste.png"
 resrc["all"] = "src/all.png"

@@ -48,10 +48,10 @@ class SubActionTogBtn(QPushButton):
 
 class ActCb(QComboBox):
     signal = pyqtSignal()
-    def __init__(self, tw, typ, act):
+    def __init__(self, tw, typ, sub_act):
         QComboBox.__init__(self)
         act_lst = tw.act_items[typ]
-        ix = act_lst.index(act)
+        ix = act_lst.index(sub_act)
         self.addItems(act_lst) # remember this way!
         self.setCurrentIndex(ix)
         self.currentIndexChanged.connect(self.run)

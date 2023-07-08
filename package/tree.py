@@ -20,7 +20,7 @@ class Head(Enum):
     non = 0
     typ = 1
     pos = 2
-    act = 3
+    sub_act = 3
     
 class TreeWidgetItem(QTreeWidgetItem):
     def __init__(self,tw,parent=None,row=""):
@@ -29,19 +29,18 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.row = row
         
         self.p_name,self.name = self.row[0:2]
-        self.input_type,self.act = self.row[2:4]
+        self.input_type,self.sub_act = self.row[2:4]
         self.pos = self.row[4]
         
         self.tog_num = "M"
-        self.tog_mouse_list = ["click","double"]
-        self.subact_iter = iter(self.tog_mouse_list)
+        self.subact_iter = iter(rs.resrc["mouse_acts"])
 
         self.input_tog = None
         self.act_tog = None
         self.pos_cp = None
         
         #if len(self.row)>2: #그룹이 아닐 경우
-        self.setText(0,self.name)
+        self.setText(0, self.name)
         self.set_widget(self.tw)
         self.set_icon()
         
@@ -84,11 +83,9 @@ class TreeWidgetItem(QTreeWidgetItem):
     #https://stackoverflow.com/questions/40325953/why-do-i-need-to-decorate-connected-slots-with-pyqtslot/40330912#40330912       
     def toggle_input(self):
         if self.tog_num == "M":
-            self.tog_mouse_list = ["click","double"]
-            self.subact_iter = iter(self.tog_mouse_list)
+            self.subact_iter = iter(rs.resrc["mouse_acts"])
         else:
-            self.tog_key_list = ["typing","copy","paste"]
-            self.subact_iter = iter(self.tog_key_list)
+            self.subact_iter = iter(rs.resrc["key_acts"])
         
         # 매번 cp를 생성하지 말고, 숨기고 드러내는 방식으로 변경해야함
         if self.tog_num == "K": # tog_mouse_on
@@ -100,19 +97,27 @@ class TreeWidgetItem(QTreeWidgetItem):
             self.tw.removeItemWidget(self,Head.pos.value) # key로 바꿨기 때문에 pos를 지움
             
         self.input_tog.setIcon(QIcon(rs.resrc[self.tog_num]))
+    
+        # Changing Subact
+        if self.tog_num == "M":
+            self.subact_iter = iter(rs.resrc["mouse_acts"])
+        else:
+            self.tog_key_list = ["typing","copy","paste"]
+            self.subact_iter = iter(rs.resrc["key_acts"])
+        self.act_tog.setIcon(QIcon(rs.resrc[next(self.subact_iter)]))
         
         #마무리 작업
-        self.finish_toggle_typ()         
+        self.finish_toggle_typ()
+                 
     def toggle_subact(self):
         try:
             self.act_tog.cur_type = next(self.subact_iter)
         except:
             if self.tog_num == "M":
-                self.tog_mouse_list = ["click","double"]
-                self.subact_iter = iter(self.tog_mouse_list)
+                self.subact_iter = iter(rs.resrc["mouse_acts"])
             else:
                 self.tog_key_list = ["typing","copy","paste"]
-                self.subact_iter = iter(self.tog_key_list)
+                self.subact_iter = iter(rs.resrc["key_acts"])
             self.act_tog.cur_type = next(self.subact_iter)
         self.act_tog.setIcon(QIcon(rs.resrc[self.act_tog.cur_type]))
         # 마무리 작업
