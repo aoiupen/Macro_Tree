@@ -29,29 +29,37 @@ class InputDeviceTogBtn(QPushButton):
         self.prnt = parent
         self.setFixedWidth(30)
         self.clicked.connect(self.run)
-        self.setIcon(QIcon(rs.resrc[input_type]))
+        self.setIcon(QIcon(rs.resrc[input_type]["icon"]))
 
     def run(self):
         self.signal.emit()
         
 class SubActionTogBtn(QPushButton):
     signal = pyqtSignal()
-    def __init__(self, parent, action_type):
+    def __init__(self, parent, action_type, subact):
         QPushButton.__init__(self)
         self.prnt = parent
+        self.cur_type = subact
+        self.subact_iter = iter(rs.resrc["M"]["subacts"]) if action_type == "M" else iter(rs.resrc["K"]["subacts"])
+        print("subact : " + self.cur_type)
+        while True:
+            temp = next(self.subact_iter)
+            print("temp : " + temp)
+            if self.cur_type == temp:
+                break
         self.setFixedWidth(30)
         self.clicked.connect(self.run)
-        self.setIcon(QIcon(rs.resrc[action_type]))
+        self.setIcon(QIcon(rs.resrc[self.cur_type])) # 주어진 sub_act을 넣고, next 기반 마련해야함
 
     def run(self):
         self.signal.emit()
 
 class ActCb(QComboBox):
     signal = pyqtSignal()
-    def __init__(self, tw, typ, sub_act):
+    def __init__(self, tw, typ, subact):
         QComboBox.__init__(self)
         act_lst = tw.act_items[typ]
-        ix = act_lst.index(sub_act)
+        ix = act_lst.index(subact)
         self.addItems(act_lst) # remember this way!
         self.setCurrentIndex(ix)
         self.currentIndexChanged.connect(self.run)

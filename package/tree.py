@@ -1,14 +1,14 @@
 import csv
 import pyautogui as pag
+from types import NoneType
+from enum import Enum
+from copy import deepcopy
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from package import pos as ps
 from package import compo as cp
 from package import tree as tr
-from types import NoneType
-from enum import Enum
-from copy import deepcopy
 from package import resrc as rs
 
 class Indi(Enum):
@@ -20,99 +20,103 @@ class Head(Enum):
     non = 0
     typ = 1
     pos = 2
-    sub_act = 3
+    subact = 3
     
 class TreeWidgetItem(QTreeWidgetItem):
     def __init__(self,tw,parent=None,row=""):
         QTreeWidgetItem.__init__(self, parent) # 부모 지정하는 단계
+        # Set Tree
         self.tw = tw
-        self.row = row
-        
-        self.p_name,self.name = self.row[0:2]
-        self.input_type,self.sub_act = self.row[2:4]
-        self.pos = self.row[4]
-        
-        self.isMouse = True
-        self.subact_iter = iter(rs.resrc["mouse_acts"])
-
         self.input_tog = None
-        self.act_tog = None
+        self.subact_tog = None
         self.pos_wid = None
+        self.lbl_wid = None
         
-        #if len(self.row)>2: #그룹이 아닐 경우
+        # Item Information
+        self.row = row
+        self.p_name = self.row[0]
+        self.name = self.row[1]
+        self.input_type = self.row[2]
+        self.subact = self.row[3]
+        self.pos = self.row[4]
+        self.item_type = "G" if self.row[2] == "" else "I"
+
+        # Head & Setting
+        self.setCheckState(0, Qt.Checked) #col,state
+        self.setIcon(0, QIcon(rs.resrc[self.item_type]))
         self.setText(0, self.name)
-        self.set_widget(self.tw)
-        self.set_icon()
-        
-        self.setFlags(self.flags()|Qt.ItemIsEditable) #editable
-        self.setCheckState(0,Qt.Checked) #col,state
+        self.setFlags(self.flags() | Qt.ItemIsEditable) # editable
         self.setExpanded(True)
         
+        self.set_widget(self.tw)
+            
     #group을 지웠을 때 child가 윗계층으로 올라가기
     def set_widget(self,tw):
-        if self.input_type:
+        if self.item_type == "I":
             # ~ : 가능/ ^ : 불가능
             self.setFlags(self.flags() ^ Qt.ItemIsDropEnabled) # Item Drop 불가
             
             # Init ItemWidget
             self.input_tog = cp.InputDeviceTogBtn(self,self.input_type) # 매번 생성하는 것은 문제
             self.input_tog.signal.connect(lambda:self.toggle_input())
-            self.act_tog = cp.SubActionTogBtn(self,self.input_type) # 매번 생성하는 것은 문제. group일때는 버튼을 비활성화+색상변경
-            self.act_tog.signal.connect(lambda:self.toggle_subact())
+            self.subact_tog = cp.SubActionTogBtn(self,self.input_type,self.subact) # 매번 생성하는 것은 문제. group일때는 버튼을 비활성화+색상변경
+            self.subact_tog.signal.connect(lambda:self.toggle_subact())
             
             # Set Item Widget in Col
             tw.setItemWidget(self, 1, self.input_tog)
-            if self.isMouse:
-                x,y = self.pos.split(",")
+            if self.input_type == "M":
+                x, y = self.pos.split(",")
                 self.pos_wid = cp.PosWidget(x,y)
                 tw.setItemWidget(self, 2, self.pos_wid)
-            tw.setItemWidget(self, 3, self.act_tog)
+            else:
+                if self.subact == "typing":
+                    self.lbl_wid = QLabel()
+                    self.lbl_wid.setFixedWidth(80)
+                    tw.setItemWidget(self, 2, self.lbl_wid)
+            tw.setItemWidget(self, 3, self.subact_tog)
             
     def isGroup(self):
-        return True if self.input_type == "" else False # mariaDB 활용해야
+        return True if self.input_type == "" else False
     
     def isTop(self):
         return True if isinstance(self.parent(), NoneType) else False
-        
-    def set_icon(self):
-        item_type = "group" if self.isGroup() else "inst"
-        self.setIcon(0, QIcon(rs.resrc[item_type]))
-        
+  
     #signal의 class가 qobject를 상속할 때만 @pyqtSlot()을 달아주고, 아니면 달지 않는다
     #https://stackoverflow.com/questions/40325953/why-do-i-need-to-decorate-connected-slots-with-pyqtslot/40330912#40330912       
     def toggle_input(self):
         # 매번 cp를 생성하지 말고, 숨기고 드러내는 방식으로 변경해야함
-        if self.isMouse: #tog_key_off 함수
+        if self.input_type == "M": #tog_key_off 함수
             self.tw.removeItemWidget(self,Head.pos.value) # key로 바꿨기 때문에 pos를 지움
         else:
             self.pos_wid = cp.PosWidget(0,0)
             self.tw.setItemWidget(self,Head.pos.value,self.pos_wid) # typ을 M로 변경시 - pos 연동 생성되는 코드
             
-        self.isMouse = not self.isMouse
-        self.input_tog.setIcon(QIcon(rs.resrc["M" if self.isMouse else "K"]))
+        self.input_type = "K" if self.input_type == "M" else "M"
+        self.input_tog.setIcon(QIcon(rs.resrc[self.input_type]["icon"]))
     
         # Changing Subact
-        self.subact_iter = iter(rs.resrc["mouse_acts"]) if self.isMouse else iter(rs.resrc["key_acts"])
-        self.act_tog.setIcon(QIcon(rs.resrc[next(self.subact_iter)]))
-        
-        #마무리 작업
-        self.finish_toggle_typ()
+        self.subact_tog.subact_iter = iter(rs.resrc["M"]["subacts"]) if self.input_type == "M" else iter(rs.resrc["K"]["subacts"])
+        self.subact_tog.setIcon(QIcon(rs.resrc[next(self.subact_tog.subact_iter)]))
+
+        self.finish_tog()
                  
-    def toggle_subact(self):
-        # 난독 코드 가능성. 수정 필요
+    def toggle_subact(self): # 난독 코드 가능성. 수정 필요
         try:
-            self.act_tog.cur_type = next(self.subact_iter)
+            print("before : " + self.subact_tog.cur_type)
+            self.subact_tog.cur_type = next(self.subact_tog.subact_iter)
+            print("after : " + self.subact_tog.cur_type)
         except:
-            self.subact_iter = iter(rs.resrc["mouse_acts"]) if self.isMouse else iter(rs.resrc["key_acts"])
-            self.act_tog.cur_type = next(self.subact_iter)
-        self.act_tog.setIcon(QIcon(rs.resrc[self.act_tog.cur_type]))
-        # 마무리 작업
-        self.finish_toggle_typ()
+            print("exxxxxxxxx")
+            self.subact_tog.subact_iter = iter(rs.resrc["M"]["subacts"]) if self.input_type == "M" else iter(rs.resrc["K"]["subacts"])
+            self.subact_tog.cur_type = next(self.subact_tog.subact_iter)
+        self.subact_tog.setIcon(QIcon(rs.resrc[self.subact_tog.cur_type]))
+
+        self.finish_tog()
     
-    def finish_toggle_typ(self):
+    def finish_tog(self):
         self.tw.save_push_log()
         self.tw.disconnect()        
-        self.tw.itemChanged.connect(self.tw.change_check) # typ을 key로 변경시 - pos 연동 삭제
+        self.tw.itemChanged.connect(self.tw.change_check) # input_type M -> K : pos 연동 삭제
         self.tw.setFocus()
                 
 class TreeUndoCommand(QUndoCommand):
@@ -188,7 +192,7 @@ class TreeWidget(QTreeWidget):
                         three = top_it.text(3)
                     # 수정해야함
                     self.log_txt += ','.join(["top",top_it.text(0),top_it.input_tog.text()
-                                              ,top_it.act_tog.cur_type,three,""])
+                                              ,top_it.subact_tog.cur_type,three,""])
                 else:
                     self.log_txt += ','.join(["top",top_it.text(0),"","","",""])
                 self.log_txt += '\n'
@@ -253,7 +257,7 @@ class TreeWidget(QTreeWidget):
             p = next((inst for inst in self.inst_list if inst.text(0) == p_str), None)
             tw_it = tr.TreeWidgetItem(self, p, row) if p else tr.TreeWidgetItem(self, self, row)
             tw_it.p_name = p.text(0) if p else 'top'
-            tw_it.set_icon()
+            tw_it.setIcon(0, QIcon(rs.resrc[tw_it.item_type]))
             tw_it.setText(0, name)
             if len(rest) > 1 and rest[0] == "K":
                 tw_it.setText(3, rest[1])
@@ -267,7 +271,7 @@ class TreeWidget(QTreeWidget):
             ch_vals = [ch.text(i) for i in range(self.columnCount())]
             if ch.input_tog:
                 ch_vals[1] = ch.input_tog.text()
-                ch_vals[2] = ch.act_tog.text()
+                ch_vals[2] = ch.subact_tog.text()
                 if ch_vals[1] == "M":
                     ch_vals[3] = ch.pos_wid.coor.text()
                 elif ch_vals[1] == "K":
@@ -305,7 +309,7 @@ class TreeWidget(QTreeWidget):
                 for item in self.copy_buf:
                     new_item = TreeWidgetItem(self, target)
                     new_item.pos_wid = item.pos_wid
-                    new_item.act_tog = item.act_tog
+                    new_item.subact_tog = item.subact_tog
                     new_item.input_tog = item.input_tog
                 print("Paste")
         elif event.matches(QKeySequence.Undo):
@@ -327,7 +331,7 @@ class TreeWidget(QTreeWidget):
     def exec_insts(self, inst_lst):
         for inst in inst_lst:
             typ_cur = inst.input_tog.Text()
-            act_cur = inst.act_tog.currentText()
+            act_cur = inst.subact_tog.currentText()
 
             if typ_cur == "M":
                 x, y = map(int, inst.pos_wid.coor.text().split(','))
@@ -519,9 +523,9 @@ class TreeWidget(QTreeWidget):
         # -Top일 때/아닐 때
         #if self.isGroup(item):
         #    item.input_tog = ps.TypeBtn(self,item.text(1))
-        #    item.act_tog = ps.ActCb(self,item.text(1),item.text(2))
+        #    item.subact_tog = ps.ActCb(self,item.text(1),item.text(2))
         #    self.setItemWidget(item, 1, item.input_tog)
-        #    self.setItemWidget(item, 2, item.act_tog)
+        #    self.setItemWidget(item, 2, item.subact_tog)
         #    if item.text(1) == "M":
         #        coor = item.pos_wid.coor.text()
         #        item.pos_wid = ps.PosWidget(coor)
@@ -773,10 +777,10 @@ class TreeWidget(QTreeWidget):
             if ch.input_tog:
                 inst[2] = ch.input_tog.text()
                 if inst[2] == "M":
-                    inst[3] = ch.act_tog.currentText()
+                    inst[3] = ch.subact_tog.currentText()
                     inst[4] = ch.pos_wid.coor.text()
                 else:
-                    inst[3] = ch.act_tog.currentText()
+                    inst[3] = ch.subact_tog.currentText()
                     inst[4] = ch.text(3)
             insts.append(inst)
             self.recur_get_info(insts,ch)

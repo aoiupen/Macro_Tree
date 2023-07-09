@@ -3,18 +3,22 @@
 # setter getter
 resrc = {}
 
-# inputdevice
-resrc["mouse_acts"] = ["click","double"]
-resrc["key_acts"] = ["typing","copy","paste"]
-# inputdevice icon
-resrc["M"] = "src/mouse.png"
-resrc["K"] = "src/key.png"
+# input type
+resrc["M"] = {}
+resrc["K"] = {}
+# input icon
+resrc["M"]["icon"] = "src/mouse.png"
+resrc["K"]["icon"] = "src/key.png"
+# input subacts
+resrc["M"]["subacts"] = ["click","double"]
+resrc["K"]["subacts"] = ["typing","copy","paste"]
+
 
 # getting coor icon
 resrc["coor"] = "src/coor.png"
 
-# subaction icon (key)
-resrc["click"] = "src/mouse.png"
+# subaction icon (mouse)
+resrc["click"] = "src/click.png"
 resrc["double"] = "src/double.png"
 #resrc["press"] = 
 
@@ -25,8 +29,8 @@ resrc["paste"] = "src/paste.png"
 resrc["all"] = "src/all.png"
 
 # tree icon
-resrc["group"] = "src/group.png"
-resrc["inst"] = "src/inst.png"
+resrc["G"] = "src/group.png"
+resrc["I"] = "src/inst.png"
 
 # mainwin shortcut
 
