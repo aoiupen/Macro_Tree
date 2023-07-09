@@ -30,7 +30,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.input_tog = None
         self.subact_tog = None
         self.pos_wid = None
-        self.lbl_wid = None
+        self.key_wid = None
         
         # Item Information
         self.row = row
@@ -39,7 +39,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.input_type = self.row[2]
         self.subact = self.row[3]
         self.pos = self.row[4]
-        self.item_type = "G" if self.row[2] == "" else "I"
+        self.item_type = "G" if self.row[2].__len__() == 0 else "I"
 
         # Head & Setting
         self.setCheckState(0, Qt.Checked) #col,state
@@ -70,9 +70,15 @@ class TreeWidgetItem(QTreeWidgetItem):
                 tw.setItemWidget(self, 2, self.pos_wid)
             else:
                 if self.subact == "typing":
-                    self.lbl_wid = QLabel()
-                    self.lbl_wid.setFixedWidth(80)
-                    tw.setItemWidget(self, 2, self.lbl_wid)
+                    self.key_wid = QLineEdit()
+                    self.key_wid.setFixedWidth(115)
+                    self.key_wid.setFixedHeight(25)
+                    self.key_wid.setText("Temp")
+                    tw.setItemWidget(self, 2, self.key_wid)
+                else:
+                    self.key_wid = QLabel()
+                    self.key_wid.setText("Temp")
+                    tw.setItemWidget(self, 2, self.key_wid)
             tw.setItemWidget(self, 3, self.subact_tog)
             
     def isGroup(self):
@@ -87,6 +93,13 @@ class TreeWidgetItem(QTreeWidgetItem):
         # 매번 cp를 생성하지 말고, 숨기고 드러내는 방식으로 변경해야함
         if self.input_type == "M": #tog_key_off 함수
             self.tw.removeItemWidget(self,Head.pos.value) # key로 바꿨기 때문에 pos를 지움
+            # Key Line Edit 생성
+            self.tw.removeItemWidget(self,Head.pos.value)
+            self.key_wid = QLineEdit()
+            self.key_wid.setFixedWidth(115)
+            self.key_wid.setFixedHeight(25)
+            self.key_wid.setText("Temp")
+            self.tw.setItemWidget(self, 2, self.key_wid)
         else:
             self.pos_wid = cp.PosWidget(0,0)
             self.tw.setItemWidget(self,Head.pos.value,self.pos_wid) # typ을 M로 변경시 - pos 연동 생성되는 코드
@@ -102,14 +115,25 @@ class TreeWidgetItem(QTreeWidgetItem):
                  
     def toggle_subact(self): # 난독 코드 가능성. 수정 필요
         try:
-            print("before : " + self.subact_tog.cur_type)
             self.subact_tog.cur_type = next(self.subact_tog.subact_iter)
-            print("after : " + self.subact_tog.cur_type)
         except:
-            print("exxxxxxxxx")
             self.subact_tog.subact_iter = iter(rs.resrc["M"]["subacts"]) if self.input_type == "M" else iter(rs.resrc["K"]["subacts"])
             self.subact_tog.cur_type = next(self.subact_tog.subact_iter)
         self.subact_tog.setIcon(QIcon(rs.resrc[self.subact_tog.cur_type]))
+        
+        if self.input_type == "K":
+            if self.subact_tog.cur_type in ["copy","paste"]:
+                self.tw.removeItemWidget(self,Head.pos.value)
+                self.key_wid = QLabel()
+                self.key_wid.setText("Temp")
+                self.tw.setItemWidget(self, 2, self.key_wid)
+            else:
+                self.tw.removeItemWidget(self,Head.pos.value)
+                self.key_wid = QLineEdit()
+                self.key_wid.setFixedWidth(115)
+                self.key_wid.setFixedHeight(25)
+                self.key_wid.setText("Temp")
+                self.tw.setItemWidget(self, 2, self.key_wid)
 
         self.finish_tog()
     
