@@ -4,6 +4,7 @@ from PyQt5.QtGui import *
 from package import pos as ps
 from package import compo as cp
 from package import resrc as rs
+import copy
 
 class PosBtn(QPushButton):
     double_signal = pyqtSignal()
@@ -31,13 +32,13 @@ class InputDeviceTogBtn(QPushButton):
         self.setFixedWidth(30)
         self.clicked.connect(self.run)
         self.cur_input = input
-        self.input_iter = iter(rs.resrc["input"])
+        self.iter_val = copy.deepcopy(rs.resrc["input"])
         # 함수화하기
         while True:
-            temp = next(self.input_iter)
+            temp = next(self.iter_val)
             if self.cur_input == temp:
                 break
-        #----------
+        #----------z
         self.setIcon(QIcon(rs.resrc[self.cur_input]["icon"]))
 
     def run(self):
@@ -49,10 +50,10 @@ class SubActionTogBtn(QPushButton):
         QPushButton.__init__(self)
         self.prnt = parent
         self.cur_subact = subact
-        self.subact_iter = iter(rs.resrc[cur_input]["subacts"])
+        self.iter_val = copy.deepcopy(rs.resrc[cur_input]["subacts"])
         # 함수화하기
         while True:
-            temp = next(self.subact_iter)
+            temp = next(self.iter_val)
             if self.cur_subact == temp:
                 break
         #----------

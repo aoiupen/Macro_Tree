@@ -1,18 +1,19 @@
+import itertools as itls
 # Settings
 
 # setter getter
 resrc = {}
 
 # input type
-resrc["input"] = ["M","K"]
+resrc["input"] = itls.cycle(["M","K"])
 resrc["M"] = {}
 resrc["K"] = {}
 # input icon
 resrc["M"]["icon"] = "src/mouse.png"
 resrc["K"]["icon"] = "src/key.png"
 # input subacts
-resrc["M"]["subacts"] = ["click","double"]
-resrc["K"]["subacts"] = ["typing","copy","paste"]
+resrc["M"]["subacts"] = itls.cycle(["click","double"])
+resrc["K"]["subacts"] = itls.cycle(["typing","copy","paste"])
 
 
 # getting coor icon

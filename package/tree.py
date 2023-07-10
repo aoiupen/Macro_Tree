@@ -10,6 +10,7 @@ from package import pos as ps
 from package import compo as cp
 from package import tree as tr
 from package import resrc as rs
+import copy
 
 class Indi(Enum):
     md = 0
@@ -29,7 +30,6 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.tw = tw
         self.input_tog = None
         self.pos_wid = None
-        self.key_wid = None
         self.subact_tog = None
         self.key_wid_2 = QLabel("Temptemp")
         # Info
@@ -59,7 +59,6 @@ class TreeWidgetItem(QTreeWidgetItem):
         # 1 Set Input toggle button
         self.input_tog = cp.InputDeviceTogBtn(self,self.cur_input)
         self.input_tog.signal.connect(lambda:self.toggle_input())
-        tw.setItemWidget(self, 1, self.input_tog)
         
         # 2 Set Content Widget
         if self.cur_input == "M":
@@ -68,17 +67,20 @@ class TreeWidgetItem(QTreeWidgetItem):
             tw.setItemWidget(self, 2, self.pos_wid)
         else:
             if self.subact == "typing":
-                self.key_wid = QLineEdit()
-                self.key_wid.setFixedWidth(115)
-                self.key_wid.setFixedHeight(25)
+                self.pos_wid = QLineEdit()
+                self.pos_wid.setFixedWidth(115)
+                self.pos_wid.setFixedHeight(25)
             else:
-                self.key_wid = QLabel()
-            self.key_wid.setText("Temp")
-            tw.setItemWidget(self, 2, self.key_wid)
-            
+                self.pos_wid = QLabel()
+            self.pos_wid.setText("Temp")
+        
         # 3 Set Subact toggle button
         self.subact_tog = cp.SubActionTogBtn(self,self.cur_input,self.subact) # group일때는 버튼을 비활성화+색상변경
         self.subact_tog.signal.connect(lambda:self.toggle_subact())
+        
+        # Set
+        tw.setItemWidget(self, 1, self.input_tog)
+        tw.setItemWidget(self, 2, self.pos_wid)
         tw.setItemWidget(self, 3, self.subact_tog)
             
     def isGroup(self):
@@ -88,45 +90,29 @@ class TreeWidgetItem(QTreeWidgetItem):
         return True if isinstance(self.parent(), NoneType) else False
   
     #signal의 class가 qobject를 상속할 때만 @pyqtSlot()을 달아주고, 아니면 달지 않는다
-    #https://stackoverflow.com/questions/40325953/why-do-i-need-to-decorate-connected-slots-with-pyqtslot/40330912#40330912       
+    #https://stackoverflow.com/questions/40325953/why-do-i-need-to-decorate-connected-slots-with-pyqtslot/40330912#40330912
+    # 매번 cp를 생성하지 말고, 숨기고 드러내는 방식으로 변경해야함       
     def toggle_input(self):
-        # 매번 cp를 생성하지 말고, 숨기고 드러내는 방식으로 변경해야함
-        if self.cur_input == "M": #tog_key_off 함수
-            # Key Line Edit 생성
-            self.key_wid = QLineEdit()
-            self.key_wid.setFixedWidth(115)
-            self.key_wid.setFixedHeight(25)
-            self.key_wid.setText("Temp")
-            self.tw.setItemWidget(self, Head.pos.value, self.key_wid)
+        self.cur_input = next(self.input_tog.iter_val)
+        self.input_tog.setIcon(QIcon(rs.resrc[self.cur_input]["icon"]))
+        
+        if self.cur_input == "K":
+            self.pos_wid = QLineEdit()
+            self.pos_wid.setFixedWidth(115)
+            self.pos_wid.setFixedHeight(25)
+            self.pos_wid.setText("Temp")
         else:
             self.pos_wid = cp.PosWidget(0,0)
-            self.tw.setItemWidget(self, Head.pos.value, self.pos_wid) # typ을 M로 변경시 - pos 연동 생성되는 코드
-
-        self.cur_input = self.get_next_input()
-        self.input_tog.setIcon(QIcon(rs.resrc[self.cur_input]["icon"]))
+        self.tw.setItemWidget(self, Head.pos.value, self.pos_wid)
     
         # Changing Subact
-        self.subact_tog.subact_iter = iter(rs.resrc[self.cur_input]["subacts"])
-        self.subact_tog.setIcon(QIcon(rs.resrc[next(self.subact_tog.subact_iter)]))
+        self.subact_tog.iter_val = copy.deepcopy(rs.resrc[self.cur_input]["subacts"])
+        self.subact_tog.setIcon(QIcon(rs.resrc[next(self.subact_tog.iter_val)]))
 
         self.finish_tog()
-        
-    def get_next_input(self):
-        try:
-            return next(self.input_tog.input_iter)
-        except:
-            self.input_tog.input_iter = iter(rs.resrc["input"])
-            return next(self.input_tog.input_iter)
-            
-    def get_next_subact(self):
-        try:
-            return next(self.subact_tog.subact_iter)
-        except:
-            self.subact_tog.subact_iter = iter(rs.resrc[self.cur_input]["subacts"])
-            return next(self.subact_tog.subact_iter)
     
     def toggle_subact(self): # 난독 코드 가능성. 수정 필요
-        self.cur_subact = self.get_next_subact()
+        self.cur_subact = next(self.subact_tog.iter_val)
         self.subact_tog.setIcon(QIcon(rs.resrc[self.cur_subact]))
         
         if self.cur_input == "K":
@@ -547,6 +533,7 @@ class TreeWidget(QTreeWidget):
                 self.change_parent("top",tar,item,Indi.md.value)
             else:
                 self.change_parent(new_p,tar,item,Indi.md.value)
+        
         # connect 잘 해줘야
         # item.input_tog.signal.connect(lambda:item.toggle_input())
         # 아이템이 그룹일 때
