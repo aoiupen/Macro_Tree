@@ -17,22 +17,31 @@ resrc["K"]["subacts"] = itls.cycle(["typing","copy","paste"])
 
 
 # getting coor icon
-resrc["coor"] = "src/coor.png"
+resrc["coor"] = {}
+resrc["coor"]["icon"] = "src/coor.png"
 
 # subaction icon (mouse)
-resrc["click"] = "src/click.png"
-resrc["double"] = "src/double.png"
+resrc["click"] = {}
+resrc["double"] = {}
+resrc["click"]["icon"] = "src/click.png"
+resrc["double"]["icon"] = "src/double.png"
 #resrc["press"] = 
 
 # subaction icon (key)
-resrc["typing"] = "src/typing.png"
-resrc["copy"] = "src/copy.png"
-resrc["paste"] = "src/paste.png"
-resrc["all"] = "src/all.png"
+resrc["typing"] = {}
+resrc["copy"] = {}
+resrc["paste"] = {}
+resrc["all"] = {}
+resrc["typing"]["icon"] = "src/typing.png"
+resrc["copy"]["icon"] = "src/copy.png"
+resrc["paste"]["icon"] = "src/paste.png"
+resrc["all"]["icon"] = "src/all.png"
 
 # tree icon
-resrc["G"] = "src/group.png"
-resrc["I"] = "src/inst.png"
+resrc["G"] = {}
+resrc["I"] = {}
+resrc["G"]["icon"] = "src/group.png"
+resrc["I"]["icon"] = "src/inst.png"
 
 # mainwin shortcut
 
