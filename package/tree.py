@@ -122,7 +122,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         try:
             return next(self.subact_tog.subact_iter)
         except:
-            self.subact_tog.subact_iter = iter(rs.resrc["M"]["subacts"]) if self.cur_input == "M" else iter(rs.resrc["K"]["subacts"])
+            self.subact_tog.subact_iter = iter(rs.resrc[self.cur_input]["subacts"])
             return next(self.subact_tog.subact_iter)
     
     def toggle_subact(self): # 난독 코드 가능성. 수정 필요

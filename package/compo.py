@@ -11,6 +11,7 @@ class PosBtn(QPushButton):
         super().__init__()
         self.setText(name)
         self.clicked.connect(self.run)
+        
     def run(self):
         self.double_signal.emit()
 
