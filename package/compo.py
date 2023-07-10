@@ -22,7 +22,7 @@ class RegBtn(QPushButton):
         super().__init__()
         self.setText(name)
         self.coor_list = []
-        self.setFixedSize(QSize(50,20))
+        self.setFixedSize(50,20)
         self.setStyleSheet("color:red")
 
 class InputDeviceTogBtn(QPushButton):

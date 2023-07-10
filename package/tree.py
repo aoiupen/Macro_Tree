@@ -69,8 +69,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         else:
             if self.cur_sub == "typing":
                 self.pos_wid = QLineEdit()
-                self.pos_wid.setFixedWidth(115)
-                self.pos_wid.setFixedHeight(25)
+                self.pos_wid.setFixedSize(115,25)
             else:
                 self.pos_wid = QLabel()
             self.pos_wid.setText("Temp")
@@ -99,8 +98,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         
         if self.cur_inp == "K":
             self.pos_wid = QLineEdit()
-            self.pos_wid.setFixedWidth(115)
-            self.pos_wid.setFixedHeight(25)
+            self.pos_wid.setFixedSize(115,25)
             self.pos_wid.setText("Temp")
         else:
             self.pos_wid = cp.PosWidget(0,0)
@@ -123,8 +121,7 @@ class TreeWidgetItem(QTreeWidgetItem):
                 self.key_wid = QLabel()
             else:
                 self.key_wid = QLineEdit()
-                self.key_wid.setFixedWidth(115)
-                self.key_wid.setFixedHeight(25)
+                self.key_wid.setFixedSize(115,25)
             self.key_wid.setText("Temp")
             self.tw.setItemWidget(self, 2, self.key_wid)
 
@@ -216,7 +213,6 @@ class TreeWidget(QTreeWidget):
                 if top_it.childCount():
                     self.recur_log(top_it)
         self.log_txt = self.log_txt.rstrip('\n')
-        #print(self.log_txt)
         return self.log_txt
     
     def load_log(self, tr_str):
