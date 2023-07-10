@@ -47,10 +47,10 @@ class InputDeviceTogBtn(QPushButton):
         
 class SubActionTogBtn(QPushButton):
     signal = pyqtSignal()
-    def __init__(self, parent, cur_inp, subact):
+    def __init__(self, parent, cur_inp, cur_sub):
         QPushButton.__init__(self)
         self.prnt = parent
-        self.cur_sub = subact
+        self.cur_sub = cur_sub
         self.iters = copy.deepcopy(rsc[cur_inp]["subacts"])
         # 함수화하기
         while True:
@@ -67,10 +67,10 @@ class SubActionTogBtn(QPushButton):
 
 class ActCb(QComboBox):
     signal = pyqtSignal()
-    def __init__(self, tw, typ, subact):
+    def __init__(self, tw, typ, cur_sub):
         QComboBox.__init__(self)
         act_lst = tw.act_items[typ]
-        ix = act_lst.index(subact)
+        ix = act_lst.index(cur_sub)
         self.addItems(act_lst) # remember this way!
         self.setCurrentIndex(ix)
         self.currentIndexChanged.connect(self.run)

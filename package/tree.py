@@ -37,7 +37,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.p_name = row[0]
         self.name = row[1]
         self.cur_inp = row[2]
-        self.subact = row[3]
+        self.cur_sub = row[3]
         self.pos = row[4]
         self.item_type = "G" if row[2].__len__() == 0 else "I"
 
@@ -67,7 +67,7 @@ class TreeWidgetItem(QTreeWidgetItem):
             self.pos_wid = cp.PosWidget(x,y)
             tw.setItemWidget(self, 2, self.pos_wid)
         else:
-            if self.subact == "typing":
+            if self.cur_sub == "typing":
                 self.pos_wid = QLineEdit()
                 self.pos_wid.setFixedWidth(115)
                 self.pos_wid.setFixedHeight(25)
@@ -76,7 +76,7 @@ class TreeWidgetItem(QTreeWidgetItem):
             self.pos_wid.setText("Temp")
         
         # 3 Set Subact toggle button
-        self.sub_tog = cp.SubActionTogBtn(self,self.cur_inp,self.subact) # group일때는 버튼을 비활성화+색상변경
+        self.sub_tog = cp.SubActionTogBtn(self,self.cur_inp,self.cur_sub) # group일때는 버튼을 비활성화+색상변경
         self.sub_tog.signal.connect(lambda:self.toggle_subact())
         
         # Set
