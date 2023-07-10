@@ -24,32 +24,40 @@ class RegBtn(QPushButton):
 
 class InputDeviceTogBtn(QPushButton):
     signal = pyqtSignal()
-    def __init__(self, parent, input_type):
+    def __init__(self, parent, input):
         QPushButton.__init__(self)
         self.prnt = parent
         self.setFixedWidth(30)
         self.clicked.connect(self.run)
-        self.setIcon(QIcon(rs.resrc[input_type]["icon"]))
+        self.cur_input = input
+        self.input_iter = iter(rs.resrc["input"])
+        # 함수화하기
+        while True:
+            temp = next(self.input_iter)
+            if self.cur_input == temp:
+                break
+        #----------
+        self.setIcon(QIcon(rs.resrc[self.cur_input]["icon"]))
 
     def run(self):
         self.signal.emit()
         
 class SubActionTogBtn(QPushButton):
     signal = pyqtSignal()
-    def __init__(self, parent, action_type, subact):
+    def __init__(self, parent, cur_input, subact):
         QPushButton.__init__(self)
         self.prnt = parent
-        self.cur_type = subact
-        self.subact_iter = iter(rs.resrc["M"]["subacts"]) if action_type == "M" else iter(rs.resrc["K"]["subacts"])
-        print("subact : " + self.cur_type)
+        self.cur_subact = subact
+        self.subact_iter = iter(rs.resrc[cur_input]["subacts"])
+        # 함수화하기
         while True:
             temp = next(self.subact_iter)
-            print("temp : " + temp)
-            if self.cur_type == temp:
+            if self.cur_subact == temp:
                 break
+        #----------
         self.setFixedWidth(30)
         self.clicked.connect(self.run)
-        self.setIcon(QIcon(rs.resrc[self.cur_type])) # 주어진 sub_act을 넣고, next 기반 마련해야함
+        self.setIcon(QIcon(rs.resrc[self.cur_subact])) # 주어진 sub_act을 넣고, next 기반 마련해야함
 
     def run(self):
         self.signal.emit()

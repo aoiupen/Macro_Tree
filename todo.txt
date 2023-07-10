@@ -1,7 +1,6 @@
 # 기획 의도 : Flexible 범용 매크로 개발
 
 # 기획
-# Tree : input_type 개선하기
 # Tree : Group, inst 조작 (recur,event 등)
 # Tree : Log,File,매크로 3개 레이어 분리
 # Tree : 매크로 실행시 값 전달 확인
@@ -24,6 +23,7 @@
 # Tree : Ctrl+left click시 복사 붙여넣기 되도록 + 여러개 선택시 모두 복사 되기
 
 # 완료
+# Tree : cur_input 개선하기
 # Tree : Subact 코드 정리
 # Tree : Item 이동,삽입,삭제
 # Tree : Mouse,Key 토글 버튼으로 바꾸기

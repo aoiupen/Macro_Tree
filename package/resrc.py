@@ -4,6 +4,7 @@
 resrc = {}
 
 # input type
+resrc["input"] = ["M","K"]
 resrc["M"] = {}
 resrc["K"] = {}
 # input icon
