@@ -2,46 +2,46 @@ import itertools as itls
 # Settings
 
 # setter getter
-resrc = {}
+rsc = {}
 
 # input type
-resrc["input"] = itls.cycle(["M","K"])
-resrc["M"] = {}
-resrc["K"] = {}
+rsc["input"] = itls.cycle(["M","K"])
+rsc["M"] = {}
+rsc["K"] = {}
 # input icon
-resrc["M"]["icon"] = "src/mouse.png"
-resrc["K"]["icon"] = "src/key.png"
+rsc["M"]["icon"] = "src/mouse.png"
+rsc["K"]["icon"] = "src/key.png"
 # input subacts
-resrc["M"]["subacts"] = itls.cycle(["click","double"])
-resrc["K"]["subacts"] = itls.cycle(["typing","copy","paste"])
+rsc["M"]["subacts"] = itls.cycle(["click","double"])
+rsc["K"]["subacts"] = itls.cycle(["typing","copy","paste"])
 
 
 # getting coor icon
-resrc["coor"] = {}
-resrc["coor"]["icon"] = "src/coor.png"
+rsc["coor"] = {}
+rsc["coor"]["icon"] = "src/coor.png"
 
 # subaction icon (mouse)
-resrc["click"] = {}
-resrc["double"] = {}
-resrc["click"]["icon"] = "src/click.png"
-resrc["double"]["icon"] = "src/double.png"
-#resrc["press"] = 
+rsc["click"] = {}
+rsc["double"] = {}
+rsc["click"]["icon"] = "src/click.png"
+rsc["double"]["icon"] = "src/double.png"
+#rsc["press"] = 
 
 # subaction icon (key)
-resrc["typing"] = {}
-resrc["copy"] = {}
-resrc["paste"] = {}
-resrc["all"] = {}
-resrc["typing"]["icon"] = "src/typing.png"
-resrc["copy"]["icon"] = "src/copy.png"
-resrc["paste"]["icon"] = "src/paste.png"
-resrc["all"]["icon"] = "src/all.png"
+rsc["typing"] = {}
+rsc["copy"] = {}
+rsc["paste"] = {}
+rsc["all"] = {}
+rsc["typing"]["icon"] = "src/typing.png"
+rsc["copy"]["icon"] = "src/copy.png"
+rsc["paste"]["icon"] = "src/paste.png"
+rsc["all"]["icon"] = "src/all.png"
 
 # tree icon
-resrc["G"] = {}
-resrc["I"] = {}
-resrc["G"]["icon"] = "src/group.png"
-resrc["I"]["icon"] = "src/inst.png"
+rsc["G"] = {}
+rsc["I"] = {}
+rsc["G"]["icon"] = "src/group.png"
+rsc["I"]["icon"] = "src/inst.png"
 
 # mainwin shortcut
 

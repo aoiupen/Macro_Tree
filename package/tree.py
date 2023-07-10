@@ -9,7 +9,8 @@ from PyQt5.QtGui import *
 from package import pos as ps
 from package import compo as cp
 from package import tree as tr
-from package import resrc as rs
+from package import resrc
+from .resrc import *
 import copy
 
 class Indi(Enum):
@@ -42,7 +43,7 @@ class TreeWidgetItem(QTreeWidgetItem):
 
         # Group,Inst
         self.setCheckState(0, Qt.Checked) #col,state
-        self.setIcon(0, QIcon(rs.resrc[self.item_type]["icon"]))
+        self.setIcon(0, QIcon(rsc[self.item_type]["icon"]))
         self.setText(0, self.name)
         self.setFlags(self.flags() | Qt.ItemIsEditable) # editable
         self.setExpanded(True)
@@ -94,7 +95,7 @@ class TreeWidgetItem(QTreeWidgetItem):
     # 매번 cp를 생성하지 말고, 숨기고 드러내는 방식으로 변경해야함       
     def toggle_input(self):
         self.cur_inp = next(self.input_tog.iters)
-        self.input_tog.setIcon(QIcon(rs.resrc[self.cur_inp]["icon"]))
+        self.input_tog.setIcon(QIcon(rsc[self.cur_inp]["icon"]))
         
         if self.cur_inp == "K":
             self.pos_wid = QLineEdit()
@@ -106,15 +107,15 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.tw.setItemWidget(self, Head.pos.value, self.pos_wid)
     
         # Changing Subact
-        self.sub_tog.iters = copy.deepcopy(rs.resrc[self.cur_inp]["subacts"])
+        self.sub_tog.iters = copy.deepcopy(rsc[self.cur_inp]["subacts"])
         self.cur_sub = next(self.sub_tog.iters)
-        self.sub_tog.setIcon(QIcon(rs.resrc[self.cur_sub]["icon"]))
+        self.sub_tog.setIcon(QIcon(rsc[self.cur_sub]["icon"]))
 
         self.finish_tog()
     
     def toggle_subact(self): # 난독 코드 가능성. 수정 필요
         self.cur_sub = next(self.sub_tog.iters)
-        self.sub_tog.setIcon(QIcon(rs.resrc[self.cur_sub]["icon"]))
+        self.sub_tog.setIcon(QIcon(rsc[self.cur_sub]["icon"]))
         
         if self.cur_inp == "K":
             self.tw.removeItemWidget(self,Head.pos.value)
@@ -273,7 +274,7 @@ class TreeWidget(QTreeWidget):
             p = next((inst for inst in self.inst_list if inst.text(0) == p_str), None)
             tw_it = tr.TreeWidgetItem(self, p, row) if p else tr.TreeWidgetItem(self, self, row)
             tw_it.p_name = p.text(0) if p else 'top'
-            tw_it.setIcon(0, QIcon(rs.resrc[tw_it.item_type]["icon"]))
+            tw_it.setIcon(0, QIcon(rsc[tw_it.item_type]["icon"]))
             tw_it.setText(0, name)
             if len(rest) > 1 and rest[0] == "K":
                 tw_it.setText(3, rest[1])

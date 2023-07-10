@@ -3,7 +3,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from package import pos as ps
 from package import compo as cp
-from package import resrc as rs
+from package import resrc
+from .resrc import *
 import copy
 
 class PosBtn(QPushButton):
@@ -32,14 +33,14 @@ class InputDeviceTogBtn(QPushButton):
         self.setFixedWidth(30)
         self.clicked.connect(self.run)
         self.cur_inp = input
-        self.iters = copy.deepcopy(rs.resrc["input"])
+        self.iters = copy.deepcopy(rsc["input"])
         # 함수화하기
         while True:
             temp = next(self.iters)
             if self.cur_inp == temp:
                 break
         #----------z
-        self.setIcon(QIcon(rs.resrc[self.cur_inp]["icon"]))
+        self.setIcon(QIcon(rsc[self.cur_inp]["icon"]))
 
     def run(self):
         self.signal.emit()
@@ -50,7 +51,7 @@ class SubActionTogBtn(QPushButton):
         QPushButton.__init__(self)
         self.prnt = parent
         self.cur_sub = subact
-        self.iters = copy.deepcopy(rs.resrc[cur_inp]["subacts"])
+        self.iters = copy.deepcopy(rsc[cur_inp]["subacts"])
         # 함수화하기
         while True:
             temp = next(self.iters)
@@ -59,7 +60,7 @@ class SubActionTogBtn(QPushButton):
         #----------
         self.setFixedWidth(30)
         self.clicked.connect(self.run)
-        self.setIcon(QIcon(rs.resrc[self.cur_sub]["icon"])) # 주어진 sub_act을 넣고, next 기반 마련해야함
+        self.setIcon(QIcon(rsc[self.cur_sub]["icon"])) # 주어진 sub_act을 넣고, next 기반 마련해야함
 
     def run(self):
         self.signal.emit()
@@ -103,7 +104,7 @@ class PosWidget(QWidget):
         
         # Button for getting coordinate
         self.coor_btn = cp.PosBtn("")
-        self.coor_btn.setIcon(QIcon(rs.resrc["coor"]["icon"]))
+        self.coor_btn.setIcon(QIcon(rsc["coor"]["icon"]))
         self.coor_btn.setFixedWidth(self.btn_width)
         self.coor_btn.clicked.connect(lambda ignore,f=self.get_pos:f())
         
