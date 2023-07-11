@@ -74,7 +74,7 @@ class UI():
         
         # finish
         #self.win.adjustSize()
-        self.tw.load()
+        self.tw.load_log_from_csv()
         
 def change_them(dark,app):
     if dark.is_dark:
