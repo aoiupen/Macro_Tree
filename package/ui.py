@@ -10,7 +10,7 @@ class UI():
         super().__init__()
         self.col_n = 5
         self.col_w = 10
-        
+
         self.setup_win(win,app)
         self.setup_tree()
         self.setup_menubar(self.tw)
