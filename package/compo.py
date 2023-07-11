@@ -27,31 +27,31 @@ class RegBtn(QPushButton):
 
 class InputDeviceTogBtn(QPushButton):
     signal = pyqtSignal()
-    def __init__(self, parent, input):
+    def __init__(self, parent, inp):
         QPushButton.__init__(self)
         self.prnt = parent
         self.setFixedWidth(30)
         self.clicked.connect(self.run)
-        self.cur_inp = input
+        self.cur = inp
         self.iters = copy.deepcopy(rsc["input"])
         # 함수화하기
         while True:
             temp = next(self.iters)
-            if self.cur_inp == temp:
+            if self.cur == temp:
                 break
-        #----------z
-        self.setIcon(QIcon(rsc[self.cur_inp]["icon"]))
+        #----------
+        self.setIcon(QIcon(rsc[self.cur]["icon"]))
 
     def run(self):
         self.signal.emit()
         
 class SubActionTogBtn(QPushButton):
     signal = pyqtSignal()
-    def __init__(self, parent, cur_inp, cur_sub):
+    def __init__(self, parent, inp, sub):
         QPushButton.__init__(self)
         self.prnt = parent
-        self.cur_sub = cur_sub
-        self.iters = copy.deepcopy(rsc[cur_inp]["subacts"])
+        self.cur_sub = sub
+        self.iters = copy.deepcopy(rsc[inp]["subacts"])
         # 함수화하기
         while True:
             temp = next(self.iters)

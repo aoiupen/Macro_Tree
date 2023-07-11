@@ -23,7 +23,7 @@
 # Tree : Ctrl+left click시 복사 붙여넣기 되도록 + 여러개 선택시 모두 복사 되기
 
 # 완료
-# Tree : cur_inp 개선하기
+# Tree : cur 개선하기
 # Tree : Subact 코드 정리
 # Tree : Item 이동,삽입,삭제
 # Tree : Mouse,Key 토글 버튼으로 바꾸기

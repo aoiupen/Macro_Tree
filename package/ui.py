@@ -14,7 +14,7 @@ class UI():
         self.setup_win(win,app)
         self.setup_tree()
         self.setup_menubar(self.tw)
-        self.tw.load()
+        self.tw.load_log_from_csv()
         
         
     def setup_win(self,win,app):
