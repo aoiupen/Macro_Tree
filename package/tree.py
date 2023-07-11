@@ -197,20 +197,19 @@ class TreeWidget(QTreeWidget):
         for i in range(self.topLevelItemCount()):
             top_it = self.topLevelItem(i)
             if top_it:
+                name = top_it.text(0)
                 if top_it.input_tog:
-                    three = ""
-                    if top_it.input_tog.cur_inp == "M":
-                        three = top_it.pos_wid.coor.text()
-                    elif  top_it.input_tog.text() == "K":
-                        three = top_it.text(3)
-                    # 수정해야함
-                    self.log_txt += ','.join(["top",top_it.text(0),top_it.input_tog.text()
-                                              ,top_it.sub_tog.self.cur_sub,three,""])
+                    inp = top_it.input_tog.cur_inp
+                    sub = top_it.sub_tog.cur_sub
+                    content = top_it.pos
+                    self.log_txt += ','.join(["top",name,inp,sub,content,""])
                 else:
-                    self.log_txt += ','.join(["top",top_it.text(0),"","","",""])
+                    self.log_txt += ','.join(["top",name,"","","",""])
                 self.log_txt += '\n'
+                
                 if top_it.childCount():
                     self.recur_log(top_it)
+                    
         self.log_txt = self.log_txt.rstrip('\n')
         return self.log_txt
     
