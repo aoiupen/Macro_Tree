@@ -42,7 +42,7 @@ def fillItem(self, inItem, outItem):
         print(inItem.pos_wid)
         if not outItem.typ_cb: # Group이면 부모 재설정 new_parent(tar)인자를 받아서
             #outItem.p = tar
-            outItem.p_name = outItem.text(0) 
+            outItem.p_name = outItem.name 
             #tar.insertChild(0,drag_item) # 인덱스는 임시로 0
         else:
             outItem.typ_cb = ps.TypCb(self,outItem.text(1))

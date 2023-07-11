@@ -16,7 +16,6 @@ class UI():
         self.setup_menubar(self.tw)
         self.tw.load_log_from_csv()
         
-        
     def setup_win(self,win,app):
         self.app = app
         self.win = win
@@ -42,7 +41,7 @@ class UI():
         self.menubar_file = self.menubar.addMenu('&File')
         name_list = ["Save","Load","Execute","Exit"]
         shcut_list = ['Ctrl+S','Ctrl+L','Ctrl+E','Ctrl+Q']
-        func_list = [tw.save,tw.load,tw.exec_inst,qApp.quit]
+        func_list = [tw.save,tw.load_log_from_csv,tw.exec_inst,qApp.quit]
         
         for ix in range(len(name_list)):
             act = QAction(name_list[ix],self.win)

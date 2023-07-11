@@ -9,8 +9,7 @@ from PyQt5.QtGui import *
 from package import pos as ps
 from package import compo as cp
 from package import tree as tr
-from package import resrc
-from .resrc import *
+from package.resrc import *
 import copy
 
 class Indi(Enum):
@@ -28,6 +27,7 @@ class TreeWidgetItem(QTreeWidgetItem):
     def __init__(self,tw,parent=None,row=""):
         QTreeWidgetItem.__init__(self, parent) # 부모 지정하는 단계
         # Set Tree
+        print("1313")
         self.tw = tw
         self.inp_tog = None
         self.pos_wid = None
@@ -36,46 +36,54 @@ class TreeWidgetItem(QTreeWidgetItem):
         # Info
         self.p_name = row[0]
         self.name = row[1]
-        self.cur = row[2]
-        self.cur = row[3]
+        self.cur_inp = row[2]
+        self.cur_sub = row[3]
         self.pos = row[4]
         self.item_type = "G" if row[2].__len__() == 0 else "I"
-
+        print("1414")
         # Group,Inst
         self.setCheckState(0, Qt.Checked) #col,state
         self.setIcon(0, QIcon(rsc[self.item_type]["icon"]))
         self.setText(0, self.name)
         self.setFlags(self.flags() | Qt.ItemIsEditable) # editable
         self.setExpanded(True)
-        
+        print("1515")
         # Inst Content
         if self.item_type == "I":
+            print("7777")
             self.set_widget(self.tw)
-            
+        print("1616")    
     #group을 지웠을 때 child가 윗계층으로 올라가기
     def set_widget(self,tw):
         # ~ : 가능/ ^ : 불가능
         self.setFlags(self.flags() ^ Qt.ItemIsDropEnabled) # Item Drop 불가
-        
+        print("9999")
         # 1 Set Input toggle button
-        self.inp_tog = cp.InputDeviceTogBtn(self,self.cur)
+        self.inp_tog = cp.InputDeviceTogBtn(self,self.cur_inp)
+        print("8888")
         self.inp_tog.signal.connect(lambda:self.toggle_input())
-        
         # 2 Set Content Widget
-        if self.cur == "M":
+        if self.cur_inp == "M":
             x, y = self.pos.split(",")
             self.pos_wid = cp.PosWidget(x,y)
             tw.setItemWidget(self, 2, self.pos_wid)
         else:
-            if self.cur == "typing":
+            print(")))"*20)
+            print(self.cur_sub)
+            if self.cur_sub == "typing":
                 self.pos_wid = QLineEdit()
+                print("*"*20)
+                self.pos_wid.setText(self.pos)
                 self.pos_wid.setFixedSize(115,25)
             else:
                 self.pos_wid = QLabel()
-            self.pos_wid.setText("Temp")
-        
+            if self.pos:
+                self.pos_wid.setText(self.pos)
+            else:
+                self.pos_wid.setText("Temp")
+        print("7777")
         # 3 Set Subact toggle button
-        self.sub_tog = cp.SubActionTogBtn(self,self.cur,self.cur) # group일때는 버튼을 비활성화+색상변경
+        self.sub_tog = cp.SubActionTogBtn(self,self.cur_inp,self.cur_sub) # group일때는 버튼을 비활성화+색상변경
         self.sub_tog.signal.connect(lambda:self.toggle_subact())
         
         # Set
@@ -84,7 +92,10 @@ class TreeWidgetItem(QTreeWidgetItem):
         tw.setItemWidget(self, 3, self.sub_tog)
             
     def isGroup(self):
-        return True if self.cur == "" else False
+        return True if self.cur_inp == "" else False
+    
+    def isInst(self):
+        return False if self.cur_inp == "" else True
     
     def isTop(self):
         return True if isinstance(self.parent(), NoneType) else False
@@ -197,7 +208,7 @@ class TreeWidget(QTreeWidget):
         for i in range(self.topLevelItemCount()):
             top_it = self.topLevelItem(i)
             if top_it:
-                name = top_it.text(0)
+                name = top_it.name
                 if top_it.inp_tog:
                     inp = top_it.inp_tog.cur
                     sub = top_it.sub_tog.cur
@@ -237,10 +248,10 @@ class TreeWidget(QTreeWidget):
                 tw_it.setText(0, name)
             else:
                 for inst in self.insts:
-                    if inst.text(0) == parent_str:
+                    if inst.name == parent_str:
                         parent = inst
                         tw_it = TreeWidgetItem(self, parent, row)
-                        tw_it.p_name = parent.text(0)
+                        tw_it.p_name = parent.name
                         tw_it.setText(0, name)
                         break
 
@@ -261,9 +272,9 @@ class TreeWidget(QTreeWidget):
         
         for row in log_list:
             p_str, name, *rest = row
-            p = next((inst for inst in self.inst_list if inst.text(0) == p_str), None)
+            p = next((inst for inst in self.inst_list if inst.name == p_str), None)
             tw_it = tr.TreeWidgetItem(self, p, row) if p else tr.TreeWidgetItem(self, self, row)
-            tw_it.p_name = p.text(0) if p else 'top'
+            tw_it.p_name = p.name if p else 'top'
             tw_it.setIcon(0, QIcon(rsc[tw_it.item_type]["icon"]))
             tw_it.setText(0, name)
             if len(rest) > 1 and rest[0] == "K":
@@ -282,20 +293,24 @@ class TreeWidget(QTreeWidget):
         with open('ex.csv', 'rt') as f:
             log_list = list(csv.reader(f))
         
-        for row in log_list:
-            p_name, name, *wid_info = row
-            p = next([inst for inst in self.inst_list if inst.text(0) == p_name], None)
-            parent = p if p else self
-            tw_it = tr.TreeWidgetItem(self, parent, row)
-            
-            tw_it.p_name = p.text(0) if p else 'top'
-            tw_it.setIcon(0, QIcon(rsc[tw_it.item_type]["icon"]))
-            tw_it.setText(0, name)
-            if len(wid_info) > 1 and wid_info[0] == "K":
-                tw_it.setText(3, wid_info[1])
-            self.inst_list.append(tw_it)
+            for row in log_list:
+                p_name, name, *wid_info = row
+                p = next((inst for inst in self.inst_list if inst.name == p_name), None) # tuple : iter(O), List : iter(X)
+                print(p)
+                parent = p if p else self
+                print(type(parent))
+                print(row)
+                tw_it = tr.TreeWidgetItem(self, parent, row)
+                tw_it.p_name = p.name if p else 'top'
+                #tw_it.setIcon(0, QIcon(rsc[tw_it.item_type]["icon"]))
+                tw_it.setText(0, name)
+                print("1212")
+                #if len(wid_info) > 1 and wid_info[0] == "K":
+                #    tw_it.setText(3, wid_info[1])
+                self.inst_list.append(tw_it)
 
-        self.itemChanged.connect(self.change_check)
+            #self.itemChanged.connect(self.change_check)
+        
                
     def recur_log(self, parent):
         for ix in range(parent.childCount()):
@@ -309,7 +324,7 @@ class TreeWidget(QTreeWidget):
                 elif ch_vals[1] == "K":
                     ch_vals[3] = ch.text(3)
 
-            ch_vals.insert(0, parent.text(0))
+            ch_vals.insert(0, parent.name)
             val_join = ",".join(ch_vals) + "\n"
             self.log_txt += val_join
             if ch.childCount():
@@ -333,7 +348,7 @@ class TreeWidget(QTreeWidget):
         elif event.matches(QKeySequence.Copy):
             self.copy_buf = self.selectedItems()
             p_lst = [item.p_name for item in self.copy_buf]
-            name_lst = [item.text(0) for item in self.copy_buf]
+            name_lst = [item.name for item in self.copy_buf]
             self.copy_buf = [item for item in self.copy_buf if item.p_name not in name_lst]
         elif event.matches(QKeySequence.Paste):
             self.save_push_log()
@@ -438,11 +453,11 @@ class TreeWidget(QTreeWidget):
             print(new.parent())
         
         if isinstance(cur_p,NoneType):
-            ix = self.indexOfTopLevelItem(cur)
+            ix = self.indexOfTopLevelItem(new)
             self.insertTopLevelItem(ix,new)
         else:
             #ix, indp_it = self.extract_item(new) : OK
-            ix = cur_p.indexOfChild(cur)
+            ix = cur_p.indexOfChild(new)
             cur_p.insertChild(ix,new)
 
         for node_it in node_lst:
@@ -513,7 +528,7 @@ class TreeWidget(QTreeWidget):
             return
 
         item = self.itemAt(pos)
-        name = item.text(0)
+        name = item.name
 
         menu = QMenu()
         #quitAction = menu.addAction("Quit")
@@ -579,7 +594,7 @@ class TreeWidget(QTreeWidget):
         #    if self.isTop(item):
         #        item.p_name = "top"
         #    else:
-        #        item.p_name = tar.text(0) 
+        #        item.p_name = tar.name 
         #    # tar.insertChild(0,item) # 인덱스는 임시로 0
         #    
         #child_cnt = item.childCount()
@@ -787,43 +802,44 @@ class TreeWidget(QTreeWidget):
         self.setFocus()
         self.save_log()
         self.blockSignals(False)
-            
+    
     def save(self):
         with open('ex.csv', 'wt') as csvfile:
-            writer = csv.writer(csvfile, dialect='excel', lineterminator='\n')
-            # writer.writerow(self.header)
-            insts = []
-            for ix in range(self.topLevelItemCount()):
-                top_item = self.topLevelItem(ix)
-                if top_item:
-                    insts.append(["top", top_item.text(0), "", "", "", ""])
-                    if top_item.childCount():
-                        self.recur_get_info(insts, top_item)
-                
-            writer.writerow(insts)
-                
+            writer = csv.writer(csvfile, dialect='excel', lineterminator='\n', quotechar="\"")
+            it_row_list = []
+            self.collect_it(it_row_list)
+            for it_row in it_row_list:
+                writer.writerow(it_row)
         csvfile.close()
-        
-    def save_as(self):
-        return
+
+    def collect_it(self, it_row_list):
+        for ix in range(self.topLevelItemCount()):
+            top_it = self.topLevelItem(ix)
+            if top_it: # top 있으면
+                self.append_top_it(it_row_list, top_it) # top 담기
+                if top_it.childCount(): # child 있으면
+                    self.recur_append_it(it_row_list, top_it) # child 담기
     
-    # top은 예외 recur은 마지막에
-    def recur_get_info(self,insts,parent):
+    def append_top_it(self, it_row_list, top_it):
+        top_it_row = ["top", top_it.name, "", "", "", ""]
+        it_row_list.append(top_it_row)
+ 
+    def recur_append_it(self,it_row_list,parent):
         for ix in range(parent.childCount()):
-            inst = ["","","","",""]
-            ch = parent.child(ix)
-            print(type(ch))
-            inst[0] = parent.text(0)
-            inst[1] = ch.text(0)
-            if ch.inp_tog:
-                inst[2] = ch.inp_tog.text()
-                inst[3] = ch.sub_tog.cur
-                if inst[2] == "M":
-                    inst[4] = ch.pos_wid.coor_str
+            it = parent.child(ix)
+            it_row = [parent.name,it.name,"","","",""]
+            if it.isInst():
+                inp = it.inp_tog.cur_inp
+                sub = it.sub_tog.cur_sub
+                it_row = [parent.name,it.name,inp,sub,"",""]
+                if it_row[2] == "M":
+                    coor = it.pos_wid.coor_str
+                    it_row = [parent.name,it.name,inp,sub,coor,""]
                 else:
-                    inst[4] = ch.text(3)
-            insts.append(inst)
-            self.recur_get_info(insts,ch)
+                    content = "\"" + it.pos + "\""
+                    it_row = [parent.name,it.name,inp,sub,content,""]
+            it_row_list.append(it_row)
+            self.recur_append_it(it_row_list,it)
         return
     
     def recur_child_exec(self,parent,lst):

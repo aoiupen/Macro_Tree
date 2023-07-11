@@ -32,15 +32,15 @@ class InputDeviceTogBtn(QPushButton):
         self.prnt = parent
         self.setFixedWidth(30)
         self.clicked.connect(self.run)
-        self.cur = inp
+        self.cur_inp = inp
         self.iters = copy.deepcopy(rsc["input"])
         # 함수화하기
         while True:
             temp = next(self.iters)
-            if self.cur == temp:
+            if self.cur_inp == temp:
                 break
         #----------
-        self.setIcon(QIcon(rsc[self.cur]["icon"]))
+        self.setIcon(QIcon(rsc[self.cur_inp]["icon"]))
 
     def run(self):
         self.signal.emit()
