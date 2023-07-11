@@ -4,6 +4,10 @@ import itertools as itls
 # setter getter
 rsc = {}
 
+# header
+rsc["header"] = ["Name","M/K","Value","Act",""]
+rsc["win_geo"] = [100,100,500,400]
+
 # input type
 rsc["input"] = itls.cycle(["M","K"])
 rsc["M"] = {}

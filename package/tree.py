@@ -168,7 +168,7 @@ class TreeWidget(QTreeWidget):
         self.header().setSectionResizeMode(QHeaderView.ResizeToContents) #adjust
         self.header().setCascadingSectionResizes(True)
         self.customContextMenuRequested.connect(self.context_menu)
-        #self.header().setSectionResizeMode(5,QHeaderView.Stretch)#movable True
+        #self.header().setSectionResizeMode(5,QHeaderView.Stretch) # movable True
         #self.setContextMenuPolicy(Qt.CustomContextMenu) #비활성화시키면 contextmenuevent 동작됨
         self.copy_buf = []
         self.log_lst = []
@@ -177,7 +177,6 @@ class TreeWidget(QTreeWidget):
         self.undoStack = QUndoStack(self)
         self.undoStack.setIndex(0)
         self.cnt = 0
-        self.header = [self.headerItem().text(col) for col in range(self.columnCount())]
         
     def mousePressEvent(self, event):
         if event.modifiers() != Qt.ControlModifier:
@@ -200,7 +199,7 @@ class TreeWidget(QTreeWidget):
             if top_it:
                 if top_it.input_tog:
                     three = ""
-                    if top_it.input_tog.text() == "M":
+                    if top_it.input_tog.cur_inp == "M":
                         three = top_it.pos_wid.coor.text()
                     elif  top_it.input_tog.text() == "K":
                         three = top_it.text(3)
@@ -790,11 +789,10 @@ class TreeWidget(QTreeWidget):
             inst[1] = ch.text(0)
             if ch.input_tog:
                 inst[2] = ch.input_tog.text()
+                inst[3] = ch.sub_tog.cur_sub
                 if inst[2] == "M":
-                    inst[3] = ch.sub_tog.currentText()
-                    inst[4] = ch.pos_wid.coor.text()
+                    inst[4] = ch.pos_wid.coor_str
                 else:
-                    inst[3] = ch.sub_tog.currentText()
                     inst[4] = ch.text(3)
             insts.append(inst)
             self.recur_get_info(insts,ch)

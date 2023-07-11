@@ -101,6 +101,7 @@ class PosWidget(QWidget):
         self.coor_y_edit = QLineEdit(str(coor_y_val), self)
         self.coor_y_edit.setFixedWidth(self.edit_width)
         self.coor_y_edit.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.coor_str = self.coor_x_edit.text() + self.coor_lbl.text() + self.coor_y_edit.text()
         
         # Button for getting coordinate
         self.coor_btn = cp.PosBtn("")
