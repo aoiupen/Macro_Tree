@@ -95,12 +95,14 @@ class PosWidget(QWidget):
         self.coor_x_edit = QLineEdit(str(coor_x_val), self)
         self.coor_x_edit.setFixedWidth(self.edit_width)
         self.coor_x_edit.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.coor_x_edit.textChanged.connect(self.update_coor)
         self.coor_lbl = QLabel(",")
         self.coor_lbl.setAlignment(Qt.AlignCenter)
         self.coor_lbl.setFixedWidth(self.lbl_width)
         self.coor_y_edit = QLineEdit(str(coor_y_val), self)
         self.coor_y_edit.setFixedWidth(self.edit_width)
         self.coor_y_edit.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.coor_y_edit.textChanged.connect(self.update_coor)
         self.coor_str = self.coor_x_edit.text() + self.coor_lbl.text() + self.coor_y_edit.text()
         
         # Button for getting coordinate
@@ -119,3 +121,5 @@ class PosWidget(QWidget):
         self.poswin = ps.PosWin(self)
         self.poswin.show()
     
+    def update_coor(self):
+        self.coor_str = self.coor_x_edit.text() + self.coor_lbl.text() + self.coor_y_edit.text()

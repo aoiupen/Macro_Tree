@@ -13,9 +13,9 @@ class FramelessWidget(QWidget):
         self.setWindowTitle("Test")
         self.setWindowFlags(Qt.FramelessWindowHint)
         m = get_monitors()[0]
-        print(m)
         self.resolution_width = m.width
         self.resolution_height = m.height
+        
         self.label = QLabel("", self)
         self.offset = None
         self.quitSc1 = QShortcut(QKeySequence('Ctrl+Q'), self)
@@ -24,6 +24,7 @@ class FramelessWidget(QWidget):
         self.quitSc2.activated.connect(self.set_maximize)
         self.quitSc3 = QShortcut(QKeySequence('Ctrl+S'), self)
         self.quitSc3.activated.connect(self.set_minimize)
+        
         op = QGraphicsOpacityEffect(self)
         self.setGraphicsEffect(op)
         self.setAutoFillBackground(True)
@@ -70,7 +71,6 @@ class FramelessWidget(QWidget):
         super().mouseReleaseEvent(event)
 
     def paintEvent(self, event):
-        print("paint")
         painter = QPainter(self)
         painter.setPen(QPen(Qt.green, 8, Qt.SolidLine))
         painter.drawEllipse(self.offset,40,40)

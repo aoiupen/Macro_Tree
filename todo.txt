@@ -2,8 +2,6 @@
 
 # 기획
 # Tree : 
-# ---- inst/group, item/top/not top, row/line 등의 네이밍 기준 정리
-# ---- ch.name 대신 ch.name -> name을 추가하기
 # ---- mouse는 self.pos_wid.coor_str, key는 self.pos 둘 통일하기
 # Tree : Group, inst 조작 (recur,event 등)
 # Tree : Log,File,매크로 3개 레이어 분리
@@ -28,6 +26,8 @@
 # Tree : Ctrl+left click시 복사 붙여넣기 되도록 + 여러개 선택시 모두 복사 되기
 
 # 완료
+# Tree : ch.name 대신 ch.name -> name을 추가하기
+# Tree : inst/group, item/top/not top, row/line 등의 네이밍 기준 정리
 # Tree : cur 개선하기
 # Tree : Subact 코드 정리
 # Tree : Item 이동,삽입,삭제
