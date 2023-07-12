@@ -35,7 +35,7 @@ class UI():
     def setup_menubar(self,tw):
         # menubar
         self.menubar = self.win.menuBar()
-        self.menubar.setNativeMenuBar(False)       
+        self.menubar.setNativeMenuBar(False)
         
         # menubar_file(act)
         self.menubar_file = self.menubar.addMenu('&File')
