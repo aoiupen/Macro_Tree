@@ -25,52 +25,52 @@ class RegBtn(QPushButton):
         self.setFixedSize(50,20)
         self.setStyleSheet("color:red")
 
-class InputDeviceTogBtn(QPushButton):
+class InpTogBtn(QPushButton):
     signal = pyqtSignal()
     def __init__(self, parent, inp):
         QPushButton.__init__(self)
         self.prnt = parent
         self.setFixedWidth(30)
         self.clicked.connect(self.run)
-        self.cur_inp = inp
+        self.cur = inp
         self.iters = copy.deepcopy(rsc["input"])
         # 함수화하기
         while True:
             temp = next(self.iters)
-            if self.cur_inp == temp:
+            if self.cur == temp:
                 break
         #----------
-        self.setIcon(QIcon(rsc[self.cur_inp]["icon"]))
+        self.setIcon(QIcon(rsc[self.cur]["icon"]))
 
     def run(self):
         self.signal.emit()
         
-class SubActionTogBtn(QPushButton):
+class SubTogBtn(QPushButton):
     signal = pyqtSignal()
     def __init__(self, parent, inp, sub):
         QPushButton.__init__(self)
         self.prnt = parent
-        self.cur_sub = sub
+        self.cur = sub
         self.iters = copy.deepcopy(rsc[inp]["subacts"])
         # 함수화하기
         while True:
             temp = next(self.iters)
-            if self.cur_sub == temp:
+            if self.cur == temp:
                 break
         #----------
         self.setFixedWidth(30)
         self.clicked.connect(self.run)
-        self.setIcon(QIcon(rsc[self.cur_sub]["icon"])) # 주어진 sub_act을 넣고, next 기반 마련해야함
+        self.setIcon(QIcon(rsc[self.cur]["icon"])) # 주어진 sub_act을 넣고, next 기반 마련해야함
 
     def run(self):
         self.signal.emit()
 
 class ActCb(QComboBox):
     signal = pyqtSignal()
-    def __init__(self, tw, typ, cur_sub):
+    def __init__(self, tw, inp, sub):
         QComboBox.__init__(self)
-        act_lst = tw.act_items[typ]
-        ix = act_lst.index(cur_sub)
+        act_lst = tw.act_items[inp]
+        ix = act_lst.index(sub)
         self.addItems(act_lst) # remember this way!
         self.setCurrentIndex(ix)
         self.currentIndexChanged.connect(self.run)

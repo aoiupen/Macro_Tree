@@ -39,10 +39,10 @@ def fillItem(self, inItem, outItem):
         # *drop event로 Data를 먼저 옮기고, if문 이하에서 item setting
         print(inItem.typ_cb)
         print(inItem.act_cb)
-        print(inItem.pos_wid)
+        print(inItem.sub_wid)
         if not outItem.typ_cb: # Group이면 부모 재설정 new_parent(tar)인자를 받아서
             #outItem.p = tar
-            outItem.p_name = outItem.name 
+            outItem.prnt = outItem.name 
             #tar.insertChild(0,drag_item) # 인덱스는 임시로 0
         else:
             outItem.typ_cb = ps.TypCb(self,outItem.text(1))
@@ -51,11 +51,11 @@ def fillItem(self, inItem, outItem):
             self.setItemWidget(outItem, 2, outItem.act_cb)
             if outItem.text(1) == "Mouse":
                 coor = outItem.text(3)
-                outItem.pos_wid = ps.PosWidget(coor)
+                outItem.sub_wid = ps.PosWidget(coor)
                 # 이동해도, item을 새로 만드는 것이기 때문에, connect도 다시 해줘야한다.
                 # 추후 class init할 때 connect 하도록 수정할 필요있음
-                outItem.pos_wid.btn.clicked.connect(lambda ignore,f=outItem.pos_wid.get_pos:f())                  
-                self.setItemWidget(outItem, 3, outItem.pos_wid)
+                outItem.sub_wid.btn.clicked.connect(lambda ignore,f=outItem.sub_wid.get_pos:f())                  
+                self.setItemWidget(outItem, 3, outItem.sub_wid)
             outItem.typ_cb.signal.connect(lambda:outItem.toggle_mouse())
         child_cnt = outItem.childCount()
         # 단,group이어도 group 자신만 dropevent만하고, 자식들은 move_itemwidget 거치도록       
@@ -64,7 +64,7 @@ def fillItem(self, inItem, outItem):
         for ix in range(itFrom.childCount()):
             ch = itFrom.child(ix)
             it = TreeWidgetItem(self,itTo)
-            it.pos_wid = ch.pos_wid
+            it.sub_wid = ch.sub_wid
             it.act_cb = ch.act_cb
             it.typ_cb = ch.typ_cb
             #self.fillItem(ch, it)
@@ -133,7 +133,7 @@ def fillItem(self, inItem, outItem):
                     for it in items:
                         # QTree->TreeWidgetItem?
                         new_it = TreeWidgetItem(self,tar)
-                        new_it.pos_wid = it.pos_wid
+                        new_it.sub_wid = it.sub_wid
                         new_it.act_cb = it.act_cb
                         new_it.typ_cb = it.typ_cb
                         
