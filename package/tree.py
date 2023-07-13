@@ -279,9 +279,8 @@ class TreeWidget(QTreeWidget):
         self.clear()
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
-        
+        print(logs)
         log_list = [log.split(",") for log in logs.split("\n")]
-        
         for row in log_list:
             p_str, name, *rest = row
             p = next((inst for inst in self.inst_list if inst.name == p_str), None)
@@ -329,16 +328,13 @@ class TreeWidget(QTreeWidget):
             for ix in range(ch_cnt):
                 it = parent.child(ix)
                 if it.is_inst():
-                    if it.inp == "M":
-                        row = [it.prnt, it.name, it.inp, it.sub_con, it.sub]
-                    else:
-                        row = [it.prnt, it.name, it.inp, it.sub_con, it.sub]
-                print(row)
+                    row = [it.prnt, it.name, it.inp, it.sub_con, it.sub]
                 row_str = ",".join(row) + "\n"
                 self.log += row_str
                 
                 self.recur_log(it)
     
+    #
     # del 등의 작업 전 log를 undostack에 임시 저장            
     def snapshot(self):
         log = self.save_log()
@@ -357,17 +353,15 @@ class TreeWidget(QTreeWidget):
             self.sel_nd_it_list = [sel_it for sel_it in sel_it_list if sel_it.prnt not in sel_it_name_list]
         elif event.matches(QKeySequence.Paste):
             self.snapshot()
-            cur_it = self.currentItem()
-            dst_it = cur_it
+            dst_it = self.currentItem()
             if dst_it.is_group():
                 for sel_nd_it in self.sel_nd_it_list:
                     row = [sel_nd_it.prnt, sel_nd_it.name, sel_nd_it.inp, sel_nd_it.sub_con, sel_nd_it.sub]
-                    copied_it = TreeWidgetItem(self, dst_it, row)
-                    copied_it.sub_tog = sel_nd_it.sub_tog
-                    copied_it.inp_tog = sel_nd_it.inp_tog
-                    copied_it.sub_wid = sel_nd_it.sub_wid
+                    TreeWidgetItem(self, dst_it, row)
         elif event.matches(QKeySequence.Undo):
             self.undoStack.undo()
+        elif event.matches(QKeySequence.Redo):
+            self.undoStack.undo()   
         else:
             super().keyPressEvent(event)
     

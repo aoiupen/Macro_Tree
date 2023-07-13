@@ -5,6 +5,8 @@ GroupG,Content,M,"1,0",click
 top,GroupB,,,
 GroupB,gr_b1,,,
 gr_b1,SaveImg,M,"503,285",click
+gr_b1,FileName,K,Temp3,copy
+gr_b1,Content,K,Empty,typing
 GroupB,gr_b2,,,
 gr_b2,SaveImg,M,"0,0",double
 gr_b2,SaveImg2,,,
