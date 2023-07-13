@@ -63,9 +63,9 @@ class UI():
         self.setup_ctr(MainWindow,app)
         
         # tree
-        col_num = 5
+        col_cnt = 5
         self.tw = tr.TreeWidget(self)
-        self.tw.setColumnCount(col_num)
+        self.tw.setColumnCount(col_cnt)
         self.tw.setHeaderLabels(["Name","M","K","Value",""])
         self.tw.setColumnWidth(1,10)
         self.ctr_lay.addWidget(self.tw)

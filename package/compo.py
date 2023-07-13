@@ -52,12 +52,8 @@ class SubTogBtn(QPushButton):
         self.prnt = parent
         self.cur = sub
         self.iters = copy.deepcopy(rsc[inp]["subacts"])
-        # 함수화하기
-        while True:
-            temp = next(self.iters)
-            if self.cur == temp:
-                break
-        #----------
+        while self.cur != next(self.iters):
+            pass
         self.setFixedWidth(30)
         self.clicked.connect(self.run)
         self.setIcon(QIcon(rsc[self.cur]["icon"])) # 주어진 sub_act을 넣고, next 기반 마련해야함
