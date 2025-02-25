@@ -11,6 +11,7 @@ from package import compo as cp
 from package import tree as tr
 from package.resrc import *
 import copy
+import psycopg2
 
 class Indi(Enum):
     md = 0
@@ -272,6 +273,24 @@ class TreeWidget(QTreeWidget):
             self.insts.append(tw_it)
         self.itemChanged.connect(self.change_check)
     '''
+
+    def load_log_from_db(self):
+        conn = psycopg2.connect("dbname=mydb user=myuser password=mypass")
+        cur = conn.cursor()
+        cur.execute("SELECT id, parent_id, name, inp, sub_con, sub FROM tree_nodes")
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+
+        self.clear()
+        node_dict = {}
+
+        for row in rows:
+            node_id, parent_id, name, inp, sub_con, sub = row
+            parent = self if parent_id is None else node_dict[parent_id]
+            node = TreeWidgetItem(self, parent, (parent_id, name, inp, sub_con, sub))
+            node_dict[node_id] = node
+
     # undo 할 때 쓰임
     def load_log_from_logs(self, logs):
         self.inst_list = []
