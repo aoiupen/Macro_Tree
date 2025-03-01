@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional
 from dataclasses import dataclass
+import psycopg2
 
 @dataclass
 class TreeState:
@@ -10,6 +11,9 @@ class TreeState:
 class TreeDB:
     def __init__(self):
         self.conn_string = "dbname=mydb user=myuser password=mypass"
+    
+    def get_connection(self):
+        return psycopg2.connect(self.conn_string)
     
     def load_tree(self) -> TreeState:
         """DB에서 전체 트리 구조를 로드"""
@@ -55,4 +59,14 @@ class TreeDB:
                         (node_id, node_data['parent_id'], node_data['name'],
                          node_data['inp'], node_data['sub_con'], node_data['sub'])
                     )
+                conn.commit()
+
+    def stage_move(self, node_id: int, new_parent_id: Optional[int], children_ids: List[int]):
+        """노드 이동을 DB에 기록"""
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE tree_nodes SET parent_id = %s WHERE id = %s",
+                    (new_parent_id, node_id)
+                )
                 conn.commit()

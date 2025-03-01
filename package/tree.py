@@ -1,18 +1,15 @@
-import csv
 import pyautogui as pag
 from types import NoneType
 from enum import Enum
-from copy import deepcopy
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from package import pos as ps
 from package import compo as cp
-from package import tree as tr
 from package.resrc import *
 from package.tree_db import TreeDB, TreeState
 import copy
-import psycopg2
+from typing import List, Optional
 
 class Indi(Enum):
     md = 0
@@ -152,59 +149,49 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.finish_tog()
     
     def finish_tog(self):
-        self.tw.snapshot() # 현상황 log 저장
-        self.tw.disconnect()        
-        self.tw.itemChanged.connect(self.tw.change_check) # cur M -> K : pos 연동 삭제
+        self.tw.update_tree_state()  # 상태 업데이트
+        self.tw.save_to_db()         # DB에 저장
         self.tw.setFocus()
                 
 class TreeUndoCommand(QUndoCommand):
-    def __init__(self,tree,tr_str,stack):
+    def __init__(self, tree, old_state, new_state):
         super().__init__()
-        self.tr = tree
-        self.stack = stack
-        self.tr_str = tr_str
-    
-    def redo(self):
-        pass
+        self.tree = tree
+        self.old_state = old_state
+        self.new_state = new_state
     
     def undo(self):
-        # undo할 때 stack에서 1개를 꺼낸다
-        # 정확히는 마지막 tree값을 취하고, 현 index를 -1 시킨다
-        # undo,redo 외의 새로운 작업이 발생하면 index를 -1 뒤의 tree는 날리고,
-        # 새로운 작업을 stack에 쌓는다
-        # 그러므로 load_log에 들어갈 인자는 stack에서 꺼낸 tree여야한다
-        ix = self.stack.index()
-        cmd = self.stack.command(ix-1)
-        if not isinstance(cmd, NoneType):
-            self.tr.load_log_from_logs(cmd.tr_str)
-            
+        self.tree.restore_state(self.old_state)
+    
+    def redo(self):
+        self.tree.restore_state(self.new_state)
+
 #https://stackoverflow.com/questions/25559221/qtreewidgetitem-issue-items-set-using-setwidgetitem-are-dispearring-after-movin        
 class TreeWidget(QTreeWidget):
     customMimeType = "application/x-customTreeWidgetdata"
-    def __init__(self,parent):
+    def __init__(self, parent):
         super().__init__()
         self.win = parent
         self.db = TreeDB()
-        self.tree_state = None  # 현재 트리 상태
+        self.tree_state = None
+        self.undoStack = QUndoStack(self)  # 추가 필요
         
+        # UI 설정
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setEditTriggers(QAbstractItemView.DoubleClicked)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.dropEvent = self.treeDropEvent
-        self.header().setSectionResizeMode(QHeaderView.ResizeToContents) #adjust
+        self.header().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.header().setCascadingSectionResizes(True)
         self.customContextMenuRequested.connect(self.context_menu)
-        #self.header().setSectionResizeMode(5,QHeaderView.Stretch) # movable True
-        #self.setContextMenuPolicy(Qt.CustomContextMenu) #비활성화시키면 contextmenuevent 동작됨
-        self.sel_nd_it_list = []
-        self.log_lst = []
-        self.log = ""
-        self.inst_list=[]
-        self.undoStack = QUndoStack(self)
-        self.undoStack.setIndex(0)
-        self.cnt = 0
         
+        # 기본 변수 초기화
+        self.sel_nd_it_list = []
+        
+        # 초기 데이터 로드
+        self.load_from_db()
+
     def load_from_db(self):
         """DB에서 트리 로드"""
         self.tree_state = self.db.load_tree()
@@ -288,138 +275,30 @@ class TreeWidget(QTreeWidget):
                 self.setCurrentItem(items)
         return super().mouseReleaseEvent(event)
 
-    #SQL
-    def save_log(self):
-        self.log = ""
-        top_it_cnt = self.topLevelItemCount()
-        for i in range(top_it_cnt):
-            top_it = self.topLevelItem(i)
-            if top_it:
-                name = top_it.name
-                if top_it.inp_tog:
-                    inp = top_it.inp_tog.cur
-                    sub = top_it.sub_tog.cur
-                    coor_str = top_it.pos
-                    self.log += ','.join(["top",name,inp,sub,coor_str,""])
-                else:
-                    self.log += ','.join(["top",name,"","","",""])
-                self.log += '\n'
-                
-                self.recur_log(top_it)
-                    
-        self.log = self.log.rstrip('\n')
-        return self.log
-
-    # DBN에서 데이터를 한 번에 로드하지 않고, 필요한 부분만 로드하는 방식
-    def load_log_from_db(self):
-        conn = psycopg2.connect("dbname=mydb user=myuser password=mypass")
-        cur = conn.cursor()
-        cur.execute("SELECT id, parent_id, name, inp, sub_con, sub FROM tree_nodes")
-        rows = cur.fetchall()
-        cur.close()
-        conn.close()
-
-        self.clear()
-
-        for row in rows:
-            node_id, parent_id, name, inp, sub_con, sub = row
-            parent = self.get_parent(parent_id)
-            node = TreeWidgetItem(self, parent, (parent_id, name, inp, sub_con, sub))
-
-    def get_parent(self, parent_id):
-        # 이미 부모가 생성되어 있으면 바로 반환
-        if parent_id in self.node_dict:
-            return self.node_dict[parent_id]
-        else:
-            return None  # 부모가 아직 생성되지 않았다면 None 반환
-
-
-    # undo 할 때 쓰임
-    def load_log_from_logs(self, logs):
-        self.inst_list = []
-        self.disconnect()
-        self.clear()
-        self.setDragEnabled(True)
-        self.setAcceptDrops(True)
-        print(logs)
-        log_list = [log.split(",") for log in logs.split("\n")]
-        for row in log_list:
-            p_str, name, *rest = row
-            p = next((inst for inst in self.inst_list if inst.name == p_str), None)
-            tw_it = tr.TreeWidgetItem(self, p, row) if p else tr.TreeWidgetItem(self, self, row)
-            tw_it.prnt = p.name if p else 'top'
-            tw_it.setIcon(0, QIcon(rsc[tw_it.typ]["icon"]))
-            tw_it.setText(0, name)
-            if len(rest) > 1 and rest[0] == "K":
-                tw_it.setText(3, rest[1])
-            self.inst_list.append(tw_it)
-
-        self.itemChanged.connect(self.change_check)
-    
-    def load_log_from_csv(self):
-        #아래 5줄 줄이기
-        self.inst_list = []
-        #self.disconnect()
-        self.clear()
-        self.setDragEnabled(True)
-        self.setAcceptDrops(True)
-        
-        with open('ex.csv', 'rt') as f:
-            log_list = list(csv.reader(f))
-        
-            for row in log_list:
-                prnt, name, *wid_info = row
-                p = next((inst for inst in self.inst_list if inst.name == prnt), None) # tuple : iter(O), List : iter(X)
-                parent = p if p else self
-
-                tw_it = tr.TreeWidgetItem(self, parent, row)
-                tw_it.prnt = p.name if p else 'top'
-                tw_it.setIcon(0, QIcon(rsc[tw_it.typ]["icon"]))
-                tw_it.setText(0, name)
-
-                #if len(wid_info) > 1 and wid_info[0] == "K":
-                #    tw_it.setText(3, wid_info[1])
-                self.inst_list.append(tw_it)
-
-            self.itemChanged.connect(self.change_check)
-        
-    def recur_log(self, parent):
-        row = []
-        ch_cnt = parent.childCount()
-        if ch_cnt:
-            for ix in range(ch_cnt):
-                it = parent.child(ix)
-                if it.is_inst():
-                    row = [it.prnt, it.name, it.inp, it.sub_con, it.sub]
-                row_str = ",".join(row) + "\n"
-                self.log += row_str
-                
-                self.recur_log(it)
-    
-    #
-    # del 등의 작업 전 log를 undostack에 임시 저장            
-    def snapshot(self):
-        log = self.save_log()
-        cmd = TreeUndoCommand(self,log,self.undoStack)
-        self.undoStack.push(cmd)                    
-                    
     def keyPressEvent(self, event):
-        root = self.invisibleRootItem()
-        sel_it_list = self.selectedItems()
         if event.key() == Qt.Key_Delete:
-            self.snapshot()
-            for sel_it in sel_it_list:
-                (sel_it.parent() or root).removeChild(sel_it)
+            old_state = self.tree_state
+            # 삭제 작업 수행
+            for sel_it in self.selectedItems():
+                (sel_it.parent() or self.invisibleRootItem()).removeChild(sel_it)
+            # 새로운 상태 저장
+            self.update_tree_state()
+            new_state = self.tree_state
+            self.undoStack.push(TreeUndoCommand(self, old_state, new_state))
         elif event.matches(QKeySequence.Copy):
-            sel_it_name_list = [sel_it.name for sel_it in sel_it_list]
-            self.sel_nd_it_list = [sel_it for sel_it in sel_it_list if sel_it.prnt not in sel_it_name_list]
+            sel_it_name_list = [sel_it.name for sel_it in self.selectedItems()]
+            self.sel_nd_it_list = [sel_it for sel_it in self.selectedItems() if sel_it.prnt not in sel_it_name_list]
         elif event.matches(QKeySequence.Paste):
-            self.snapshot()
+            old_state = self.tree_state
             dst_it = self.currentItem()
             if dst_it.is_group():
                 for sel_nd_it in self.sel_nd_it_list:
                     row = [sel_nd_it.prnt, sel_nd_it.name, sel_nd_it.inp, sel_nd_it.sub_con, sel_nd_it.sub]
-                    TreeWidgetItem(self, dst_it, row)
+                    self.create_tree_item_with_id(dst_it, row)  # node_id 할당을 포함한 생성
+            self.update_tree_state()
+            new_state = self.tree_state
+            self.undoStack.push(TreeUndoCommand(self, old_state, new_state))
+            self.save_to_db()
         elif event.matches(QKeySequence.Undo):
             self.undoStack.undo()
         elif event.matches(QKeySequence.Redo):
@@ -479,16 +358,19 @@ class TreeWidget(QTreeWidget):
         self.exec_insts(self.selectedItems())
 
     # 나중에 sip 시도해보기
-    def recur_del(self,event):
-        self.snapshot() # Log 임시저장 for undo
+    def recur_del(self, event):
+        old_state = self.tree_state
         root = self.invisibleRootItem()
         for sel_item in self.selectedItems():
             (sel_item.parent() or root).removeChild(sel_item)
+        self.update_tree_state()
+        new_state = self.tree_state
+        self.undoStack.push(TreeUndoCommand(self, old_state, new_state))
     
     # 자료구조 heap으로 교체 예정
     # group_sel_items : 
-    def group_sel_items(self, event): # cur위에 추가하고 cur끊고 new에 잇기
-        self.snapshot() # Log 임시저장 for undo
+    def group_sel_items(self, event):
+        old_state = self.tree_state
         root = self.invisibleRootItem()
         cur_it = self.currentItem()
         cur_p = cur_it.parent()
@@ -537,6 +419,11 @@ class TreeWidget(QTreeWidget):
             new.addChild(sel_nd_it)
             new.setExpanded(True)
             self.recur_set_widget(sel_nd_it)
+
+        self.update_tree_state()
+        new_state = self.tree_state
+        self.undoStack.push(TreeUndoCommand(self, old_state, new_state))
+        self.save_to_db()
     #    
     def old_group_selected_items(self,event): # cur위에 추가하고 cur끊고 new에 잇기
         self.snapshot()
@@ -758,24 +645,40 @@ class TreeWidget(QTreeWidget):
             ch = it.child(ix)
             self.recur_set_widget(ch)
 
-    def treeDropEvent(self, event):
-        indi = self.dropIndicatorPosition()
-        tar = self.itemAt(event.pos())
-        tar_p = tar.parent()
-        self.snapshot()
+    def dropEvent(self, event):
+        # treeDropEvent 대신 직접 구현
+        moved_item = self.currentItem()
+        new_parent = self.itemAt(event.pos())
+        
+        if not moved_item:
+            return
+        
+        old_state = self.tree_state
+        
+        # 기본 드롭 이벤트 처리
+        super().dropEvent(event)
+        
+        # DB 업데이트
+        self.db.stage_move(
+            node_id=moved_item.node_id,
+            new_parent_id=new_parent.node_id if new_parent else None,
+            children_ids=self.collect_children_ids(moved_item)
+        )
+        
+        # UI 업데이트
+        self.update_tree_state()
+        new_state = self.tree_state
+        self.undoStack.push(TreeUndoCommand(self, old_state, new_state))
 
-        if event.source() == self:
-            mod = event.keyboardModifiers()
-            # Extract sel_nd_it list
-            tar_p_lst, node_lst = [], []
-            if self.get_sel_items_node(tar_p, node_lst):
-                return
-            else:
-                for item in node_lst:
-                    self.change_parent_plus(tar_p, tar, item, indi, mod)
-                    event.acceptProposedAction()
-            #if (modifiers & Qt.ControlModifier) and (modifiers & Qt.ShiftModifier):
-            #    print("Control+Shift")   
+    def collect_children_ids(self, item) -> List[int]:
+        """아이템의 모든 하위 노드 ID를 수집"""
+        ids = []
+        for i in range(item.childCount()):
+            child = item.child(i)
+            ids.append(child.node_id)
+            ids.extend(self.collect_children_ids(child))
+        return ids
+
     # 문제 : group,inst가 위계없이 items에 다 들어가는 중. (왜냐하면, group,inst를 구분하는 코드는 없고, text(1)을 기준으로 나누기 때문에) 중복을 제외하고 넘기기
     # n,0 (role은 0으로  고정하고 n은 0~4)
     
@@ -852,52 +755,17 @@ class TreeWidget(QTreeWidget):
     def change_check(self,cur,col):
         self.blockSignals(True)
         if cur.checkState(col) == Qt.Checked:
-            self.check_child(cur,col) # 자식 전체 check
-            self.check_parent(cur,col) # 동료 full check-> 부모 check                                  
+            self.check_child(cur,col)
+            self.check_parent(cur,col)
         else:
-            self.uncheck_child(cur,col) # 자식 전체 uncheck
-            self.blockSignals(True) # itemChanged 시그널 발생 막기
-            self.uncheck_parent(cur,col) # 부모 전체 uncheck until
+            self.uncheck_child(cur,col)
+            self.blockSignals(True)
+            self.uncheck_parent(cur,col)
             self.blockSignals(False)
         self.setFocus()
-        self.save_log()
+        self.update_tree_state()  # save_log() 대신 update_tree_state() 사용
+        self.save_to_db()         # DB에 저장
         self.blockSignals(False)
-    
-    def save(self):
-        with open('ex.csv', 'wt') as csvfile:
-            writer = csv.writer(csvfile, dialect='excel', lineterminator='\n', quotechar="\"")
-            it_row_list = []
-            self.collect_it_row(it_row_list)
-            for it_row in it_row_list:
-                writer.writerow(it_row)
-        csvfile.close()
-
-    def collect_it_row(self, it_row_list):
-        for ix in range(self.topLevelItemCount()):
-            top_it = self.topLevelItem(ix)
-            if top_it: # top 있으면
-                self.append_top_it(it_row_list, top_it) # top 담기
-                if top_it.childCount(): # child 있으면
-                    self.recur_append_it(it_row_list, top_it) # child 담기
-    
-    def append_top_it(self, it_row_list, top_it):
-        #top inst일 경우 추가하기
-        top_it_row = ["top", top_it.name, "", "", ""]
-        it_row_list.append(top_it_row)
- 
-    def recur_append_it(self,it_row_list,parent):
-        for ix in range(parent.childCount()):
-            it = parent.child(ix)
-            it_row = [parent.name,it.name,"","",""]
-            if it.is_inst():
-                if it.inp == "M":
-                    content = it.sub_wid.coor_str
-                else:
-                    content = it.sub_wid.text()
-                it_row = [parent.name,it.name,it.inp,content,it.sub]
-            it_row_list.append(it_row)
-            self.recur_append_it(it_row_list,it)
-        return
     
     def recur_child_exec(self,parent,lst):
         for ix in range(parent.childCount()):
@@ -910,13 +778,16 @@ class TreeWidget(QTreeWidget):
             elif child.childCount():
                 self.recur_child_exec(child, lst)
                         
-            #if event.mimeData().hasFormat(TreeWidget.customMimeType):
-            #    encoded = event.mimeData().data(TreeWidget.customMimeType)
-            #    items = self.decodeData(encoded, event.source())
-            #    # problem : 복수 선택 후 복사할 때 child가 중복 복사되는 문제
-            #    # solution : 선택된 것들의 이름 모으기, 부모 모으기
-            #    # -> 내 부모의 이름이 이름안에 있으면 난 안됨
-            #    # selected item에 col에 반영되지 않는 parent 정보가 있으면 편한데,
-            #    # 지금은 우선 번거롭더라도 selected items에서 prnt_str으로 parent 이름을 받자
+    def restore_state(self, state):
+        """상태 복원 (undo/redo용)"""
+        self.tree_state = state
+        self.clear()
+        self.build_tree_from_state()
+
+    def create_tree_item_with_id(self, parent, row):
+        """새로운 TreeWidgetItem을 생성하고 node_id 할당"""
+        item = TreeWidgetItem(self, parent, row)
+        item.node_id = self.db.get_next_node_id()  # DB에서 새로운 ID 발급
+        return item
 
 
