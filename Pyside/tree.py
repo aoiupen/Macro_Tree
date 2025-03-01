@@ -9,7 +9,7 @@ from PyQt5.QtGui import *
 from package import pos as ps
 from package import compo as cp
 from package import tree as tr
-from package.resrc import *
+from package.resources import *
 import copy
 
 class Indi(Enum):

@@ -3,8 +3,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from package import pos as ps
 from package import compo as cp
-from package import resrc
-from .resrc import *
+from package import resources
+from .resources import *
 import copy
 
 class PosBtn(QPushButton):

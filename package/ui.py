@@ -3,7 +3,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from package import tree as tr
 from enum import Enum
-from .resrc import *
+from resources import *
 
 class UI():
     def __init__(self,win,app):
