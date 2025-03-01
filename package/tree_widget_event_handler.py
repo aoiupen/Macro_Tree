@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import QMenu, QAction
 from PyQt5.QtCore import Qt, QPoint, pyqtSlot
 from PyQt5.QtGui import QCursor, QKeySequence
+from tree_undo_redo_manager import TreeUndoCommand
+from PyQt5.QtWidgets import QTreeWidgetItem
 
 class TreeWidgetEventHandler:
     def __init__(self, tree_widget):

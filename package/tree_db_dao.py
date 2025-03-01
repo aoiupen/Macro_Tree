@@ -40,4 +40,4 @@ class TreeDbDao:
                         structure[parent_id] = []
                     structure[parent_id].append(node_id)
 
-                return Tree
+                return TreeState(nodes, structure)  # 수정된 부분
