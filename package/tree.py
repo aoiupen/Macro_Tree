@@ -10,6 +10,7 @@ from package import pos as ps
 from package import compo as cp
 from package import tree as tr
 from package.resrc import *
+from package.tree_db import TreeDB, TreeState
 import copy
 import psycopg2
 
@@ -183,6 +184,9 @@ class TreeWidget(QTreeWidget):
     def __init__(self,parent):
         super().__init__()
         self.win = parent
+        self.db = TreeDB()
+        self.tree_state = None  # 현재 트리 상태
+        
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setEditTriggers(QAbstractItemView.DoubleClicked)
@@ -201,6 +205,76 @@ class TreeWidget(QTreeWidget):
         self.undoStack.setIndex(0)
         self.cnt = 0
         
+    def load_from_db(self):
+        """DB에서 트리 로드"""
+        self.tree_state = self.db.load_tree()
+        self.clear()
+        self.build_tree_from_state()
+
+    def save_to_db(self):
+        """현재 트리 상태를 DB에 저장"""
+        self.update_tree_state()
+        self.db.save_tree(self.tree_state)
+
+    def build_tree_from_state(self):
+        """tree_state를 사용하여 트리 UI 구성"""
+        # 최상위 노드들 먼저 생성
+        for node_id in self.tree_state.structure.get(None, []):
+            node_data = self.tree_state.nodes[node_id]
+            self.create_tree_item(None, node_id, node_data)
+
+    def create_tree_item(self, parent, node_id, node_data):
+        """TreeWidgetItem 생성 및 자식 노드 재귀적 생성"""
+        row = [
+            node_data.get('parent_id', 'top'),
+            node_data['name'],
+            node_data.get('inp', ''),
+            node_data.get('sub_con', ''),
+            node_data.get('sub', ''),
+            ''
+        ]
+        
+        item = TreeWidgetItem(self, parent, row)
+        item.node_id = node_id
+        
+        # 자식 노드들 생성
+        for child_id in self.tree_state.structure.get(node_id, []):
+            child_data = self.tree_state.nodes[child_id]
+            self.create_tree_item(item, child_id, child_data)
+        
+        return item
+
+    def update_tree_state(self):
+        """현재 UI 상태를 tree_state에 반영"""
+        nodes = {}
+        structure = {}
+        
+        def process_item(item, parent_id=None):
+            node_id = getattr(item, 'node_id', None)
+            if node_id is None:
+                return
+                
+            nodes[node_id] = {
+                'name': item.name,
+                'inp': item.inp,
+                'sub_con': item.sub_con,
+                'sub': item.sub,
+                'parent_id': parent_id
+            }
+            
+            if parent_id not in structure:
+                structure[parent_id] = []
+            structure[parent_id].append(node_id)
+            
+            for i in range(item.childCount()):
+                process_item(item.child(i), node_id)
+
+        # 최상위 아이템들 처리
+        for i in range(self.topLevelItemCount()):
+            process_item(self.topLevelItem(i))
+            
+        self.tree_state = TreeState(nodes, structure)
+
     def mousePressEvent(self, event):
         if event.modifiers() != Qt.ControlModifier:
             return super().mousePressEvent(event)
@@ -235,45 +309,8 @@ class TreeWidget(QTreeWidget):
                     
         self.log = self.log.rstrip('\n')
         return self.log
-    '''
-    def load_log(self, log):
-        self.disconnect()
-        self.clear()
-        reader = log.split('\n')
-        for i, row in enumerate(reader):
-            row = row.split(',')
-            if len(row) == 7:
-                row[4] = (row[4] + "," + row[5]).strip("\"")
-                row[5] = ""
-                row.pop()
-            reader[i] = row
-        self.insts = []
 
-        for row in reader:
-            parent = ""
-            parent_str = row[0]
-            name = row[1]
-            if parent_str == 'top':
-                parent = self
-                tw_it = TreeWidgetItem(self, parent, row)
-                tw_it.prnt = 'top'
-                tw_it.setText(0, name)
-            else:
-                for inst in self.insts:
-                    if inst.name == parent_str:
-                        parent = inst
-                        tw_it = TreeWidgetItem(self, parent, row)
-                        tw_it.prnt = parent.name
-                        tw_it.setText(0, name)
-                        break
-
-            if len(row) > 2:
-                sub_con = row[5]
-                tw_it.setText(3, sub_con)
-            self.insts.append(tw_it)
-        self.itemChanged.connect(self.change_check)
-    '''
-
+    # DBN에서 데이터를 한 번에 로드하지 않고, 필요한 부분만 로드하는 방식
     def load_log_from_db(self):
         conn = psycopg2.connect("dbname=mydb user=myuser password=mypass")
         cur = conn.cursor()
@@ -283,13 +320,19 @@ class TreeWidget(QTreeWidget):
         conn.close()
 
         self.clear()
-        node_dict = {}
 
         for row in rows:
             node_id, parent_id, name, inp, sub_con, sub = row
-            parent = self if parent_id is None else node_dict[parent_id]
+            parent = self.get_parent(parent_id)
             node = TreeWidgetItem(self, parent, (parent_id, name, inp, sub_con, sub))
-            node_dict[node_id] = node
+
+    def get_parent(self, parent_id):
+        # 이미 부모가 생성되어 있으면 바로 반환
+        if parent_id in self.node_dict:
+            return self.node_dict[parent_id]
+        else:
+            return None  # 부모가 아직 생성되지 않았다면 None 반환
+
 
     # undo 할 때 쓰임
     def load_log_from_logs(self, logs):
@@ -759,7 +802,7 @@ class TreeWidget(QTreeWidget):
         #print(it, col, it.text(col))
 
     def exec_inst(self): # inst_list 수집
-        # 미리 수집을 해놓야야한다. item 변할 때마다. 그래서 아래 함수를 없애고, exec_insts만 존재하게 한다
+        # 미리 수집을 해놓아야한다. item 변할 때마다. 그래서 아래 함수를 없애고, exec_insts만 존재하게 한다
         inst_lst = []
         for ix in range(self.topLevelItemCount()):
             t_it = self.topLevelItem(ix)
