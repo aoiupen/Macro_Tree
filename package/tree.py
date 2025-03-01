@@ -646,29 +646,28 @@ class TreeWidget(QTreeWidget):
             self.recur_set_widget(ch)
 
     def dropEvent(self, event):
-        # treeDropEvent 대신 직접 구현
         moved_item = self.currentItem()
         new_parent = self.itemAt(event.pos())
         
         if not moved_item:
             return
         
-        old_state = self.tree_state
-        
-        # 기본 드롭 이벤트 처리
-        super().dropEvent(event)
-        
-        # DB 업데이트
-        self.db.stage_move(
-            node_id=moved_item.node_id,
-            new_parent_id=new_parent.node_id if new_parent else None,
-            children_ids=self.collect_children_ids(moved_item)
-        )
-        
-        # UI 업데이트
-        self.update_tree_state()
-        new_state = self.tree_state
-        self.undoStack.push(TreeUndoCommand(self, old_state, new_state))
+        # DB 업데이트 호출 제거
+        # old_state = self.tree_state
+        # super().dropEvent(event)  # 기본 드롭 이벤트 처리
+
+        # 부모 변경
+        if new_parent:
+            # 부모를 변경하는 로직
+            old_parent = moved_item.parent()
+            if old_parent:
+                old_parent.removeChild(moved_item)  # 기존 부모에서 제거
+            new_parent.addChild(moved_item)  # 새로운 부모에 추가
+
+        # 상태 업데이트
+        self.update_tree_state()  # 현재 UI 상태를 tree_state에 반영
+        # new_state = self.tree_state
+        # self.undoStack.push(TreeUndoCommand(self, old_state, new_state))
 
     def collect_children_ids(self, item) -> List[int]:
         """아이템의 모든 하위 노드 ID를 수집"""
