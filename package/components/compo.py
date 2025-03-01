@@ -2,9 +2,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from package import pos as ps
-from package import compo as cp
+from package.components import compo as cp
 from package import resources
-from .resources import *
+from ..resources import *
 import copy
 
 class PosBtn(QPushButton):
