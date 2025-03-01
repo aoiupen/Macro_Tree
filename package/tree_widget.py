@@ -1,20 +1,20 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from package.tree_db import TreeDB, TreeState
+from package.db.tree_db_dao import TreeDbDao
+from package.db.tree_db import TreeDB, TreeState
 from package.tree_widget_item import TreeWidgetItem
-from package.tree_db_dao import TreeDbDao
-from package.tree_snapshot_manager import TreeSnapshotManager
-from package.tree_widget_event_handler import TreeWidgetEventHandler
-from package.tree_undo_redo_manager import TreeUndoRedoManager
-from package.tree_item_executor import TreeItemExecutor
-from resources import rsc  # rsc 임포트
+from package.db.tree_snapshot_manager import TreeSnapshotManager
+from package.ui.tree_widget_event_handler import TreeWidgetEventHandler
+from package.logic.tree_undo_redo_manager import TreeUndoRedoManager
+from package.logic.tree_item_executor import TreeItemExecutor
+from package.resources.resources import rsc  # rsc 임포트
 
 class TreeWidget(QTreeWidget):
     def __init__(self, parent):
         super().__init__()
         self.win = parent
-        self.db_dao = TreeDbDao("dbname=mydb user=myuser password=mypass")
+        self.db_dao = TreeDbDao()
         self.snapshot_manager = TreeSnapshotManager()
         self.event_handler = TreeWidgetEventHandler(self)
         self.undo_redo_manager = TreeUndoRedoManager(self)
@@ -48,7 +48,7 @@ class TreeWidget(QTreeWidget):
         self.db_dao.save_tree(self.tree_state)
 
     def build_tree_from_state(self):
-        """tree_state를 사용하여 트리 UI 구성"""
+        """트리 상태를 기반으로 트리 UI 구성"""
         for node_id in self.tree_state.structure.get(None, []):
             node_data = self.tree_state.nodes[node_id]
             self.create_tree_item(None, node_id, node_data)

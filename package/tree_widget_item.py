@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import QTreeWidgetItem, QLineEdit, QLabel
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
-from tree_widget_item_logic import TreeWidgetItemLogic
-from custom_widgets import InpTogBtn, SubTogBtn, PosWidget
-from resources import rsc
+from package.logic.tree_widget_item_logic import TreeWidgetItemLogic
+from package.components.custom_widgets import InpTogBtn, SubTogBtn, PosWidget
+from package.resources.resources import rsc
 
 class TreeWidgetItem(QTreeWidgetItem):
     def __init__(self, tw, parent=None, row=""):

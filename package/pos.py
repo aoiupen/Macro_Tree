@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from package import compo as cp
+from package.components import compo as cp
 from screeninfo import get_monitors
 
 class PosWin(QWidget):

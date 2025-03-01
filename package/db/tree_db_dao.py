@@ -1,7 +1,13 @@
+import os
 import psycopg2
 from typing import Dict, List, Optional
 from dataclasses import dataclass
 import copy
+from dotenv import load_dotenv
+from getpass import getpass
+
+# .env 파일의 환경 변수를 로드
+load_dotenv()
 
 @dataclass
 class TreeState:
@@ -10,13 +16,26 @@ class TreeState:
     structure: Dict[int, List[int]]  # {parent_id: [child_ids]}
 
 class TreeDbDao:
-    def __init__(self, conn_string):
-        self.conn_string = conn_string
+    def __init__(self):
+        # 환경 변수에서 데이터베이스 연결 정보 가져오기
+        self.conn_string = (
+            f"dbname={os.getenv('DB_NAME')} "
+            f"user={os.getenv('DB_USER')} "
+            f"host={os.getenv('DB_HOST')} "
+            f"port={os.getenv('DB_PORT')}"
+        )
+        # 비밀번호를 사용자에게 입력받기
+        self.password = getpass("Enter your database password: ")
+        self.conn_string += f" password={self.password}"
 
     def get_connection(self):
-        return psycopg2.connect(self.conn_string)
+        try:
+            return psycopg2.connect(self.conn_string)
+        except psycopg2.OperationalError as e:
+            print(f"Database connection error: {e}")
+            raise
 
-    def load_tree(self) -> TreeState:
+    def load_tree(self):
         """DB에서 전체 트리 구조를 로드"""
         with self.get_connection() as conn:
             with conn.cursor() as cur:
@@ -40,4 +59,4 @@ class TreeDbDao:
                         structure[parent_id] = []
                     structure[parent_id].append(node_id)
 
-                return TreeState(nodes, structure)  # 수정된 부분
+                return TreeState(nodes, structure)

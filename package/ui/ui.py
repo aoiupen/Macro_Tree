@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from package import tree as tr
+from package import tree_widget as tr
 from enum import Enum
-from resources import *
+from package.resources.resources import *
 
 class UI():
     def __init__(self,win,app):

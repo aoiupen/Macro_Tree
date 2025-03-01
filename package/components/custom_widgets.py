@@ -1,6 +1,10 @@
 from PyQt5.QtWidgets import QPushButton, QLineEdit, QWidget, QGridLayout
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSignal
+from package.resources.resources import rsc
+from package.db.tree_snapshot_manager import TreeSnapshotManager
+from package.db.tree_db_dao import TreeDbDao
+from package.db.tree_db import TreeDB
 
 class InpTogBtn(QPushButton):
     inp_changed = pyqtSignal()
@@ -28,12 +32,11 @@ class SubTogBtn(QPushButton):
     def __init__(self, parent, inp, sub):
         super().__init__()
         self.parent = parent
-        self._sub = sub # 내부적으로 sub를 _sub로 관리
+        self._sub = sub  # 내부적으로 sub를 _sub로 관리
         self.setFixedSize(30, 25)
         self.setIcon(QIcon(rsc["subacts"][self._sub]["icon"]))
         self.clicked.connect(self.sub_changed.emit)
 
-    @property
     def sub(self):
         return self._sub
 
@@ -62,7 +65,7 @@ class PosWidget(QWidget):
             y = int(self.y_edit.text())
             self.position_changed.emit(x, y)
         except ValueError:
-            pass # 숫자가 아닌 값이 입력되었을 때 무시
+            pass  # 숫자가 아닌 값이 입력되었을 때 무시
 
     def get_position(self):
         try:
@@ -71,3 +74,4 @@ class PosWidget(QWidget):
             return x, y
         except ValueError:
             return None # 숫자가 아닌 값이 입력되었을 때 None 반환
+

@@ -7,9 +7,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from package import pos as ps
-from package import compo as cp
-from package import tree as tr
-from package.resrc import *
+from package.components import compo as cp
+from package.old_ver import legacy_tree as tr
+from package.resources import *
 import copy
 
 class Indi(Enum):

@@ -1,12 +1,31 @@
 from PyQt5.QtWidgets import QMenu, QAction
 from PyQt5.QtCore import Qt, QPoint, pyqtSlot
 from PyQt5.QtGui import QCursor, QKeySequence
-from tree_undo_redo_manager import TreeUndoCommand
+from package.logic.tree_undo_redo_manager import TreeUndoCommand
 from PyQt5.QtWidgets import QTreeWidgetItem
 
 class TreeWidgetEventHandler:
     def __init__(self, tree_widget):
         self.tree_widget = tree_widget
+
+    def tree_drop_event(self, event):
+        """드롭 이벤트 처리"""
+        target_item = self.tree_widget.itemAt(event.pos())
+        if target_item is None:
+            return
+
+        self.tree_widget.snapshot()  # 현재 상태를 스냅샷으로 저장
+
+        # 드롭된 아이템 처리 로직
+        if event.source() == self.tree_widget:
+            selected_items = self.tree_widget.selectedItems()
+            for item in selected_items:
+                # 드롭할 위치에 따라 부모를 변경하는 로직
+                target_parent = target_item.parent() if target_item else self.tree_widget.invisibleRootItem()
+                target_parent.addChild(item)
+                item.setSelected(False)  # 드롭 후 선택 해제
+
+        event.accept()  # 이벤트 수용
 
     def context_menu(self, pos):
         index = self.tree_widget.indexAt(pos)
@@ -87,6 +106,6 @@ class TreeWidgetEventHandler:
         self.tree_widget.ctxt.addActions([del_act, ungr_act, gr_act])
         self.tree_widget.ctxt.popup(QCursor.pos())
 
-    @pyqtSlot(QTreeWidgetItem, int)
-    def on_item_clicked(self, it, col):
-        pass
+    def on_item_clicked(self, item, column):
+        # 아이템 클릭 처리 로직
+        print(f"Item clicked: {item.text(0)}")  # 예시로 클릭된 아이템의 텍스트 출력
