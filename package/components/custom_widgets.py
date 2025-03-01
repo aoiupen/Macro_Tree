@@ -37,6 +37,7 @@ class SubTogBtn(QPushButton):
         self.setIcon(QIcon(rsc["subacts"][self._sub]["icon"]))
         self.clicked.connect(self.sub_changed.emit)
 
+    @property
     def sub(self):
         return self._sub
 
