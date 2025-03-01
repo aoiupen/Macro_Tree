@@ -24,7 +24,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.setFlags(self.flags() ^ Qt.ItemIsDropEnabled)
 
         self.inp_tog = InpTogBtn(self, self.logic.inp)
-        self.inp_tog.signal.connect(self.toggle_input)
+        self.inp_tog.inp_changed.connect(self.toggle_input)
 
         if self.logic.inp == "M":
             x, y = self.logic.sub_con.split(",")
@@ -38,7 +38,7 @@ class TreeWidgetItem(QTreeWidgetItem):
             self.sub_wid.setFixedSize(115, 25)
 
         self.sub_tog = SubTogBtn(self, self.logic.inp, self.logic.sub)
-        self.sub_tog.signal.connect(self.toggle_subact)
+        self.sub_tog.sub_changed.connect(self.toggle_subact)
 
         tw.setItemWidget(self, 1, self.inp_tog)
         tw.setItemWidget(self, 2, self.sub_wid)

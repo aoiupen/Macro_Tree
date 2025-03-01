@@ -12,10 +12,13 @@ class InpTogBtn(QPushButton):
     def __init__(self, parent, inp):
         super().__init__()
         self.parent = parent
-        self._inp = inp  # 내부적으로 inp를 _inp로 관리
-        self.setFixedSize(30, 25)
-        self.setIcon(QIcon(rsc["inputs"][self._inp]["icon"]))
-        self.clicked.connect(self.inp_changed.emit)
+        self._inp = inp
+        if self._inp is not None and self._inp in rsc["inputs"] and "icon" in rsc["inputs"][self._inp]:
+            self.setFixedSize(30, 25)
+            self.setIcon(QIcon(rsc["inputs"][self._inp]["icon"]))
+            self.clicked.connect(self.inp_changed.emit)
+        else:
+            print(f"Warning: Invalid _inp value: {self._inp}, skipping icon setting.")
 
     @property
     def inp(self):
@@ -33,9 +36,12 @@ class SubTogBtn(QPushButton):
         super().__init__()
         self.parent = parent
         self._sub = sub  # 내부적으로 sub를 _sub로 관리
-        self.setFixedSize(30, 25)
-        self.setIcon(QIcon(rsc["subacts"][self._sub]["icon"]))
-        self.clicked.connect(self.sub_changed.emit)
+        if self._sub is not None and self._sub in rsc["subacts"] and "icon" in rsc["subacts"][self._sub]:
+            self.setFixedSize(30, 25)
+            self.setIcon(QIcon(rsc["subacts"][self._sub]["icon"]))
+            self.clicked.connect(self.sub_changed.emit)
+        else:
+            print(f"Warning: Invalid _sub value: {self._sub}, skipping icon setting.")
 
     @property
     def sub(self):
