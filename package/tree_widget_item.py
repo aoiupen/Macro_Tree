@@ -48,7 +48,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.logic.toggle_input()
         self.inp_tog.setIcon(QIcon(rsc["inputs"][self.logic.inp]["icon"]))
         self.sub_tog.setIcon(QIcon(rsc["subacts"][self.logic.sub]["icon"]))
-        self.update_sub_widget()
+        #self.update_sub_widget()
         self.finish_tog()
 
     def toggle_subact(self):

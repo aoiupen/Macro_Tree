@@ -81,7 +81,7 @@ class TreeWidgetEventHandler:
         self.tree_widget.update_tree_state()
         new_state = self.tree_widget.tree_state
         self.tree_widget.undoStack.push(TreeUndoCommand(self.tree_widget, old_state, new_state))
-        self.tree_widget.save_to_db()
+        self.tree_widget.save_to_db() # 스냅샷으로 바꿔야
 
     def mouse_press_event(self, event):
         if event.modifiers() != Qt.ControlModifier:

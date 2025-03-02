@@ -60,3 +60,25 @@ class TreeDbDao:
                     structure[parent_id].append(node_id)
 
                 return TreeState(nodes, structure)
+            
+    def save_tree(self, tree_state: TreeState):
+        """현재 트리 상태를 DB에 저장"""
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                # 기존 데이터 삭제 (선택 사항)
+                cur.execute("DELETE FROM tree_nodes")
+
+                # 새로운 데이터 삽입
+                for node_id, node_data in tree_state.nodes.items():
+                    cur.execute(
+                        "INSERT INTO tree_nodes (id, parent_id, name, inp, sub_con, sub) VALUES (%s, %s, %s, %s, %s, %s)",
+                        (
+                            node_id,
+                            node_data['parent_id'],
+                            node_data['name'],
+                            node_data['inp'],
+                            node_data['sub_con'],
+                            node_data['sub']
+                        ),
+                    )
+                conn.commit()

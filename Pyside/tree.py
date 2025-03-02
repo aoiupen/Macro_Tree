@@ -526,7 +526,7 @@ class TreeWidget(QTreeWidget):
             return
 
         item = self.itemAt(pos)
-        name = item.name
+        name = item.logic.name
 
         menu = QMenu()
         #quitAction = menu.addAction("Quit")

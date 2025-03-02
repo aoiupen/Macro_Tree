@@ -120,15 +120,16 @@ class TreeWidget(QTreeWidget):
         structure = {}
 
         def process_item(item, parent_id=None):
+            
             node_id = getattr(item, 'node_id', None)
             if node_id is None:
                 return
 
             nodes[node_id] = {
-                'name': item.name,
-                'inp': item.inp,
-                'sub_con': item.sub_con,
-                'sub': item.sub,
+                'name': item.logic.name,
+                'inp': item.logic.inp,
+                'sub_con': item.logic.sub_con,
+                'sub': item.logic.sub,
                 'parent_id': parent_id
             }
 
