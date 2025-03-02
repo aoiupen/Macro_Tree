@@ -32,9 +32,6 @@ class TreeWidget(QTreeWidget):
         self.customContextMenuRequested.connect(self.event_handler.context_menu)
         self.itemClicked.connect(self.event_handler.on_item_clicked)
 
-        # 초기 데이터 로드
-        self.load_from_db()
-
     def load_from_db(self):
         """DB에서 트리 로드"""
         self.tree_state = self.db_dao.load_tree()
@@ -49,10 +46,49 @@ class TreeWidget(QTreeWidget):
 
     def build_tree_from_state(self):
         """트리 상태를 기반으로 트리 UI 구성"""
-        for node_id in self.tree_state.structure.get(None, []):
-            node_data = self.tree_state.nodes[node_id]
-            self.create_tree_item(None, node_id, node_data)
+        self.clear()
+        for node_id, node_data in self.tree_state.nodes.items():
+            if node_data.get('parent_id') is None and node_data.get('name') == 'top':
+                for child_id in self.tree_state.structure.get(node_id, []):
+                    child_data = self.tree_state.nodes[child_id]
+                    self.create_top_level_item(child_id, child_data) # top 노드의 자식 노드를 최상위 노드로 추가
+                break # top 노드는 하나만 존재하므로 루프 종료
+            elif node_data.get('parent_id') is None and node_data.get('name') != 'top':
+                self.create_top_level_item(node_id, node_data)
+            elif node_data.get('parent_id') in self.tree_state.nodes:
+                parent_id = node_data.get('parent_id')
+                parent_item = self.find_item_by_node_id(parent_id)
+                if parent_item:
+                    self.create_tree_item(parent_item, node_id, node_data)
 
+    def find_item_by_node_id(self, node_id):
+        """node_id로 TreeWidgetItem 찾기"""
+        items = self.findItems("", Qt.MatchContains | Qt.MatchRecursive, 0)
+        for item in items:
+            if hasattr(item, 'node_id') and item.node_id == node_id:
+                return item
+        return None
+    
+    def create_top_level_item(self, node_id, node_data):
+        """최상위 TreeWidgetItem 생성 및 자식 노드 재귀적 생성"""
+        row = [
+            node_data.get('parent_id', 'top'),
+            node_data['name'],
+            node_data.get('inp', ''),
+            node_data.get('sub_con', ''),
+            node_data.get('sub', ''),
+            ''
+        ]
+        item = TreeWidgetItem(self, None, row)  # 부모 아이템 없음
+        item.node_id = node_id
+        self.addTopLevelItem(item)  # QTreeWidget에 직접 추가
+
+        for child_id in self.tree_state.structure.get(node_id, []):
+            child_data = self.tree_state.nodes[child_id]
+            self.create_tree_item(item, child_id, child_data)
+
+        return item
+    
     def create_tree_item(self, parent, node_id, node_data):
         """TreeWidgetItem 생성 및 자식 노드 재귀적 생성"""
         row = [
@@ -65,6 +101,12 @@ class TreeWidget(QTreeWidget):
         ]
         item = TreeWidgetItem(self, parent, row)
         item.node_id = node_id
+
+        # QTreeWidget에 아이템 추가
+        if parent is None:
+            self.addTopLevelItem(item)
+        else:
+            parent.addChild(item)
 
         for child_id in self.tree_state.structure.get(node_id, []):
             child_data = self.tree_state.nodes[child_id]
@@ -118,13 +160,13 @@ class TreeWidget(QTreeWidget):
         self.event_handler.key_press_event(event)
     
     def mousePressEvent(self, event):
-        self.event_handler.mouse_press_event(event)
+        super().mousePressEvent(event) # 기본 동작을 수행
     
     def mouseReleaseEvent(self, event):
-        self.event_handler.mouse_release_event(event)
+        super().mouseReleaseEvent(event) # 기본 동작을 수행
 
     def contextMenuEvent(self, event):
-        self.event_handler.context_menu_event(event)
+        super().contextMenuEvent(event) # 기본 동작을 수행
 
     def exec_inst(self):
         self.item_executor.execute_selected_items()

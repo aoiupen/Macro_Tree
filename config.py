@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
+
 PROJECT_ROOT = os.path.abspath(os.getenv("PROJECT_ROOT", ".")) # 기본값으로 현재 디렉토리 사용
 
 if not os.path.exists(PROJECT_ROOT):
