@@ -1,50 +1,84 @@
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+"""사용자 인터페이스 모듈
+
+애플리케이션의 메인 UI를 구성하는 클래스를 제공합니다.
+"""
+from typing import List, Callable
+from PyQt5.QtWidgets import (
+    QWidget, QHBoxLayout, QMainWindow, QMenuBar,
+    QAction, QApplication
+)
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import *
 from package import tree_widget as tr
 from enum import Enum
 from package.resources.resources import *
 
-class UI():
-    def __init__(self,win,app):
-        super().__init__()
-        self.col_n = 5
-        self.col_w = 10
+class UI:
+    """사용자 인터페이스 클래스
+    
+    애플리케이션의 메인 UI를 구성하고 관리합니다.
+    """
 
-        self.setup_win(win,app)
-        self.setup_tree()
-        self.setup_menubar(self.tw)
-        self.tw.load_from_db()
+    def __init__(self, window: QMainWindow, app: QApplication) -> None:
+        """UI 생성자
         
-    def setup_win(self,win,app):
+        Args:
+            window: 메인 윈도우 인스턴스
+            app: QApplication 인스턴스
+        """
+        super().__init__()
+        self.column_count = 5
+        self.column_width = 10
+
+        self.setup_window(window, app)
+        self.setup_tree()
+        self.setup_menubar(self.tree_widget)
+        self.tree_widget.load_from_db()
+        
+    def setup_window(self, window: QMainWindow, app: QApplication) -> None:
+        """메인 윈도우를 설정합니다.
+        
+        Args:
+            window: 메인 윈도우 인스턴스
+            app: QApplication 인스턴스
+        """
         self.app = app
-        self.win = win
-        self.win.setWindowTitle("Macro")
-        self.win.setGeometry(*rsc["win_geo"])
-        self.ctr_wid = QWidget()
-        self.ctr_lay = QHBoxLayout(self.ctr_wid)
-        self.win.setCentralWidget(self.ctr_wid)
+        self.window = window
+        self.window.setWindowTitle("Macro")
+        self.window.setGeometry(*rsc["win_geo"])
+        self.central_widget = QWidget()
+        self.central_layout = QHBoxLayout(self.central_widget)
+        self.window.setCentralWidget(self.central_widget)
 
-    def setup_tree(self):
-        self.tw = tr.TreeWidget(self)
-        self.tw.setColumnCount(self.col_n)
-        self.tw.setHeaderLabels(rsc["header"])
-        self.tw.setColumnWidth(1,self.col_w)
-        self.ctr_lay.addWidget(self.tw)
+    def setup_tree(self) -> None:
+        """트리 위젯을 설정합니다."""
+        self.tree_widget = tr.TreeWidget(self)
+        self.tree_widget.setColumnCount(self.column_count)
+        self.tree_widget.setHeaderLabels(rsc["header"])
+        self.tree_widget.setColumnWidth(1, self.column_width)
+        self.central_layout.addWidget(self.tree_widget)
 
-    def setup_menubar(self,tw):
-        # menubar
-        self.menubar = self.win.menuBar()
+    def setup_menubar(self, tree_widget: tr.TreeWidget) -> None:
+        """메뉴바를 설정합니다.
+        
+        Args:
+            tree_widget: 트리 위젯 인스턴스
+        """
+        # 메뉴바 생성
+        self.menubar = self.window.menuBar()
         self.menubar.setNativeMenuBar(False)
         
-        # menubar_file(act)
+        # 파일 메뉴 설정
         self.menubar_file = self.menubar.addMenu('&File')
-        name_list = ["Save","Load","Execute","Exit"]
-        shcut_list = ['Ctrl+S','Ctrl+L','Ctrl+E','Ctrl+Q']
-        func_list = [tw.save_to_db,tw.load_from_db,tw.exec_inst,qApp.quit]
+        menu_items = [
+            ("Save", 'Ctrl+S', tree_widget.save_to_db),
+            ("Load", 'Ctrl+L', tree_widget.load_from_db),
+            ("Execute", 'Ctrl+E', tree_widget.exec_inst),
+            ("Exit", 'Ctrl+Q', QApplication.quit)
+        ]
         
-        for ix in range(len(name_list)):
-            act = QAction(name_list[ix],self.win)
-            act.setShortcut(shcut_list[ix])
-            act.triggered.connect(func_list[ix])
-            self.menubar_file.addAction(act)
+        for name, shortcut, func in menu_items:
+            action = QAction(name, self.window)
+            action.setShortcut(shortcut)
+            action.triggered.connect(func)
+            self.menubar_file.addAction(action)

@@ -1,6 +1,13 @@
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+"""트리 위젯 모듈
+
+트리 구조의 데이터를 표시하고 관리하는 위젯을 제공합니다.
+"""
+from typing import Dict, List, Optional, Any, Union
+from PyQt5.QtWidgets import (
+    QTreeWidget, QTreeWidgetItem, QAbstractItemView,
+    QHeaderView, QMainWindow
+)
+from PyQt5.QtCore import Qt
 from package.db.tree_db_dao import TreeDbDao
 from package.db.tree_db import TreeDB, TreeState
 from package.tree_widget_item import TreeWidgetItem
@@ -8,18 +15,29 @@ from package.db.tree_snapshot_manager import TreeSnapshotManager
 from package.ui.tree_widget_event_handler import TreeWidgetEventHandler
 from package.logic.tree_undo_redo_manager import TreeUndoRedoManager
 from package.logic.tree_item_executor import TreeItemExecutor
-from package.resources.resources import rsc  # rsc 임포트
+from package.resources.resources import rsc
+
 
 class TreeWidget(QTreeWidget):
-    def __init__(self, parent):
+    """트리 위젯 클래스
+    
+    트리 구조의 데이터를 표시하고 관리하는 위젯입니다.
+    """
+
+    def __init__(self, parent: QMainWindow) -> None:
+        """TreeWidget 생성자
+        
+        Args:
+            parent: 부모 윈도우
+        """
         super().__init__()
-        self.win = parent
+        self.window = parent
         self.db_dao = TreeDbDao()
         self.snapshot_manager = TreeSnapshotManager()
         self.event_handler = TreeWidgetEventHandler(self)
         self.undo_redo_manager = TreeUndoRedoManager(self)
         self.item_executor = TreeItemExecutor(self)
-        self.tree_state = None
+        self.tree_state: Optional[TreeState] = None
 
         # UI 설정
         self.setDragEnabled(True)
@@ -32,27 +50,30 @@ class TreeWidget(QTreeWidget):
         self.customContextMenuRequested.connect(self.event_handler.context_menu)
         self.itemClicked.connect(self.event_handler.on_item_clicked)
 
-    def load_from_db(self):
-        """DB에서 트리 로드"""
+    def load_from_db(self) -> None:
+        """DB에서 트리를 로드합니다."""
         self.tree_state = self.db_dao.load_tree()
         self.snapshot_manager.take_snapshot(self.tree_state)
         self.clear()
         self.build_tree_from_state()
 
-    def save_to_db(self):
-        """현재 트리 상태를 DB에 저장"""
+    def save_to_db(self) -> None:
+        """현재 트리 상태를 DB에 저장합니다."""
         self.update_tree_state()
         self.db_dao.save_tree(self.tree_state)
 
-    def build_tree_from_state(self):
-        """트리 상태를 기반으로 트리 UI 구성"""
+    def build_tree_from_state(self) -> None:
+        """트리 상태를 기반으로 트리 UI를 구성합니다."""
         self.clear()
+        if not self.tree_state:
+            return
+
         for node_id, node_data in self.tree_state.nodes.items():
             if node_data.get('parent_id') is None and node_data.get('name') == 'top':
                 for child_id in self.tree_state.structure.get(node_id, []):
                     child_data = self.tree_state.nodes[child_id]
-                    self.create_top_level_item(child_id, child_data) # top 노드의 자식 노드를 최상위 노드로 추가
-                break # top 노드는 하나만 존재하므로 루프 종료
+                    self.create_top_level_item(child_id, child_data)
+                break
             elif node_data.get('parent_id') is None and node_data.get('name') != 'top':
                 self.create_top_level_item(node_id, node_data)
             elif node_data.get('parent_id') in self.tree_state.nodes:
@@ -61,16 +82,31 @@ class TreeWidget(QTreeWidget):
                 if parent_item:
                     self.create_tree_item(parent_item, node_id, node_data)
 
-    def find_item_by_node_id(self, node_id):
-        """node_id로 TreeWidgetItem 찾기"""
+    def find_item_by_node_id(self, node_id: str) -> Optional[TreeWidgetItem]:
+        """node_id로 TreeWidgetItem을 찾습니다.
+        
+        Args:
+            node_id: 찾을 노드의 ID
+            
+        Returns:
+            찾은 TreeWidgetItem 또는 None
+        """
         items = self.findItems("", Qt.MatchContains | Qt.MatchRecursive, 0)
         for item in items:
             if hasattr(item, 'node_id') and item.node_id == node_id:
                 return item
         return None
     
-    def create_top_level_item(self, node_id, node_data):
-        """최상위 TreeWidgetItem 생성 및 자식 노드 재귀적 생성"""
+    def create_top_level_item(self, node_id: str, node_data: Dict[str, Any]) -> TreeWidgetItem:
+        """최상위 TreeWidgetItem을 생성하고 자식 노드를 재귀적으로 생성합니다.
+        
+        Args:
+            node_id: 노드 ID
+            node_data: 노드 데이터
+            
+        Returns:
+            생성된 TreeWidgetItem
+        """
         row = [
             node_data.get('parent_id', 'top'),
             node_data['name'],
@@ -79,9 +115,9 @@ class TreeWidget(QTreeWidget):
             node_data.get('sub', ''),
             ''
         ]
-        item = TreeWidgetItem(self, None, row)  # 부모 아이템 없음
+        item = TreeWidgetItem(self, None, row)
         item.node_id = node_id
-        self.addTopLevelItem(item)  # QTreeWidget에 직접 추가
+        self.addTopLevelItem(item)
 
         for child_id in self.tree_state.structure.get(node_id, []):
             child_data = self.tree_state.nodes[child_id]
@@ -89,8 +125,18 @@ class TreeWidget(QTreeWidget):
 
         return item
     
-    def create_tree_item(self, parent, node_id, node_data):
-        """TreeWidgetItem 생성 및 자식 노드 재귀적 생성"""
+    def create_tree_item(self, parent: Optional[TreeWidgetItem], node_id: str,
+                        node_data: Dict[str, Any]) -> TreeWidgetItem:
+        """TreeWidgetItem을 생성하고 자식 노드를 재귀적으로 생성합니다.
+        
+        Args:
+            parent: 부모 TreeWidgetItem
+            node_id: 노드 ID
+            node_data: 노드 데이터
+            
+        Returns:
+            생성된 TreeWidgetItem
+        """
         row = [
             node_data.get('parent_id', 'top'),
             node_data['name'],
@@ -102,7 +148,6 @@ class TreeWidget(QTreeWidget):
         item = TreeWidgetItem(self, parent, row)
         item.node_id = node_id
 
-        # QTreeWidget에 아이템 추가
         if parent is None:
             self.addTopLevelItem(item)
         else:
@@ -114,13 +159,18 @@ class TreeWidget(QTreeWidget):
 
         return item
 
-    def update_tree_state(self):
-        """현재 UI 상태를 tree_state에 반영"""
-        nodes = {}
-        structure = {}
+    def update_tree_state(self) -> None:
+        """현재 UI 상태를 tree_state에 반영합니다."""
+        nodes: Dict[str, Dict[str, Any]] = {}
+        structure: Dict[str, List[str]] = {}
 
-        def process_item(item, parent_id=None):
+        def process_item(item: TreeWidgetItem, parent_id: Optional[str] = None) -> None:
+            """아이템을 처리하고 상태를 업데이트합니다.
             
+            Args:
+                item: 처리할 TreeWidgetItem
+                parent_id: 부모 노드 ID
+            """
             node_id = getattr(item, 'node_id', None)
             if node_id is None:
                 return
@@ -145,29 +195,62 @@ class TreeWidget(QTreeWidget):
 
         self.tree_state = TreeState(nodes, structure)
 
-    def restore_state(self, state):
-        """상태 복원 (undo/redo용)"""
+    def restore_state(self, state: TreeState) -> None:
+        """상태를 복원합니다 (undo/redo용).
+        
+        Args:
+            state: 복원할 TreeState
+        """
         self.tree_state = state
         self.clear()
         self.build_tree_from_state()
 
-    def create_tree_item_with_id(self, parent, row):
-        """새로운 TreeWidgetItem을 생성하고 node_id 할당"""
+    def create_tree_item_with_id(self, parent: Optional[TreeWidgetItem],
+                                row: List[str]) -> TreeWidgetItem:
+        """새로운 TreeWidgetItem을 생성하고 node_id를 할당합니다.
+        
+        Args:
+            parent: 부모 TreeWidgetItem
+            row: 아이템 데이터 리스트
+            
+        Returns:
+            생성된 TreeWidgetItem
+        """
         item = TreeWidgetItem(self, parent, row)
-        # item.node_id = self.db.get_next_node_id()  # DB에서 새로운 ID 발급
         return item
-    
-    def keyPressEvent(self, event):
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        """키 입력 이벤트를 처리합니다.
+        
+        Args:
+            event: 키 이벤트 객체
+        """
         self.event_handler.key_press_event(event)
     
-    def mousePressEvent(self, event):
-        super().mousePressEvent(event) # 기본 동작을 수행
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        """마우스 클릭 이벤트를 처리합니다.
+        
+        Args:
+            event: 마우스 이벤트 객체
+        """
+        super().mousePressEvent(event)
     
-    def mouseReleaseEvent(self, event):
-        super().mouseReleaseEvent(event) # 기본 동작을 수행
+    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
+        """마우스 버튼 해제 이벤트를 처리합니다.
+        
+        Args:
+            event: 마우스 이벤트 객체
+        """
+        super().mouseReleaseEvent(event)
 
-    def contextMenuEvent(self, event):
-        super().contextMenuEvent(event) # 기본 동작을 수행
-
-    def exec_inst(self):
+    def contextMenuEvent(self, event: QContextMenuEvent) -> None:
+        """컨텍스트 메뉴 이벤트를 처리합니다.
+        
+        Args:
+            event: 컨텍스트 메뉴 이벤트 객체
+        """
+        super().contextMenuEvent(event)
+    
+    def exec_inst(self) -> None:
+        """선택된 아이템들을 실행합니다."""
         self.item_executor.execute_selected_items()
