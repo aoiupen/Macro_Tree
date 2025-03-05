@@ -54,7 +54,7 @@ class TreeWidget(QTreeWidget):
     def load_from_db(self) -> None:
         """DB에서 트리를 로드합니다."""
         self.tree_state = self.db_dao.load_tree()
-        self.snapshot_manager.take_snapshot(self.tree_state)
+        self.snapshot_manager.add_snapshot(self.tree_state)
         self.clear()
         self.build_tree_from_state()
 
@@ -234,8 +234,7 @@ class TreeWidget(QTreeWidget):
         Args:
             event: 마우스 이벤트 객체
         """
-        if event.modifiers() != Qt.ControlModifier:
-            super().mousePressEvent(event)
+        self.event_handler.mouse_press_event(event)
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         """마우스 버튼 해제 이벤트를 처리합니다.
@@ -243,12 +242,7 @@ class TreeWidget(QTreeWidget):
         Args:
             event: 마우스 이벤트 객체
         """
-        if event.modifiers() == Qt.ControlModifier:
-            super().mousePressEvent(event)
-            items = self.currentItem()
-            if items:
-                self.setCurrentItem(items)
-        super().mouseReleaseEvent(event)
+        self.event_handler.mouse_release_event(event)
 
     def contextMenuEvent(self, event: QContextMenuEvent) -> None:
         """컨텍스트 메뉴 이벤트를 처리합니다.

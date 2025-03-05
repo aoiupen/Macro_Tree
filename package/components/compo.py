@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from package import pos as ps
+from package import mouse_position as ps
 from package.components import compo as cp
 from package.resources import resources
 from ..resources.resources import *

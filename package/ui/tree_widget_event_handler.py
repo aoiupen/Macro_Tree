@@ -34,7 +34,7 @@ class TreeWidgetEventHandler:
             return
 
         # 현재 상태를 스냅샷으로 저장
-        self.tree_widget.snapshot_manager.take_snapshot(self.tree_widget.tree_state)
+        self.tree_widget.snapshot_manager.add_snapshot(self.tree_widget.tree_state)
 
         # 드롭된 아이템 처리
         if event.source() == self.tree_widget:
@@ -45,6 +45,28 @@ class TreeWidgetEventHandler:
                 item.setSelected(False)  # 드롭 후 선택 해제
 
         event.accept()
+
+    def mouse_press_event(self, event: QMouseEvent) -> None:
+        """마우스 클릭 이벤트를 처리합니다.
+        
+        Args:
+            event: 마우스 이벤트 객체
+        """
+        if event.modifiers() != Qt.ControlModifier:
+            super(self.tree_widget.__class__, self.tree_widget).mousePressEvent(event)
+
+    def mouse_release_event(self, event: QMouseEvent) -> None:
+        """마우스 버튼 해제 이벤트를 처리합니다.
+        
+        Args:
+            event: 마우스 이벤트 객체
+        """
+        if event.modifiers() == Qt.ControlModifier:
+            super(self.tree_widget.__class__, self.tree_widget).mousePressEvent(event)
+            items = self.tree_widget.currentItem()
+            if items:
+                self.tree_widget.setCurrentItem(items)
+        super(self.tree_widget.__class__, self.tree_widget).mouseReleaseEvent(event)
 
     def context_menu(self, pos: QPoint) -> None:
         """컨텍스트 메뉴를 표시합니다.
@@ -86,7 +108,7 @@ class TreeWidgetEventHandler:
         elif event.matches(QKeySequence.Redo):
             self.tree_widget.undoStack.redo()
         else:
-            self.tree_widget.keyPressEvent(event)
+            super(self.tree_widget.__class__, self.tree_widget).keyPressEvent(event)
 
     def delete_selected_items(self) -> None:
         """선택된 아이템들을 삭제합니다."""
@@ -124,8 +146,8 @@ class TreeWidgetEventHandler:
         self.tree_widget.update_tree_state()
         new_state = self.tree_widget.tree_state
         self.tree_widget.undoStack.push(TreeUndoCommand(self.tree_widget, old_state, new_state))
-        # 스냅샷으로 변경 필요
-        self.tree_widget.snapshot_manager.take_snapshot(new_state)
+        # 스냅샷 생성
+        self.tree_widget.snapshot_manager.add_snapshot(new_state)
 
     def context_menu_event(self, event: QMouseEvent) -> None:
         """컨텍스트 메뉴 이벤트를 처리합니다.

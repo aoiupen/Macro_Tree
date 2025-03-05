@@ -125,7 +125,7 @@ class TreeDbDao:
             structure[parent_id].append(node_id)
 
         initial_state = TreeState(nodes, structure)
-        self.snapshot_manager.take_snapshot(initial_state)
+        self.snapshot_manager.add_snapshot(initial_state)
         return initial_state
 
     def save_tree(self, tree_state: TreeState) -> None:
@@ -149,15 +149,15 @@ class TreeDbDao:
             )
         conn.commit()
         
-    def take_snapshot(self, tree_state: TreeState) -> None:
+    def add_snapshot(self, tree_state: TreeState) -> None:
         """현재 트리 상태의 스냅샷을 저장합니다.
         
         Args:
             tree_state: 스냅샷으로 저장할 트리 상태
         """
-        self.snapshot_manager.take_snapshot(tree_state)
+        self.snapshot_manager.add_snapshot(tree_state)
 
-    def create_new_snapshot(self, changes: Dict[int, Dict[str, Any]]) -> TreeState:
+    def create_snapshot_from_changes(self, changes: Dict[int, Dict[str, Any]]) -> TreeState:
         """최신 스냅샷의 복사본을 만들고 변경 사항을 적용하여 새로운 스냅샷을 생성합니다.
         
         Args:
@@ -166,4 +166,8 @@ class TreeDbDao:
         Returns:
             새로 생성된 트리 상태
         """
-        return self.snapshot_manager.create_new_snapshot(changes)
+        return self.snapshot_manager.create_snapshot_from_changes(changes)
+
+    # 이전 메서드 이름과의 호환성을 위한 별칭
+    take_snapshot = add_snapshot
+    create_new_snapshot = create_snapshot_from_changes
