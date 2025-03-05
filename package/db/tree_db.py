@@ -24,7 +24,3 @@ class TreeDB:
     def create_new_snapshot(self, changes: Dict[int, Dict]) -> TreeState:
         """최신 스냅샷의 복사본을 만들고 변경 사항을 적용하여 새로운 스냅샷 생성"""
         return self.snapshot_manager.create_new_snapshot(changes)
-
-    def restore_snapshot(self, index: int) -> Optional[TreeState]:
-        """지정된 인덱스의 스냅샷으로 복원"""
-        return self.snapshot_manager.restore_snapshot(index)

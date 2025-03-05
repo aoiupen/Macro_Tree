@@ -1,12 +1,7 @@
 from typing import Dict, List, Optional
 from dataclasses import dataclass
 import copy
-
-@dataclass
-class TreeState:
-    """현재 트리의 전체 상태를 저장하는 클래스"""
-    nodes: Dict[int, Dict]  # {node_id: node_data}
-    structure: Dict[int, List[int]]  # {parent_id: [child_ids]}
+from tree_data import TreeState
 
 class TreeSnapshotManager:
     def __init__(self):
@@ -30,9 +25,3 @@ class TreeSnapshotManager:
 
         self.take_snapshot(new_snapshot)
         return new_snapshot
-
-    def restore_snapshot(self, index: int) -> Optional[TreeState]:
-        """지정된 인덱스의 스냅샷으로 복원"""
-        if 0 <= index < len(self.snapshots):
-            return self.snapshots[index]
-        return None
