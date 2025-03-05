@@ -1,34 +1,57 @@
-from PyQt5.QtWidgets import QMenu, QAction
+"""트리 위젯 이벤트 핸들러 모듈
+
+트리 위젯의 이벤트를 처리하는 클래스를 제공합니다.
+"""
+from typing import List, Optional
+from PyQt5.QtWidgets import QMenu, QAction, QTreeWidgetItem, QTreeWidget
 from PyQt5.QtCore import Qt, QPoint, pyqtSlot
-from PyQt5.QtGui import QCursor, QKeySequence
+from PyQt5.QtGui import QCursor, QKeySequence, QDropEvent, QMouseEvent, QKeyEvent
 from package.logic.tree_undo_redo_manager import TreeUndoCommand
-from PyQt5.QtWidgets import QTreeWidgetItem
+
 
 class TreeWidgetEventHandler:
-    def __init__(self, tree_widget):
+    """트리 위젯 이벤트 핸들러 클래스
+    
+    트리 위젯의 다양한 이벤트를 처리합니다.
+    """
+
+    def __init__(self, tree_widget: QTreeWidget) -> None:
+        """TreeWidgetEventHandler 생성자
+        
+        Args:
+            tree_widget: 이벤트를 처리할 트리 위젯
+        """
         self.tree_widget = tree_widget
 
-    def tree_drop_event(self, event):
-        """드롭 이벤트 처리"""
+    def tree_drop_event(self, event: QDropEvent) -> None:
+        """드롭 이벤트를 처리합니다.
+        
+        Args:
+            event: 드롭 이벤트 객체
+        """
         target_item = self.tree_widget.itemAt(event.pos())
         if target_item is None:
             return
 
-        self.tree_widget.snapshot_manager.take_snapshot(self.tree_widget.tree_state)  # 현재 상태를 스냅샷으로 저장
+        # 현재 상태를 스냅샷으로 저장
+        self.tree_widget.snapshot_manager.take_snapshot(self.tree_widget.tree_state)
 
-        # 드롭된 아이템 처리 로직
+        # 드롭된 아이템 처리
         if event.source() == self.tree_widget:
             selected_items = self.tree_widget.selectedItems()
             for item in selected_items:
-                # 드롭할 위치에 따라 부모를 변경하는 로직
-                #target_parent = target_item if target_item.parent() else self.tree_widget.invisibleRootItem()
                 target_parent = target_item if target_item.parent() else target_item
                 target_parent.addChild(item)
                 item.setSelected(False)  # 드롭 후 선택 해제
 
-        event.accept()  # 이벤트 수용
+        event.accept()
 
-    def context_menu(self, pos):
+    def context_menu(self, pos: QPoint) -> None:
+        """컨텍스트 메뉴를 표시합니다.
+        
+        Args:
+            pos: 메뉴를 표시할 위치
+        """
         index = self.tree_widget.indexAt(pos)
         if not index.isValid():
             return
@@ -40,13 +63,18 @@ class TreeWidgetEventHandler:
         menu.addAction("action")
         menu.addAction(name)
         menu.addSeparator()
-        action_1 = menu.addAction("Choix 1")
-        action_2 = menu.addAction("Choix 2")
+        menu.addAction("Choix 1")
+        menu.addAction("Choix 2")
         menu.addSeparator()
-        action_3 = menu.addAction("Choix 3")
+        menu.addAction("Choix 3")
         menu.exec_(self.tree_widget.mapToGlobal(pos))
 
-    def key_press_event(self, event):
+    def key_press_event(self, event: QKeyEvent) -> None:
+        """키 입력 이벤트를 처리합니다.
+        
+        Args:
+            event: 키 이벤트 객체
+        """
         if event.key() == Qt.Key_Delete:
             self.delete_selected_items()
         elif event.matches(QKeySequence.Copy):
@@ -60,53 +88,69 @@ class TreeWidgetEventHandler:
         else:
             self.tree_widget.keyPressEvent(event)
 
-    def delete_selected_items(self):
+    def delete_selected_items(self) -> None:
+        """선택된 아이템들을 삭제합니다."""
         old_state = self.tree_widget.tree_state
-        for sel_it in self.tree_widget.selectedItems():
-            (sel_it.parent() or self.tree_widget.invisibleRootItem()).removeChild(sel_it)
+        for selected_item in self.tree_widget.selectedItems():
+            (selected_item.parent() or self.tree_widget.invisibleRootItem()).removeChild(selected_item)
         self.tree_widget.update_tree_state()
         new_state = self.tree_widget.tree_state
         self.tree_widget.undoStack.push(TreeUndoCommand(self.tree_widget, old_state, new_state))
 
-    def copy_selected_items(self):
-        sel_it_name_list = [sel_it.logic.name for sel_it in self.tree_widget.selectedItems()]
-        self.tree_widget.sel_nd_it_list = [sel_it for sel_it in self.tree_widget.selectedItems() if sel_it.logic.prnt not in sel_it_name_list]
+    def copy_selected_items(self) -> None:
+        """선택된 아이템들을 복사합니다."""
+        selected_item_names = [item.logic.name for item in self.tree_widget.selectedItems()]
+        self.tree_widget.selected_node_items = [
+            item for item in self.tree_widget.selectedItems()
+            if item.logic.parent_id not in selected_item_names
+        ]
 
-    def paste_selected_items(self):
+    def paste_selected_items(self) -> None:
+        """복사된 아이템들을 붙여넣기합니다."""
         old_state = self.tree_widget.tree_state
-        dst_it = self.tree_widget.currentItem()
-        if dst_it and dst_it.logic.is_group():
-            for sel_nd_it in self.tree_widget.sel_nd_it_list:
-                row = [sel_nd_it.logic.prnt, sel_nd_it.logic.name, sel_nd_it.logic.inp, sel_nd_it.logic.sub_con, sel_nd_it.logic.sub]
-                self.tree_widget.create_tree_item_with_id(dst_it, row)
+        destination_item = self.tree_widget.currentItem()
+        
+        if destination_item and destination_item.logic.is_group():
+            for selected_node_item in self.tree_widget.selected_node_items:
+                row = [
+                    selected_node_item.logic.parent_id,
+                    selected_node_item.logic.name,
+                    selected_node_item.logic.inp,
+                    selected_node_item.logic.sub_con,
+                    selected_node_item.logic.sub
+                ]
+                self.tree_widget.create_tree_item_with_id(destination_item, row)
+        
         self.tree_widget.update_tree_state()
         new_state = self.tree_widget.tree_state
         self.tree_widget.undoStack.push(TreeUndoCommand(self.tree_widget, old_state, new_state))
-        self.tree_widget.save_to_db() # 스냅샷으로 바꿔야
+        # 스냅샷으로 변경 필요
+        self.tree_widget.snapshot_manager.take_snapshot(new_state)
 
-    def mouse_press_event(self, event):
-        if event.modifiers() != Qt.ControlModifier:
-            return self.tree_widget.mousePressEvent(event)
+    def context_menu_event(self, event: QMouseEvent) -> None:
+        """컨텍스트 메뉴 이벤트를 처리합니다.
+        
+        Args:
+            event: 마우스 이벤트 객체
+        """
+        context_menu = QMenu(self.tree_widget)
+        delete_action = QAction('Delete', self.tree_widget)
+        ungroup_action = QAction('Ungroup', self.tree_widget)
+        group_action = QAction('Group', self.tree_widget)
+        
+        delete_action.triggered.connect(lambda: self.tree_widget.recur_del(event))
+        ungroup_action.triggered.connect(lambda: self.tree_widget.ungroup_sel_items(event))
+        group_action.triggered.connect(lambda: self.tree_widget.group_sel_items(event))
+        
+        context_menu.addActions([delete_action, ungroup_action, group_action])
+        context_menu.popup(QCursor.pos())
 
-    def mouse_release_event(self, event):
-        if event.modifiers() == Qt.ControlModifier:
-            self.tree_widget.mousePressEvent(event)
-            items = self.tree_widget.currentItem()
-            if items:
-                self.tree_widget.setCurrentItem(items)
-        return self.tree_widget.mouseReleaseEvent(event)
-
-    def context_menu_event(self, event):
-        self.tree_widget.ctxt = QMenu(self.tree_widget)
-        del_act = QAction('Delete', self.tree_widget)
-        ungr_act = QAction('Ungroup', self.tree_widget)
-        gr_act = QAction('Group', self.tree_widget)
-        del_act.triggered.connect(lambda: self.tree_widget.recur_del(event))
-        ungr_act.triggered.connect(lambda: self.tree_widget.ungroup_sel_items(event))
-        gr_act.triggered.connect(lambda: self.tree_widget.group_sel_items(event))
-        self.tree_widget.ctxt.addActions([del_act, ungr_act, gr_act])
-        self.tree_widget.ctxt.popup(QCursor.pos())
-
-    def on_item_clicked(self, item, column):
-        # 아이템 클릭 처리 로직
-        print(f"Item clicked: {item.text(0)}")  # 예시로 클릭된 아이템의 텍스트 출력
+    @pyqtSlot(QTreeWidgetItem, int)
+    def on_item_clicked(self, item: QTreeWidgetItem, column: int) -> None:
+        """아이템 클릭 이벤트를 처리합니다.
+        
+        Args:
+            item: 클릭된 트리 위젯 아이템
+            column: 클릭된 열 번호
+        """
+        print(f"Item clicked: {item.text(0)}")  # 클릭된 아이템의 텍스트 출력

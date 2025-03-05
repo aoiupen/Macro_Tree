@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from package.db.tree_db_dao import TreeDbDao
-from package.db.tree_db import TreeDB, TreeState
+from package.db.tree_data import TreeState
 from package.tree_widget_item import TreeWidgetItem
 from package.db.tree_snapshot_manager import TreeSnapshotManager
 from package.ui.tree_widget_event_handler import TreeWidgetEventHandler
@@ -38,6 +38,7 @@ class TreeWidget(QTreeWidget):
         self.undo_redo_manager = TreeUndoRedoManager(self)
         self.item_executor = TreeItemExecutor(self)
         self.tree_state: Optional[TreeState] = None
+        self.selected_node_items: List[TreeWidgetItem] = []
 
         # UI 설정
         self.setDragEnabled(True)
@@ -226,21 +227,27 @@ class TreeWidget(QTreeWidget):
             event: 키 이벤트 객체
         """
         self.event_handler.key_press_event(event)
-    
+
     def mousePressEvent(self, event: QMouseEvent) -> None:
         """마우스 클릭 이벤트를 처리합니다.
         
         Args:
             event: 마우스 이벤트 객체
         """
-        super().mousePressEvent(event)
-    
+        if event.modifiers() != Qt.ControlModifier:
+            super().mousePressEvent(event)
+
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         """마우스 버튼 해제 이벤트를 처리합니다.
         
         Args:
             event: 마우스 이벤트 객체
         """
+        if event.modifiers() == Qt.ControlModifier:
+            super().mousePressEvent(event)
+            items = self.currentItem()
+            if items:
+                self.setCurrentItem(items)
         super().mouseReleaseEvent(event)
 
     def contextMenuEvent(self, event: QContextMenuEvent) -> None:
@@ -249,7 +256,7 @@ class TreeWidget(QTreeWidget):
         Args:
             event: 컨텍스트 메뉴 이벤트 객체
         """
-        super().contextMenuEvent(event)
+        self.event_handler.context_menu_event(event)
     
     def exec_inst(self) -> None:
         """선택된 아이템들을 실행합니다."""

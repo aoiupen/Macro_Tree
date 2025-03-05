@@ -1,22 +1,37 @@
+"""트리 데이터베이스 DAO 모듈
+
+트리 구조의 데이터를 데이터베이스에 저장하고 관리하는 기능을 제공합니다.
+"""
 import os
 import psycopg2
 from getpass import getpass
 from dotenv import load_dotenv
-from typing import Dict, List
-from dataclasses import dataclass
-from tree_data import TreeState
+from typing import Dict, List, Optional, Tuple, Any
+from package.db.tree_data import TreeState
+from package.db.tree_snapshot_manager import TreeSnapshotManager
+
 
 class DatabaseConnection:
+    """데이터베이스 연결 싱글톤 클래스
+    
+    데이터베이스 연결을 관리하는 싱글톤 패턴 클래스입니다.
+    """
+    
     _instance = None
-    _connection = None  # 클래스 변수로 연결 객체 저장
+    _connection = None
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def connect(self):
-        if DatabaseConnection._connection is not None:  # 클래스 변수 사용
+    def connect(self) -> Optional[psycopg2.extensions.connection]:
+        """데이터베이스 연결을 생성하고 반환합니다.
+        
+        Returns:
+            데이터베이스 연결 객체 또는 None
+        """
+        if DatabaseConnection._connection is not None:
             return DatabaseConnection._connection
 
         try:
@@ -27,7 +42,7 @@ class DatabaseConnection:
             port = os.getenv("DB_PORT")
             password = getpass("Enter your database password: ")
 
-            DatabaseConnection._connection = psycopg2.connect(  # 클래스 변수 사용
+            DatabaseConnection._connection = psycopg2.connect(
                 dbname=db_name,
                 user=user,
                 password=password,
@@ -40,25 +55,55 @@ class DatabaseConnection:
             print(f"Database connection error: {e}")
             return None
 
-class TreeDbDao:
-    def __init__(self):
-        self.db_connection = DatabaseConnection()
 
-    def get_connection(self):
+class TreeDbDao:
+    """트리 데이터베이스 DAO 클래스
+    
+    트리 구조의 데이터를 데이터베이스에 저장하고 관리합니다.
+    """
+    
+    def __init__(self, conn_string: Optional[str] = None) -> None:
+        """TreeDbDao 생성자
+        
+        Args:
+            conn_string: 데이터베이스 연결 문자열 (선택적)
+        """
+        self.db_connection = DatabaseConnection()
+        self.snapshot_manager = TreeSnapshotManager()
+        self.conn_string = conn_string
+
+    def get_connection(self) -> Optional[psycopg2.extensions.connection]:
+        """데이터베이스 연결을 반환합니다.
+        
+        Returns:
+            데이터베이스 연결 객체 또는 None
+        """
         return self.db_connection.connect()
 
-    def _execute_query(self, query, params=None):
-        """데이터베이스 연결 및 커서 생성, 쿼리 실행을 담당하는 내부 메서드"""
-        with self.get_connection() as conn:
-            with conn.cursor() as cur:
-                if params:
-                    cur.execute(query, params)
-                else:
-                    cur.execute(query)
-                return cur, conn
+    def _execute_query(self, query: str, params: Optional[Tuple] = None) -> Tuple[psycopg2.extensions.cursor, psycopg2.extensions.connection]:
+        """데이터베이스 쿼리를 실행합니다.
+        
+        Args:
+            query: 실행할 SQL 쿼리
+            params: 쿼리 매개변수 (선택적)
+            
+        Returns:
+            커서와 연결 객체 튜플
+        """
+        conn = self.get_connection()
+        cur = conn.cursor()
+        if params:
+            cur.execute(query, params)
+        else:
+            cur.execute(query)
+        return cur, conn
 
-    def load_tree(self):
-        """DB에서 전체 트리 구조를 로드"""
+    def load_tree(self) -> TreeState:
+        """DB에서 전체 트리 구조를 로드하고 초기 스냅샷을 생성합니다.
+        
+        Returns:
+            로드된 트리 상태
+        """
         cur, _ = self._execute_query("SELECT id, parent_id, name, inp, sub_con, sub FROM tree_nodes")
         rows = cur.fetchall()
 
@@ -79,10 +124,16 @@ class TreeDbDao:
                 structure[parent_id] = []
             structure[parent_id].append(node_id)
 
-        return TreeState(nodes, structure)
+        initial_state = TreeState(nodes, structure)
+        self.snapshot_manager.take_snapshot(initial_state)
+        return initial_state
 
-    def save_tree(self, tree_state: TreeState):
-        """현재 트리 상태를 DB에 저장"""
+    def save_tree(self, tree_state: TreeState) -> None:
+        """현재 트리 상태를 DB에 저장합니다.
+        
+        Args:
+            tree_state: 저장할 트리 상태
+        """
         cur, conn = self._execute_query("DELETE FROM tree_nodes")
         for node_id, node_data in tree_state.nodes.items():
             cur.execute(
@@ -97,3 +148,22 @@ class TreeDbDao:
                 ),
             )
         conn.commit()
+        
+    def take_snapshot(self, tree_state: TreeState) -> None:
+        """현재 트리 상태의 스냅샷을 저장합니다.
+        
+        Args:
+            tree_state: 스냅샷으로 저장할 트리 상태
+        """
+        self.snapshot_manager.take_snapshot(tree_state)
+
+    def create_new_snapshot(self, changes: Dict[int, Dict[str, Any]]) -> TreeState:
+        """최신 스냅샷의 복사본을 만들고 변경 사항을 적용하여 새로운 스냅샷을 생성합니다.
+        
+        Args:
+            changes: 적용할 변경 사항 딕셔너리
+            
+        Returns:
+            새로 생성된 트리 상태
+        """
+        return self.snapshot_manager.create_new_snapshot(changes)
