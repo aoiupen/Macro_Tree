@@ -14,14 +14,15 @@ class TreeWidgetEventHandler:
         if target_item is None:
             return
 
-        self.tree_widget.snapshot()  # 현재 상태를 스냅샷으로 저장
+        self.tree_widget.snapshot_manager.take_snapshot(self.tree_widget.tree_state)  # 현재 상태를 스냅샷으로 저장
 
         # 드롭된 아이템 처리 로직
         if event.source() == self.tree_widget:
             selected_items = self.tree_widget.selectedItems()
             for item in selected_items:
                 # 드롭할 위치에 따라 부모를 변경하는 로직
-                target_parent = target_item.parent() if target_item else self.tree_widget.invisibleRootItem()
+                #target_parent = target_item if target_item.parent() else self.tree_widget.invisibleRootItem()
+                target_parent = target_item if target_item.parent() else target_item
                 target_parent.addChild(item)
                 item.setSelected(False)  # 드롭 후 선택 해제
 
