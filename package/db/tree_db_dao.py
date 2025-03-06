@@ -35,11 +35,12 @@ class DatabaseConnection:
             return DatabaseConnection._connection
 
         try:
-            load_dotenv()
-            db_name = os.getenv("DB_NAME")
-            user = os.getenv("DB_USER")
-            host = os.getenv("DB_HOST")
-            port = os.getenv("DB_PORT")
+            config = ConfigManager()
+            db_name = config.get("database", "name")
+            user = config.get("database", "user")
+            host = config.get("database", "host")
+            port = config.get("database", "port")
+            
             password = getpass("Enter your database password: ")
 
             DatabaseConnection._connection = psycopg2.connect(
@@ -51,8 +52,11 @@ class DatabaseConnection:
             )
             return DatabaseConnection._connection
 
-        except psycopg2.OperationalError as e:
-            print(f"Database connection error: {e}")
+        except (psycopg2.OperationalError, KeyError) as e:
+            print(f"데이터베이스 연결 오류: {e}")
+            return None
+        except Exception as e:
+            print(f"예상치 못한 오류: {e}")
             return None
 
 
@@ -134,20 +138,36 @@ class TreeDbDao:
         Args:
             tree_state: 저장할 트리 상태
         """
-        cur, conn = self._execute_query("DELETE FROM tree_nodes")
-        for node_id, node_data in tree_state.nodes.items():
-            cur.execute(
-                "INSERT INTO tree_nodes (id, parent_id, name, inp, sub_con, sub) VALUES (%s, %s, %s, %s, %s, %s)",
-                (
+        try:
+            cur, conn = self._execute_query("BEGIN")
+            
+            # 기존 데이터 삭제
+            cur.execute("DELETE FROM tree_nodes")
+            
+            # 일괄 삽입을 위한 데이터 준비
+            insert_data = []
+            for node_id, node_data in tree_state.nodes.items():
+                insert_data.append((
                     node_id,
                     node_data['parent_id'],
                     node_data['name'],
                     node_data['inp'],
                     node_data['sub_con'],
                     node_data['sub']
-                ),
+                ))
+            
+            # 일괄 삽입 실행
+            cur.executemany(
+                "INSERT INTO tree_nodes (id, parent_id, name, inp, sub_con, sub) VALUES (%s, %s, %s, %s, %s, %s)",
+                insert_data
             )
-        conn.commit()
+            
+            # 트랜잭션 커밋
+            cur.execute("COMMIT")
+            
+        except Exception as e:
+            print(f"트리 저장 오류: {e}")
+            cur.execute("ROLLBACK")
         
     def add_snapshot(self, tree_state: TreeState) -> None:
         """현재 트리 상태의 스냅샷을 저장합니다.

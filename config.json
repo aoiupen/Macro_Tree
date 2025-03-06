@@ -1,0 +1,10 @@
+{
+    "window": {
+        "title": "Macro",
+        "geometry": [100, 100, 500, 400]
+    },
+    "tree": {
+        "columns": ["Name", "M/K", "Value", "Act", ""],
+        "column_width": 10
+    }
+}

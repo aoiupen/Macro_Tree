@@ -16,6 +16,7 @@ from package.ui.tree_widget_event_handler import TreeWidgetEventHandler
 from package.logic.tree_undo_redo_manager import TreeUndoRedoManager
 from package.logic.tree_item_executor import TreeItemExecutor
 from package.resources.resources import rsc
+from package.utils.tree_node_manager import TreeNodeManager
 
 
 class TreeWidget(QTreeWidget):
@@ -39,6 +40,7 @@ class TreeWidget(QTreeWidget):
         self.item_executor = TreeItemExecutor(self)
         self.tree_state: Optional[TreeState] = None
         self.selected_node_items: List[TreeWidgetItem] = []
+        self.node_manager = TreeNodeManager()
 
         # UI 설정
         self.setDragEnabled(True)
@@ -92,11 +94,7 @@ class TreeWidget(QTreeWidget):
         Returns:
             찾은 TreeWidgetItem 또는 None
         """
-        items = self.findItems("", Qt.MatchContains | Qt.MatchRecursive, 0)
-        for item in items:
-            if hasattr(item, 'node_id') and item.node_id == node_id:
-                return item
-        return None
+        return self.node_manager.get_node(node_id)
     
     def create_top_level_item(self, node_id: str, node_data: Dict[str, Any]) -> TreeWidgetItem:
         """최상위 TreeWidgetItem을 생성하고 자식 노드를 재귀적으로 생성합니다.
@@ -119,6 +117,9 @@ class TreeWidget(QTreeWidget):
         item = TreeWidgetItem(self, None, row)
         item.node_id = node_id
         self.addTopLevelItem(item)
+        
+        # 노드 관리자에 등록
+        self.node_manager.register_node(node_id, item)
 
         for child_id in self.tree_state.structure.get(node_id, []):
             child_data = self.tree_state.nodes[child_id]
@@ -148,6 +149,9 @@ class TreeWidget(QTreeWidget):
         ]
         item = TreeWidgetItem(self, parent, row)
         item.node_id = node_id
+        
+        # 노드 관리자에 등록
+        self.node_manager.register_node(node_id, item)
 
         if parent is None:
             self.addTopLevelItem(item)
@@ -255,3 +259,8 @@ class TreeWidget(QTreeWidget):
     def exec_inst(self) -> None:
         """선택된 아이템들을 실행합니다."""
         self.item_executor.execute_selected_items()
+
+    def clear(self) -> None:
+        """트리 위젯을 초기화합니다."""
+        super().clear()
+        self.node_manager.clear()
