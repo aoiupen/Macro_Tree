@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow
-from package.ui.ui import UI
+from view.ui import UI  # ui 폴더를 view 폴더로 변경했습니다.
 #
 class MainWindow(QMainWindow):
     def __init__(self,app):
