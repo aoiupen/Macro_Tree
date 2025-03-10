@@ -185,3 +185,4 @@ ehthumbs.db
 # Virtual Environment
 venv/
 .env/
+.etc
