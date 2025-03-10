@@ -10,6 +10,7 @@ from typing import Dict, List, Optional, Tuple, Any
 from core.tree_state import TreeState
 from viewmodels.snapshot_manager import TreeSnapshotManager
 from utils.config_manager import ConfigManager
+from .dummy_data import get_default_tree
 
 
 class DatabaseConnection:
@@ -44,10 +45,6 @@ class DatabaseConnection:
             db_port = config.get("database", "port", "5432")
             db_password = os.environ.get("DB_PASSWORD")
             
-            # 비밀번호가 환경 변수에 없으면 사용자에게 요청
-            if not db_password and os.environ.get("ENVIRONMENT") != "production":
-                db_password = getpass("Enter database password: ")
-            
             # 연결 문자열 생성
             conn_string = f"dbname={db_name} user={db_user} host={db_host} port={db_port}"
             if db_password:
@@ -63,9 +60,11 @@ class DatabaseConnection:
 
 
 class TreeRepository:
-    """트리 데이터베이스 DAO 클래스
+    """트리 도메인 객체의 저장소(Repository)
     
-    트리 구조의 데이터를 데이터베이스에 저장하고 관리합니다.
+    Domain-Driven Design 패턴에 따라 구현된 Repository로,
+    단순한 데이터 접근(DAO)을 넘어 트리 도메인 객체의 
+    생명주기 관리, 영속성 추상화, 도메인 로직 캡슐화를 담당합니다.
     """
     
     def __init__(self, conn_string: Optional[str] = None) -> None:
@@ -118,7 +117,9 @@ class TreeRepository:
             로드된 트리 상태
         """
         # 데이터베이스 연결 시도
-        result = self._execute_query("SELECT id, parent_id, name, inp, sub_con, sub FROM tree_nodes")
+        TABLE_NAME = "tree_nodes"
+        COLUMNS = ["id", "parent_id", "name", "inp", "sub_con", "sub"]
+        result = self._execute_query(f"SELECT {', '.join(COLUMNS)} FROM {TABLE_NAME}")
         
         # 데이터베이스 연결 실패 또는 쿼리 실패 시 기본 트리 상태 반환
         if result is None:
@@ -159,41 +160,7 @@ class TreeRepository:
         Returns:
             기본 트리 상태
         """
-        # 기본 노드 생성
-        nodes = {
-            "1": {
-                'name': "G:기본 그룹",
-                'inp': "M",
-                'sub_con': "",
-                'sub': "click",
-                'parent_id': None
-            },
-            "2": {
-                'name': "I:기본 인스턴스",
-                'inp': "M",
-                'sub_con': "",
-                'sub': "click",
-                'parent_id': None
-            },
-            "3": {
-                'name': "기본 액션",
-                'inp': "M",
-                'sub_con': "0,0",
-                'sub': "click",
-                'parent_id': "1"
-            }
-        }
-        
-        # 기본 구조 생성
-        structure = {
-            None: ["1", "2"],
-            "1": ["3"]
-        }
-        
-        # 기본 트리 상태 생성
-        default_state = TreeState(nodes, structure)
-        self.snapshot_manager.add_snapshot(default_state)
-        return default_state
+        return get_default_tree()
 
     def save_tree(self, tree_state: TreeState) -> None:
         """현재 트리 상태를 DB에 저장합니다.
@@ -218,22 +185,15 @@ class TreeRepository:
             cur.execute("DELETE FROM tree_nodes")
             
             # 일괄 삽입을 위한 데이터 준비
-            insert_data = []
+            values = []
             for node_id, node_data in tree_state.nodes.items():
-                insert_data.append((
-                    node_id,
-                    node_data['parent_id'],
-                    node_data['name'],
-                    node_data['inp'],
-                    node_data['sub_con'],
-                    node_data['sub']
-                ))
+                values.append((node_id, *node_data.values()))
             
             # 일괄 삽입 실행
-            cur.executemany(
-                "INSERT INTO tree_nodes (id, parent_id, name, inp, sub_con, sub) VALUES (%s, %s, %s, %s, %s, %s)",
-                insert_data
-            )
+            TABLE_NAME = "tree_nodes"
+            COLUMNS = ["id", "parent_id", "name", "inp", "sub_con", "sub"]
+            INSERT_QUERY = f"INSERT INTO {TABLE_NAME} ({', '.join(COLUMNS)}) VALUES ({', '.join(['%s'] * len(COLUMNS))})"
+            cur.executemany(INSERT_QUERY, values)
             
             # 트랜잭션 커밋
             cur.execute("COMMIT")
@@ -261,7 +221,6 @@ class TreeRepository:
             새로 생성된 트리 상태
         """
         return self.snapshot_manager.create_snapshot_from_changes(changes)
-
-    # 이전 메서드 이름과의 호환성을 위한 별칭
-    take_snapshot = add_snapshot
-    create_new_snapshot = create_snapshot_from_changes 
+    
+    def _create_sample_tree(self):
+        return SAMPLE_TREE_NODES 
