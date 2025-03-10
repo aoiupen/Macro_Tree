@@ -20,7 +20,7 @@ class TreeSnapshotManager:
         Args:
             max_snapshots: 최대 스냅샷 수 (기본값: 20)
         """
-        self.snapshots = deque(maxlen=max_snapshots)
+        self.snapshot_deque = deque(maxlen=max_snapshots)
         self.current_index = -1
     
     def add_snapshot(self, tree_state: TreeState) -> None:
@@ -30,12 +30,12 @@ class TreeSnapshotManager:
             tree_state: 저장할 트리 상태
         """
         # 현재 인덱스 이후의 스냅샷 제거
-        if self.current_index < len(self.snapshots) - 1:
-            self.snapshots = deque(list(self.snapshots)[:self.current_index + 1], maxlen=self.snapshots.maxlen)
+        if self.current_index < len(self.snapshot_deque) - 1:
+            self.snapshot_deque = deque(list(self.snapshot_deque)[:self.current_index + 1], maxlen=self.snapshot_deque.maxlen)
         
         # 깊은 복사본 저장
-        self.snapshots.append(copy.deepcopy(tree_state))
-        self.current_index = len(self.snapshots) - 1
+        self.snapshot_deque.append(copy.deepcopy(tree_state))
+        self.current_index = len(self.snapshot_deque) - 1
     
     def get_current_snapshot(self) -> Optional[TreeState]:
         """현재 스냅샷을 반환합니다.
@@ -43,10 +43,10 @@ class TreeSnapshotManager:
         Returns:
             현재 스냅샷 또는 None
         """
-        if not self.snapshots or self.current_index < 0:
+        if not self.snapshot_deque or self.current_index < 0:
             return None
         
-        return copy.deepcopy(self.snapshots[self.current_index])
+        return copy.deepcopy(self.snapshot_deque[self.current_index])
     
     def can_undo(self) -> bool:
         """실행 취소 가능 여부를 반환합니다.
@@ -57,12 +57,12 @@ class TreeSnapshotManager:
         return self.current_index > 0
     
     def can_redo(self) -> bool:
-        """다시 실행 가능 여부를 반환합니다.
+        """다시 실행 가능 여부를 확인합니다.
         
         Returns:
             다시 실행 가능 여부
         """
-        return self.current_index < len(self.snapshots) - 1
+        return self.current_index < len(self.snapshot_deque) - 1
     
     def undo(self) -> Optional[TreeState]:
         """이전 스냅샷으로 이동합니다.
@@ -74,7 +74,7 @@ class TreeSnapshotManager:
             return None
         
         self.current_index -= 1
-        return copy.deepcopy(self.snapshots[self.current_index])
+        return copy.deepcopy(self.snapshot_deque[self.current_index])
     
     def redo(self) -> Optional[TreeState]:
         """다음 스냅샷으로 이동합니다.
@@ -86,9 +86,22 @@ class TreeSnapshotManager:
             return None
         
         self.current_index += 1
-        return copy.deepcopy(self.snapshots[self.current_index])
+        return copy.deepcopy(self.snapshot_deque[self.current_index])
     
-    def create_snapshot_from_changes(self, changes: Dict[str, Dict[str, Any]]) -> TreeState:
+    def get_snapshot_at(self, index: int) -> Optional[TreeState]:
+        """지정된 인덱스의 스냅샷을 반환합니다.
+        
+        Args:
+            index: 스냅샷 인덱스
+            
+        Returns:
+            지정된 인덱스의 스냅샷 또는 None
+        """
+        if 0 <= index < len(self.snapshot_deque):
+            return copy.deepcopy(self.snapshot_deque[index])
+        return None
+    
+    def create_snapshot(self, changes: Dict[str, Dict[str, Any]]) -> TreeState:
         """최신 스냅샷의 복사본을 만들고 변경 사항을 적용하여 새로운 스냅샷을 생성합니다.
         
         Args:

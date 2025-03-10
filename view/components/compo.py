@@ -15,14 +15,6 @@ class PosBtn(QPushButton):
     def run(self):
         self.double_signal.emit()
 
-class RegBtn(QPushButton):
-    def __init__(self, name):
-        super().__init__()
-        self.setText(name)
-        self.coor_list = []
-        self.setFixedSize(50,20)
-        self.setStyleSheet("color:red")
-
 class InpTogBtn(QPushButton):
     signal = pyqtSignal()
     def __init__(self, parent, inp):

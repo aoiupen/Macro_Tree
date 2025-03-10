@@ -55,7 +55,6 @@ class TreeWidget(QTreeWidget):
         self.snapshot_manager = TreeSnapshotManager()
         self.undo_redo_manager = TreeUndoRedoManager(self)
         self.executor = TreeExecutor(self)
-        self.node_manager = TreeNodeManager()
         
         # 이벤트 핸들러 설정
         self.event_handler = TreeWidgetEventHandler(self)

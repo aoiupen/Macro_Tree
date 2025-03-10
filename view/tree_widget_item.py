@@ -6,7 +6,7 @@ from typing import Optional, Union
 from PyQt5.QtWidgets import QTreeWidgetItem, QLineEdit, QLabel, QTreeWidget
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
-from viewmodels.tree_widget_item_logic import TreeWidgetItemLogic
+from viewmodels.tree_widget_item_viewmodel import TreeWidgetItemViewModel
 from view.components.compo import InpTogBtn, SubTogBtn, PosWidget
 from resources.resources import rsc
 
@@ -28,8 +28,8 @@ class TreeWidgetItem(QTreeWidgetItem):
         super().__init__(parent)
         self.tree_widget = tree_widget
         
-        # 로직 객체 생성
-        self.logic = TreeWidgetItemLogic(row)
+        # 뷰모델 객체 생성
+        self.logic = TreeWidgetItemViewModel(row)
         
         # 아이템 텍스트 설정
         self.setText(0, self.logic.name)

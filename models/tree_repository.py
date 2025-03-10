@@ -211,16 +211,26 @@ class TreeRepository:
         """
         self.snapshot_manager.add_snapshot(tree_state)
 
-    def create_snapshot_from_changes(self, changes: Dict[int, Dict[str, Any]]) -> TreeState:
-        """최신 스냅샷의 복사본을 만들고 변경 사항을 적용하여 새로운 스냅샷을 생성합니다.
+    def update_tree(self, changes: Dict[int, Dict[str, Any]]) -> None:
+        """트리 상태를 업데이트합니다.
         
         Args:
-            changes: 적용할 변경 사항 딕셔너리
+            changes: 변경 사항 딕셔너리
+        """
+        # 변경 사항을 적용한 새 스냅샷 생성
+        self.create_snapshot(changes)
+    
+    def create_snapshot(self, changes: Dict[int, Dict[str, Any]]) -> TreeState:
+        """변경 사항을 적용한 새 스냅샷을 생성합니다.
+        
+        Args:
+            changes: 변경 사항 딕셔너리
             
         Returns:
             새로 생성된 트리 상태
         """
-        return self.snapshot_manager.create_snapshot_from_changes(changes)
-    
-    def _create_sample_tree(self):
-        return SAMPLE_TREE_NODES 
+        # 문자열 키로 변환 (JSON 직렬화를 위해)
+        str_changes = {str(k): v for k, v in changes.items()}
+        
+        # 스냅샷 매니저에 위임
+        return self.snapshot_manager.create_snapshot(str_changes)

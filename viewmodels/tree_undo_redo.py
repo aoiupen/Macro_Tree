@@ -48,7 +48,7 @@ class TreeUndoRedoManager:
             tree_widget: 관리할 트리 위젯 인스턴스
         """
         self.tree = tree_widget
-        self.undo_stack = QUndoStack()
+        self.command_stack = QUndoStack()
     
     def push_undo_command(self, old_state: TreeState, new_state: TreeState) -> None:
         """실행 취소 명령을 스택에 추가합니다.
@@ -58,12 +58,12 @@ class TreeUndoRedoManager:
             new_state: 새로운 트리 상태
         """
         command = TreeUndoCommand(self.tree, old_state, new_state)
-        self.undo_stack.push(command)
+        self.command_stack.push(command)
     
     def undo(self) -> None:
         """마지막 작업을 실행 취소합니다."""
-        self.undo_stack.undo()
+        self.command_stack.undo()
     
     def redo(self) -> None:
         """마지막으로 실행 취소된 작업을 다시 실행합니다."""
-        self.undo_stack.redo() 
+        self.command_stack.redo() 
