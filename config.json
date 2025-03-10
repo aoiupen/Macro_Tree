@@ -6,5 +6,17 @@
     "tree": {
         "columns": ["Name", "M/K", "Value", "Act", ""],
         "column_width": 10
+    },
+    "database": {
+        "name": "macro_tree",
+        "user": "postgres",
+        "host": "localhost",
+        "port": "5432"
+    },
+    "paths": {
+        "project_root": "."
+    },
+    "debug": {
+        "enabled": true
     }
 }

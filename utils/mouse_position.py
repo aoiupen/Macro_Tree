@@ -4,12 +4,18 @@
 """
 from typing import Dict, List, Callable, Optional
 from PyQt5.QtWidgets import (
-    QWidget, QShortcut, QGraphicsOpacityEffect
+    QWidget, QShortcut, QGraphicsOpacityEffect, QDesktopWidget
 )
 from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtGui import QPainter, QPen, QMouseEvent, QPaintEvent
-from components import compo as cp
-from screeninfo import get_monitors
+from view.components import compo as cp
+
+# screeninfo 모듈 가져오기 시도
+try:
+    from screeninfo import get_monitors
+    USE_SCREENINFO = True
+except ImportError:
+    USE_SCREENINFO = False
 
 
 class PosWin(QWidget):
@@ -31,9 +37,17 @@ class PosWin(QWidget):
         self.setStyleSheet("background-color: rgba(0, 0, 0, 0);")
         
         # 화면 크기 설정
-        monitor = get_monitors()[0]
-        self.screen_width = monitor.width
-        self.screen_height = monitor.height
+        if USE_SCREENINFO:
+            monitor = get_monitors()[0]
+            self.screen_width = monitor.width
+            self.screen_height = monitor.height
+        else:
+            # PyQt의 QDesktopWidget 사용
+            desktop = QDesktopWidget()
+            screen_rect = desktop.screenGeometry(0)  # 기본 모니터
+            self.screen_width = screen_rect.width()
+            self.screen_height = screen_rect.height()
+            
         self.setGeometry(0, 0, self.screen_width, self.screen_height)
         
         # 마우스 추적 변수
@@ -62,9 +76,16 @@ class PosWin(QWidget):
     def maximize_window(self) -> None:
         """윈도우를 최대화합니다."""
         # 화면 크기 업데이트
-        monitor = get_monitors()[0]
-        self.screen_width = monitor.width
-        self.screen_height = monitor.height
+        if USE_SCREENINFO:
+            monitor = get_monitors()[0]
+            self.screen_width = monitor.width
+            self.screen_height = monitor.height
+        else:
+            # PyQt의 QDesktopWidget 사용
+            desktop = QDesktopWidget()
+            screen_rect = desktop.screenGeometry(0)  # 기본 모니터
+            self.screen_width = screen_rect.width()
+            self.screen_height = screen_rect.height()
         
         # 전체 화면으로 설정
         self.setGeometry(0, 0, self.screen_width, self.screen_height)
@@ -89,9 +110,9 @@ class PosWin(QWidget):
                 self.pos_widget.coor_str = f"{self.mouse_pos.x()},{self.mouse_pos.y()}"
             
             # 좌표 표시 업데이트
-            if hasattr(self.pos_widget, 'x_edit') and hasattr(self.pos_widget, 'y_edit'):
-                self.pos_widget.x_edit.setText(str(self.mouse_pos.x()))
-                self.pos_widget.y_edit.setText(str(self.mouse_pos.y()))
+            if hasattr(self.pos_widget, 'coor_x_edit') and hasattr(self.pos_widget, 'coor_y_edit'):
+                self.pos_widget.coor_x_edit.setText(str(self.mouse_pos.x()))
+                self.pos_widget.coor_y_edit.setText(str(self.mouse_pos.y()))
             
             self.update()
 

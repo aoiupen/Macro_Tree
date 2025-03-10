@@ -3,6 +3,7 @@
 애플리케이션 설정을 관리하는 기능을 제공합니다.
 """
 import os
+import json
 import configparser
 from typing import Any, Optional
 from dotenv import load_dotenv
@@ -28,6 +29,7 @@ class ConfigManager:
     
     _instance = None
     _config = None
+    _json_config = None
     
     def __new__(cls, config_path: Optional[str] = None):
         if cls._instance is None:
@@ -42,6 +44,7 @@ class ConfigManager:
             config_path: 설정 파일 경로 (선택적)
         """
         self._config = configparser.ConfigParser()
+        self._json_config = {}
         
         # 기본 설정 파일 경로
         default_paths = [
@@ -57,9 +60,15 @@ class ConfigManager:
         for path in default_paths:
             if path and os.path.exists(path):
                 try:
-                    self._config.read(path)
-                    loaded = True
-                    break
+                    if path.endswith('.json'):
+                        with open(path, 'r', encoding='utf-8') as f:
+                            self._json_config = json.load(f)
+                        loaded = True
+                        break
+                    else:
+                        self._config.read(path)
+                        loaded = True
+                        break
                 except Exception as e:
                     print(f"설정 파일 로드 오류: {e}")
         
@@ -138,6 +147,12 @@ class ConfigManager:
         Returns:
             설정 값 또는 기본값
         """
+        # JSON 설정에서 값 가져오기 시도
+        if self._json_config and section in self._json_config:
+            if option in self._json_config[section]:
+                return self._json_config[section][option]
+        
+        # INI 설정에서 값 가져오기 시도
         if section not in self._config:
             return fallback
         
@@ -154,6 +169,13 @@ class ConfigManager:
             option: 설정 옵션
             value: 설정 값
         """
+        # JSON 설정에 값 설정
+        if self._json_config:
+            if section not in self._json_config:
+                self._json_config[section] = {}
+            self._json_config[section][option] = value
+        
+        # INI 설정에 값 설정
         if section not in self._config:
             self._config[section] = {}
             
@@ -173,8 +195,16 @@ class ConfigManager:
             
         try:
             os.makedirs(os.path.dirname(config_path), exist_ok=True)
-            with open(config_path, 'w') as f:
-                self._config.write(f)
+            
+            # JSON 파일로 저장
+            if config_path.endswith('.json') and self._json_config:
+                with open(config_path, 'w', encoding='utf-8') as f:
+                    json.dump(self._json_config, f, indent=4)
+            # INI 파일로 저장
+            else:
+                with open(config_path, 'w') as f:
+                    self._config.write(f)
+                    
             return True
         except Exception as e:
             print(f"설정 저장 오류: {e}")

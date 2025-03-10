@@ -4,7 +4,7 @@
 """
 from typing import Dict, Optional, List
 from PyQt5.QtWidgets import QTreeWidgetItem
-from tree_widget_item import TreeWidgetItem
+from view.tree_widget_item import TreeWidgetItem
 
 
 class TreeNodeManager:
