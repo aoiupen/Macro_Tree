@@ -44,12 +44,20 @@ class TreeExecutor:
         
         # 입력 타입에 따라 실행
         if item.logic.inp == "M":
-            self.perform_mouse_action(item.logic.sub, item)
+            # 접두사 제거하여 실제 액션 추출
+            action = item.logic.sub
+            if action.startswith("M_"):
+                action = action[2:]
+            self.execute_mouse_item(action, item)
         else:  # item.logic.inp == "K"
-            self.perform_keyboard_action(item.logic.sub, item)
+            # 접두사 제거하여 실제 액션 추출
+            action = item.logic.sub
+            if action.startswith("K_"):
+                action = action[2:]
+            self.execute_keyboard_item(action, item)
     
-    def perform_mouse_action(self, action: str, item) -> None:
-        """마우스 액션을 수행합니다.
+    def execute_mouse_item(self, action: str, item) -> None:
+        """마우스 아이템을 실행합니다.
         
         Args:
             action: 수행할 액션 (click, double)
@@ -70,8 +78,8 @@ class TreeExecutor:
         else:
             print(f"지원하지 않는 마우스 액션: {action}")
     
-    def perform_keyboard_action(self, action: str, item) -> None:
-        """키보드 액션을 수행합니다.
+    def execute_keyboard_item(self, action: str, item) -> None:
+        """키보드 아이템을 실행합니다.
         
         Args:
             action: 수행할 액션 (typing, copy, paste)
