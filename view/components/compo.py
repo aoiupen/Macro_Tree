@@ -2,8 +2,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from utils import mouse_position as ps
-from view.components import compo as cp
-from resources import resources
 from resources.resources import *
 import copy
 
@@ -33,14 +31,14 @@ class InpTogBtn(QPushButton):
         self.setFixedWidth(30)
         self.clicked.connect(self.run)
         self.cur = inp
-        self.iters = copy.deepcopy(rsc["input"])
-        # 함수화하기
-        while True:
-            temp = next(self.iters)
-            if self.cur == temp:
+        self.iters = iter(rsc["input"])
+        # 현재 입력 타입에 맞게 이터레이터 위치 조정
+        for item in rsc["input"]:
+            if item == self.cur:
                 break
-        #----------
-        self.setIcon(QIcon(rsc[self.cur]["icon"]))
+            next(self.iters, None)
+        
+        self.setIcon(QIcon(rsc["inputs"][self.cur]["icon"]))
 
     def run(self):
         self.signal.emit()
@@ -51,12 +49,16 @@ class SubTogBtn(QPushButton):
         QPushButton.__init__(self)
         self.prnt = parent
         self.cur = sub
-        self.iters = copy.deepcopy(rsc[inp]["subacts"])
-        while self.cur != next(self.iters):
-            pass
+        self.iters = iter(rsc["inputs"][inp]["subacts"])
+        # 현재 서브액션에 맞게 이터레이터 위치 조정
+        for item in rsc["inputs"][inp]["subacts"]:
+            if item == self.cur:
+                break
+            next(self.iters, None)
+            
         self.setFixedWidth(30)
         self.clicked.connect(self.run)
-        self.setIcon(QIcon(rsc[self.cur]["icon"])) # 주어진 sub_act을 넣고, next 기반 마련해야함
+        self.setIcon(QIcon(rsc["subacts"][self.cur]["icon"])) # 주어진 sub_act을 넣고, next 기반 마련해야함
 
     def run(self):
         self.signal.emit()
@@ -102,7 +104,7 @@ class PosWidget(QWidget):
         self.coor_str = self.coor_x_edit.text() + self.coor_lbl.text() + self.coor_y_edit.text()
         
         # Button for getting coordinate
-        self.coor_btn = cp.PosBtn("")
+        self.coor_btn = PosBtn("")
         self.coor_btn.setIcon(QIcon(rsc["coor"]["icon"]))
         self.coor_btn.setFixedWidth(self.btn_width)
         self.coor_btn.clicked.connect(lambda ignore,f=self.get_pos:f())
@@ -118,4 +120,14 @@ class PosWidget(QWidget):
         self.poswin.show()
     
     def update_coor(self):
-        self.coor_str = self.coor_x_edit.text() + self.coor_lbl.text() + self.coor_y_edit.text() 
+        self.coor_str = self.coor_x_edit.text() + self.coor_lbl.text() + self.coor_y_edit.text()
+        
+    def update_position(self, x, y):
+        """마우스 위치를 업데이트합니다.
+        
+        Args:
+            x: X 좌표
+            y: Y 좌표
+        """
+        self.coor_x_edit.setText(str(x))
+        self.coor_y_edit.setText(str(y)) 

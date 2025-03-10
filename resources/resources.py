@@ -9,22 +9,25 @@ rsc = {
     "header": ["Name", "M/K", "Value", "Act", ""],
     "win_geo": [100, 100, 500, 400],
     "inputs": {
-        "M": {"icon": os.path.join(PROJECT_ROOT, "src", "mouse.png"), "subacts": ["click", "double"]},
-        "K": {"icon": os.path.join(PROJECT_ROOT, "src", "key.png"), "subacts": ["typing", "copy", "paste"]},
+        "M": {"icon": os.path.join(PROJECT_ROOT, "resources", "icons", "mouse.png"), "subacts": ["click", "double"]},
+        "K": {"icon": os.path.join(PROJECT_ROOT, "resources", "icons", "key.png"), "subacts": ["typing", "copy", "paste"]},
     },
-    "coor": {"icon": os.path.join(PROJECT_ROOT, "src", "coor.png")},
+    "input": ["M", "K"],  # 이터레이터로 사용할 리스트
+    "coor": {"icon": os.path.join(PROJECT_ROOT, "resources", "icons", "coor.png")},
     "subacts": {
-        "click": {"icon": os.path.join(PROJECT_ROOT, "src", "click.png")},
-        "double": {"icon": os.path.join(PROJECT_ROOT, "src", "double.png")},
-        "typing": {"icon": os.path.join(PROJECT_ROOT, "src", "typing.png")},
-        "copy": {"icon": os.path.join(PROJECT_ROOT, "src", "copy.png")},
-        "paste": {"icon": os.path.join(PROJECT_ROOT, "src", "paste.png")},
-        "all": {"icon": os.path.join(PROJECT_ROOT, "src", "all.png")},
+        "click": {"icon": os.path.join(PROJECT_ROOT, "resources", "icons", "click.png")},
+        "double": {"icon": os.path.join(PROJECT_ROOT, "resources", "icons", "double.png")},
+        "typing": {"icon": os.path.join(PROJECT_ROOT, "resources", "icons", "typing.png")},
+        "copy": {"icon": os.path.join(PROJECT_ROOT, "resources", "icons", "copy.png")},
+        "paste": {"icon": os.path.join(PROJECT_ROOT, "resources", "icons", "paste.png")},
+        "all": {"icon": os.path.join(PROJECT_ROOT, "resources", "icons", "all.png")},
     },
     "tree_icons": {
-        "G": {"icon": os.path.join(PROJECT_ROOT, "src", "group.png")},
-        "I": {"icon": os.path.join(PROJECT_ROOT, "src", "inst.png")},
+        "G": {"icon": os.path.join(PROJECT_ROOT, "resources", "icons", "group.png")},
+        "I": {"icon": os.path.join(PROJECT_ROOT, "resources", "icons", "inst.png")},
     },
+    "M": {"icon": os.path.join(PROJECT_ROOT, "resources", "icons", "mouse.png")},
+    "K": {"icon": os.path.join(PROJECT_ROOT, "resources", "icons", "key.png")},
 }
 
 def get_resources():

@@ -77,6 +77,7 @@ class TreeRepository:
         self.db_connection = DatabaseConnection()
         self.snapshot_manager = TreeSnapshotManager()
         self.conn_string = conn_string
+        self.use_db = True  # 데이터베이스 사용 여부
 
     def get_connection(self) -> Optional[psycopg2.extensions.connection]:
         """데이터베이스 연결을 반환합니다.
@@ -84,9 +85,12 @@ class TreeRepository:
         Returns:
             데이터베이스 연결 객체 또는 None
         """
-        return self.db_connection.connect()
+        conn = self.db_connection.connect()
+        if conn is None:
+            self.use_db = False
+        return conn
 
-    def _execute_query(self, query: str, params: Optional[Tuple] = None) -> Tuple[psycopg2.extensions.cursor, psycopg2.extensions.connection]:
+    def _execute_query(self, query: str, params: Optional[Tuple] = None) -> Optional[Tuple[psycopg2.extensions.cursor, psycopg2.extensions.connection]]:
         """데이터베이스 쿼리를 실행합니다.
         
         Args:
@@ -94,9 +98,12 @@ class TreeRepository:
             params: 쿼리 매개변수 (선택적)
             
         Returns:
-            커서와 연결 객체 튜플
+            커서와 연결 객체 튜플 또는 None
         """
         conn = self.get_connection()
+        if conn is None:
+            return None
+            
         cur = conn.cursor()
         if params:
             cur.execute(query, params)
@@ -110,8 +117,20 @@ class TreeRepository:
         Returns:
             로드된 트리 상태
         """
-        cur, _ = self._execute_query("SELECT id, parent_id, name, inp, sub_con, sub FROM tree_nodes")
+        # 데이터베이스 연결 시도
+        result = self._execute_query("SELECT id, parent_id, name, inp, sub_con, sub FROM tree_nodes")
+        
+        # 데이터베이스 연결 실패 또는 쿼리 실패 시 기본 트리 상태 반환
+        if result is None:
+            print("데이터베이스 연결 실패. 기본 트리 상태를 사용합니다.")
+            return self._create_default_tree_state()
+            
+        cur, _ = result
         rows = cur.fetchall()
+
+        # 데이터가 없으면 기본 트리 상태 반환
+        if not rows:
+            return self._create_default_tree_state()
 
         nodes = {}
         structure = {}
@@ -133,6 +152,48 @@ class TreeRepository:
         initial_state = TreeState(nodes, structure)
         self.snapshot_manager.add_snapshot(initial_state)
         return initial_state
+        
+    def _create_default_tree_state(self) -> TreeState:
+        """기본 트리 상태를 생성합니다.
+        
+        Returns:
+            기본 트리 상태
+        """
+        # 기본 노드 생성
+        nodes = {
+            "1": {
+                'name': "G:기본 그룹",
+                'inp': "M",
+                'sub_con': "",
+                'sub': "click",
+                'parent_id': None
+            },
+            "2": {
+                'name': "I:기본 인스턴스",
+                'inp': "M",
+                'sub_con': "",
+                'sub': "click",
+                'parent_id': None
+            },
+            "3": {
+                'name': "기본 액션",
+                'inp': "M",
+                'sub_con': "0,0",
+                'sub': "click",
+                'parent_id': "1"
+            }
+        }
+        
+        # 기본 구조 생성
+        structure = {
+            None: ["1", "2"],
+            "1": ["3"]
+        }
+        
+        # 기본 트리 상태 생성
+        default_state = TreeState(nodes, structure)
+        self.snapshot_manager.add_snapshot(default_state)
+        return default_state
 
     def save_tree(self, tree_state: TreeState) -> None:
         """현재 트리 상태를 DB에 저장합니다.
@@ -140,8 +201,18 @@ class TreeRepository:
         Args:
             tree_state: 저장할 트리 상태
         """
+        # 데이터베이스를 사용하지 않는 경우 저장하지 않음
+        if not self.use_db:
+            print("데이터베이스를 사용하지 않아 저장하지 않습니다.")
+            return
+            
         try:
-            cur, conn = self._execute_query("BEGIN")
+            result = self._execute_query("BEGIN")
+            if result is None:
+                print("데이터베이스 연결 실패. 저장하지 않습니다.")
+                return
+                
+            cur, conn = result
             
             # 기존 데이터 삭제
             cur.execute("DELETE FROM tree_nodes")
@@ -169,7 +240,8 @@ class TreeRepository:
             
         except Exception as e:
             print(f"트리 저장 오류: {e}")
-            cur.execute("ROLLBACK")
+            if 'cur' in locals():
+                cur.execute("ROLLBACK")
         
     def add_snapshot(self, tree_state: TreeState) -> None:
         """현재 트리 상태의 스냅샷을 저장합니다.
