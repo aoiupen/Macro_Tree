@@ -56,13 +56,13 @@ class TreeWidgetItem(QTreeWidgetItem):
         
         # 서브 액션 토글 버튼 설정
         self.sub_btn = SubTogBtn(self, self.logic.inp, self.logic.sub)
-        self.sub_btn.signal.connect(self.toggle_subact)
+        self.sub_btn.signal.connect(self.toggle_sub)
         tree_widget.setItemWidget(self, 3, self.sub_btn)
     
     def toggle_input(self) -> None:
         """입력 타입을 토글합니다."""
-        # 로직 객체의 입력 타입 토글
-        self.logic.toggle_input()
+        # 로직 객체의 입력 타입 토글 (새 인스턴스 반환)
+        self.logic = self.logic.toggle_input()
         
         # 버튼 아이콘 업데이트
         self.inp_btn.cur = self.logic.inp
@@ -84,13 +84,13 @@ class TreeWidgetItem(QTreeWidgetItem):
         # 서브 액션 버튼 업데이트
         self.tree_widget.removeItemWidget(self, 3)
         self.sub_btn = SubTogBtn(self, self.logic.inp, self.logic.sub)
-        self.sub_btn.signal.connect(self.toggle_subact)
+        self.sub_btn.signal.connect(self.toggle_sub)
         self.tree_widget.setItemWidget(self, 3, self.sub_btn)
     
-    def toggle_subact(self) -> None:
+    def toggle_sub(self) -> None:
         """서브 액션을 토글합니다."""
-        # 로직 객체의 서브 액션 토글
-        self.logic.toggle_subact()
+        # 로직 객체의 서브 액션 토글 (새 인스턴스 반환)
+        self.logic = self.logic.toggle_sub()
         
         # 버튼 아이콘 업데이트
         self.sub_btn.cur = self.logic.sub
