@@ -9,6 +9,7 @@ from PyQt5.QtCore import Qt
 from viewmodels.tree_widget_item_viewmodel import TreeWidgetItemViewModel
 from view.components.compo import InpTogBtn, SubTogBtn, PosWidget
 from resources.resources import rsc
+import json
 
 
 class TreeWidgetItem(QTreeWidgetItem):
@@ -17,19 +18,24 @@ class TreeWidgetItem(QTreeWidgetItem):
     각 아이템의 상태와 동작을 처리합니다.
     """
 
-    def __init__(self, tree_widget: QTreeWidget, parent: Optional[QTreeWidgetItem] = None, row: str = "") -> None:
+    def __init__(self, tree_widget: QTreeWidget, parent: Optional[QTreeWidgetItem] = None, 
+                 row: str = "", view_model: Optional[TreeWidgetItemViewModel] = None) -> None:
         """TreeWidgetItem 생성자
         
         Args:
             tree_widget: 트리 위젯 인스턴스
             parent: 부모 아이템 (선택적)
-            row: 아이템 데이터 리스트
+            row: 아이템 데이터 리스트 (view_model이 None인 경우에만 사용)
+            view_model: TreeWidgetItemViewModel 인스턴스 (우선적으로 사용)
         """
         super().__init__(parent)
         self.tree_widget = tree_widget
         
-        # 뷰모델 객체 생성
-        self.logic = TreeWidgetItemViewModel(row)
+        # 뷰모델 객체 생성 또는 사용
+        if view_model is not None:
+            self.logic = view_model
+        else:
+            self.logic = TreeWidgetItemViewModel(row)
         
         # 아이템 텍스트 설정
         self.setText(0, self.logic.name)
@@ -102,4 +108,31 @@ class TreeWidgetItem(QTreeWidgetItem):
         Args:
             text: 새로운 서브 액션 값
         """
-        self.logic.sub_con = text 
+        self.logic.sub_con = text
+
+    def to_json(self) -> str:
+        return json.dumps({'nodes': self.nodes, 'structure': self.structure})
+    
+    @classmethod
+    def from_json(cls, json_str: str) -> 'TreeState':
+        data = json.loads(json_str)
+        return cls(data['nodes'], data['structure'])
+
+    def save_to_file(self, filename: str) -> None:
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(self.to_json())
+    
+    @classmethod
+    def load_from_file(cls, filename: str) -> 'TreeState':
+        with open(filename, 'r', encoding='utf-8') as f:
+            return cls.from_json(f.read())
+
+    # 향후 확장을 위한 인터페이스 준비
+    def export_data(self) -> str:
+        """데이터를 내보내기 위한 JSON 문자열 반환"""
+        return self.to_json()
+    
+    @classmethod
+    def import_data(cls, data_str: str) -> 'TreeState':
+        """JSON 문자열에서 데이터 가져오기"""
+        return cls.from_json(data_str) 
