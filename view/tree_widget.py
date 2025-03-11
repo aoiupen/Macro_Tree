@@ -16,7 +16,7 @@ from view.tree_widget_event_handler import TreeWidgetEventHandler
 from viewmodels.tree_undo_redo import TreeUndoRedoManager
 from viewmodels.tree_executor import TreeExecutor
 from resources.resources import rsc
-from utils.tree_node_manager import TreeNodeManager
+from viewmodels.tree_widget_item_logic import TreeItemData, TreeWidgetItemViewModel
 
 
 class TreeWidget(QTreeWidget):
@@ -199,18 +199,36 @@ class TreeWidget(QTreeWidget):
         Returns:
             생성된 TreeWidgetItem 객체
         """
-        row = [
-            node_data['name'],
-            node_data['inp'],
-            node_data['sub_con'],
-            node_data['sub']
-        ]
-        item = TreeWidgetItem(self, None, row)
+        # 방법 1: 기존 방식 (리스트 사용)
+        # row = [
+        #     node_data['name'],
+        #     node_data['inp'],
+        #     node_data['sub_con'],
+        #     node_data['sub']
+        # ]
+        # item = TreeWidgetItem(self, None, row)
+        
+        # 방법 2: 개선된 방식 (TreeItemData 직접 사용)
+        
+        # 딕셔너리에서 직접 TreeItemData 객체 생성
+        tree_item_data = TreeItemData(
+            name=node_data.get('name', ''),
+            inp=node_data.get('inp', 'M'),
+            sub=node_data.get('sub', 'M_click'),
+            sub_con=node_data.get('sub_con', '')
+        )
+        
+        # TreeItemData 객체를 사용하여 TreeWidgetItemViewModel 생성
+        view_model = TreeWidgetItemViewModel(data=tree_item_data)
+        
+        # TreeWidgetItem 생성 (TreeWidgetItemViewModel 직접 전달)
+        item = TreeWidgetItem(self, None, view_model=view_model)
+        
         return item
     
     def add_group(self) -> None:
         """그룹 아이템을 추가합니다."""
-        item = TreeWidgetItem(self, None, ["G:New Group", "M", "", "click"])
+        item = TreeWidgetItem(self, None, ["G:New Group", "", "", ""])
         self.addTopLevelItem(item)
         self.setCurrentItem(item)
         self.editItem(item, 0)
