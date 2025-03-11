@@ -75,6 +75,15 @@ class TreeWidgetItemViewModel:
     # 입력 타입에 따른 서브 액션 목록 (클래스 변수로 정의)
     _M_ACTIONS = CyclicList(["M_click", "M_double"])
     _K_ACTIONS = CyclicList(["K_typing", "K_copy", "K_paste"])
+    
+    # 입력 타입 목록 (현재는 2개지만 확장성과 통일성을 위해 순환 리스트 사용)
+    _INPUT_ACTIONS = CyclicList(["M", "K"])
+    
+    # 입력 타입별 기본 서브 액션 매핑
+    _DEFAULT_SUB_ACTIONS = {
+        "M": "M_click",
+        "K": "K_typing"
+    }
 
     def __init__(self, row: List[str] = None, data: TreeItemData = None) -> None:
         """TreeWidgetItemViewModel 생성자
@@ -150,25 +159,25 @@ class TreeWidgetItemViewModel:
     def toggle_input(self) -> 'TreeWidgetItemViewModel':
         """입력 타입을 토글합니다.
         
+        현재 입력 타입의 다음 타입으로 전환하고, 해당 타입의 기본 서브 액션으로 설정합니다.
+        순환 리스트를 사용하여 toggle_sub와의 통일성과 확장성을 확보합니다.
+        
         Returns:
             새로운 TreeWidgetItemViewModel 인스턴스
         """
-        if self.data.inp == "M":
-            # M에서 K로 전환
-            new_data = TreeItemData(
-                name=self.data.name,
-                inp="K",
-                sub="K_typing",
-                sub_con=self.data.sub_con
-            )
-        else:
-            # K에서 M으로 전환
-            new_data = TreeItemData(
-                name=self.data.name,
-                inp="M",
-                sub="M_click",
-                sub_con=self.data.sub_con
-            )
+        # 다음 입력 타입 가져오기
+        next_inp = self._INPUT_ACTIONS.next(self.data.inp)
+        
+        # 새 입력 타입의 기본 서브 액션 설정
+        default_sub = self._DEFAULT_SUB_ACTIONS.get(next_inp, f"{next_inp}_default")
+        
+        # 새 데이터 객체 생성
+        new_data = TreeItemData(
+            name=self.data.name,
+            inp=next_inp,
+            sub=default_sub,
+            sub_con=self.data.sub_con
+        )
         
         return TreeWidgetItemViewModel(data=new_data)
     
