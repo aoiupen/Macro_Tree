@@ -119,20 +119,10 @@ class TreeWidgetItemViewModel:
     
     @property
     def sub_con(self) -> str:
-        """서브 액션 값을 반환합니다.
-        
-        Returns:
-            서브 액션 값
-        """
         return self.data.sub_con
     
     @sub_con.setter
     def sub_con(self, value: str) -> None:
-        """서브 액션 값을 설정합니다.
-        
-        Args:
-            value: 설정할 서브 액션 값
-        """
         # 불변 객체 패턴에서는 setter가 새 객체를 생성해야 하지만,
         # 기존 코드와의 호환성을 위해 예외적으로 직접 수정 허용
         # 실제 프로덕션 코드에서는 새 객체를 반환하는 방식으로 변경 권장
