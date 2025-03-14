@@ -140,6 +140,25 @@ class TreeWidgetItemViewModel:
     def sub_con(self) -> str:
         return self.data.sub_con
     
+    def with_sub_con(self, value: str) -> 'TreeWidgetItemViewModel':
+        """새로운 sub_con 값을 가진 뷰모델을 반환합니다.
+        
+        불변성을 유지하기 위해 새 객체를 생성하여 반환합니다.
+        
+        Args:
+            value: 새 sub_con 값
+            
+        Returns:
+            새로운 TreeWidgetItemViewModel 인스턴스
+        """
+        new_data = TreeItemData(
+            name=self.data.name,
+            inp=self.data.inp,
+            sub=self.data.sub,
+            sub_con=value
+        )
+        return TreeWidgetItemViewModel(data=new_data)
+    
     def is_group(self) -> bool:
         """그룹 아이템인지 확인합니다.
         
@@ -160,7 +179,7 @@ class TreeWidgetItemViewModel:
         """입력 타입을 토글합니다.
         
         현재 입력 타입의 다음 타입으로 전환하고, 해당 타입의 기본 서브 액션으로 설정합니다.
-        순환 리스트를 사용하여 toggle_sub와의 통일성과 확장성을 확보합니다.
+        순환 리스트를 사용하여 toggle_subaction과의 통일성과 확장성을 확보합니다.
         
         Returns:
             새로운 TreeWidgetItemViewModel 인스턴스
@@ -181,8 +200,15 @@ class TreeWidgetItemViewModel:
         
         return TreeWidgetItemViewModel(data=new_data)
     
-    def toggle_sub(self) -> 'TreeWidgetItemViewModel':
-        """서브 액션을 토글합니다.
+    def toggle_subaction(self) -> 'TreeWidgetItemViewModel':
+        """서브 액션을 순환합니다.
+        
+        입력 타입에 따라 다음 순서로 변경됩니다:
+        - M: M_click -> M_double -> M_click
+        - K: K_typing -> K_copy -> K_paste -> K_typing
+        
+        CyclicList 클래스를 활용하여 코드를 간결하게 유지합니다.
+        상태 변경 시 새로운 객체를 생성하여 불변성을 보장합니다.
         
         Returns:
             새로운 TreeWidgetItemViewModel 인스턴스
@@ -201,13 +227,5 @@ class TreeWidgetItemViewModel:
         
         return TreeWidgetItemViewModel(data=new_data)
     
-    def toggle_subaction(self) -> 'TreeWidgetItemViewModel':
-        """서브 액션을 순환합니다.
-        
-        CyclicList 클래스를 활용하여 코드를 간결하게 유지합니다.
-        상태 변경 시 새로운 객체를 생성하여 불변성을 보장합니다.
-        
-        Returns:
-            새로운 TreeWidgetItemViewModel 인스턴스
-        """
-        return self.toggle_sub()  # toggle_sub와 동일한 동작 
+    # 하위 호환성을 위한 별칭 메서드
+    toggle_sub = toggle_subaction 

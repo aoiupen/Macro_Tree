@@ -16,7 +16,7 @@ from view.tree_widget_event_handler import TreeWidgetEventHandler
 from viewmodels.tree_undo_redo import TreeUndoRedoManager
 from viewmodels.tree_executor import TreeExecutor
 from resources.resources import rsc
-from viewmodels.tree_widget_item_logic import TreeItemData, TreeWidgetItemViewModel
+from viewmodels.tree_widget_item_viewmodel import TreeItemData, TreeWidgetItemViewModel
 
 
 class TreeWidget(QTreeWidget):

@@ -88,19 +88,6 @@ class TreeSnapshotManager:
         self.current_index += 1
         return copy.deepcopy(self.snapshot_deque[self.current_index])
     
-    def get_snapshot_at(self, index: int) -> Optional[TreeState]:
-        """지정된 인덱스의 스냅샷을 반환합니다.
-        
-        Args:
-            index: 스냅샷 인덱스
-            
-        Returns:
-            지정된 인덱스의 스냅샷 또는 None
-        """
-        if 0 <= index < len(self.snapshot_deque):
-            return copy.deepcopy(self.snapshot_deque[index])
-        return None
-    
     def create_snapshot(self, changes: Dict[str, Dict[str, Any]]) -> TreeState:
         """최신 스냅샷의 복사본을 만들고 변경 사항을 적용하여 새로운 스냅샷을 생성합니다.
         
@@ -137,3 +124,77 @@ class TreeSnapshotManager:
         # 새 스냅샷 추가
         self.add_snapshot(new_state)
         return new_state 
+
+class ViewModel:
+    """뷰모델 클래스
+    
+    트리 상태의 스냅샷을 관리하는 기능을 제공합니다.
+    """
+    
+    def __init__(self, max_snapshots: int = 20) -> None:
+        """ViewModel 생성자
+        
+        Args:
+            max_snapshots: 최대 스냅샷 수 (기본값: 20)
+        """
+        self._snapshot_manager = TreeSnapshotManager(max_snapshots)
+        self._state = TreeState({}, {})
+    
+    def perform_action(self, action_type: str, params: Dict[str, Any]) -> None:
+        # 변경 사항 계산
+        changes = self._calculate_changes(action_type, params)
+        
+        # 새 상태 객체 받아서 할당 (불변성 패턴)
+        self._state = self._state.apply_changes(changes)
+        
+        # 스냅샷 추가
+        self._snapshot_manager.add_snapshot(self._state)
+
+    def _calculate_changes(self, action_type: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        # 변경 사항 계산 로직을 구현해야 합니다.
+        # 이 부분은 실제 구현에 따라 달라질 수 있습니다.
+        # 예시로 간단한 변경 사항 계산을 반환합니다.
+        return {
+            "action": action_type,
+            "params": params
+        }
+
+    def get_current_snapshot(self) -> Optional[TreeState]:
+        """현재 스냅샷을 반환합니다.
+        
+        Returns:
+            현재 스냅샷 또는 None
+        """
+        return self._snapshot_manager.get_current_snapshot()
+
+    def can_undo(self) -> bool:
+        """실행 취소 가능 여부를 반환합니다.
+        
+        Returns:
+            실행 취소 가능 여부
+        """
+        return self._snapshot_manager.can_undo()
+
+    def can_redo(self) -> bool:
+        """다시 실행 가능 여부를 확인합니다.
+        
+        Returns:
+            다시 실행 가능 여부
+        """
+        return self._snapshot_manager.can_redo()
+
+    def undo(self) -> Optional[TreeState]:
+        """이전 스냅샷으로 이동합니다.
+        
+        Returns:
+            이전 스냅샷 또는 None
+        """
+        return self._snapshot_manager.undo()
+
+    def redo(self) -> Optional[TreeState]:
+        """다음 스냅샷으로 이동합니다.
+        
+        Returns:
+            다음 스냅샷 또는 None
+        """
+        return self._snapshot_manager.redo() 
