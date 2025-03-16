@@ -9,6 +9,8 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt, pyqtSignal
 from models.tree_repository import TreeRepository
+from core.tree_state_interface import ITreeStateManager
+from core.tree_state_manager import TreeStateManager
 from core.tree_state import TreeState
 from view.item import Item
 from view.tree_event_handler import TreeWidgetEventHandler
@@ -25,7 +27,8 @@ class TreeWidget(QTreeWidget):
     
     stateChanged = pyqtSignal(TreeState)  # 상태 변경 시그널
     
-    def __init__(self, parent: QMainWindow) -> None:
+    def __init__(self, parent=None, 
+                 state_manager: Optional[ITreeStateManager] = None):
         """TreeWidget 생성자
         
         Args:
@@ -53,7 +56,10 @@ class TreeWidget(QTreeWidget):
         # 데이터 관리 객체 초기화
         self.tree_repository = TreeRepository()
         self.executor = TreeExecutor(self)
-        
+
+        # 선택적 의존성 주입
+        self._state_manager = state_manager or TreeStateManager()
+
         # 이벤트 핸들러 설정
         self.event_handler = TreeWidgetEventHandler(self)
         

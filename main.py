@@ -5,9 +5,11 @@
 import sys
 from PyQt5.QtWidgets import QApplication
 from view.main_window import MainWindow
+from core.tree_state_manager import TreeStateManager
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    main = MainWindow(app)
+    state_manager = TreeStateManager()
+    main = MainWindow(app, state_manager=state_manager)
     main.show()
     sys.exit(app.exec_())

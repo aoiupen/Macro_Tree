@@ -9,7 +9,9 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import *
+from typing import Optional
 from view.tree import TreeWidget
+from core.tree_state_interface import ITreeStateManager
 from core.tree_state_manager import TreeStateManager
 from core.tree_state import TreeState
 from resources.resources import rsc
@@ -20,8 +22,9 @@ class MainWindow(QMainWindow):
     
     애플리케이션의 주 윈도우를 구성합니다.
     """
-    
-    def __init__(self, app: QApplication = None):
+
+    def __init__(self, app: QApplication = None, 
+                 state_manager: Optional[ITreeStateManager] = None):
         """MainWindow 생성자
         
         Args:
@@ -29,7 +32,10 @@ class MainWindow(QMainWindow):
         """
         super().__init__()
         self.app = app
-        
+
+        # 상태 관리자 생성 : 선택적 의존성 주입
+        self._state_manager = state_manager or TreeStateManager()
+
         # 윈도우 설정
         self.setup_window()
         
@@ -37,9 +43,6 @@ class MainWindow(QMainWindow):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         self.layout = QHBoxLayout(central_widget)
-        
-        # 상태 관리자 생성
-        self._state_manager = TreeStateManager()
         
         # 트리 위젯 설정
         self.setup_tree()
@@ -65,7 +68,7 @@ class MainWindow(QMainWindow):
     def setup_tree(self):
         """트리 위젯을 설정합니다."""
         # 트리 위젯 생성
-        self._tree_widget = TreeWidget(self)
+        self._tree_widget = TreeWidget(self, state_manager=self._state_manager)
         
         # 레이아웃에 트리 위젯 추가
         self.layout.addWidget(self._tree_widget)

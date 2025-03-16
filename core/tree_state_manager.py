@@ -7,9 +7,10 @@ from typing import Optional, Deque
 import copy
 from core.tree_state import TreeState
 from PyQt5.QtCore import QObject, pyqtSignal
+from core.tree_state_interface import ITreeStateManager
 
 
-class TreeStateManager(QObject):
+class TreeStateManager(QObject, ITreeStateManager):
     """트리 상태 관리자
     
     트리의 전체 상태 이력을 관리하고 undo/redo 기능을 제공합니다.
