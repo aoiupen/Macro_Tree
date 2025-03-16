@@ -3,7 +3,8 @@
 트리 위젯 아이템의 실행 로직을 처리하는 클래스를 제공합니다.
 """
 import pyautogui as pag
-from typing import List, Optional
+from typing import List, Optional, Any
+from view.item import Item
 
 
 class TreeExecutor:
@@ -19,23 +20,23 @@ class TreeExecutor:
             tree_widget: 실행할 아이템이 포함된 트리 위젯
         """
         self.tree_widget = tree_widget
-        self.command_buffer = []
+        self.command_buffer: List[Item] = []
     
-    def add_to_buffer(self, item):
+    def add_to_buffer(self, item: Item) -> None:
         """명령을 버퍼에 추가"""
         self.command_buffer.append(item)
     
-    def clear_buffer(self):
+    def clear_buffer(self) -> None:
         """버퍼 초기화"""
         self.command_buffer.clear()
     
-    def execute_buffered_commands(self):
+    def execute_buffered_commands(self) -> None:
         """버퍼에 있는 모든 명령을 순회하며 실행"""
         for item in self.command_buffer:
             self.traverse_and_execute(item)
         self.clear_buffer()
     
-    def traverse_and_execute(self, item):
+    def traverse_and_execute(self, item: Item) -> None:
         """
         트리 구조를 순회하며 명령을 찾아 실행합니다.
         
@@ -53,7 +54,7 @@ class TreeExecutor:
             # 그룹이 아닌 경우(인스턴스 아이템)는 실행
             self.execute_command(item.logic.sub)
     
-    def execute_command(self, logic_sub):
+    def execute_command(self, logic_sub: str) -> None:
         """
         명령을 실행합니다.
         
@@ -69,12 +70,12 @@ class TreeExecutor:
         else:
             raise ValueError(f"Unknown command type: {logic_sub}")
     
-    def _execute_keyboard_command(self, logic_sub):
+    def _execute_keyboard_command(self, logic_sub: str) -> None:
         """키보드 명령 실행"""
         # 기존 execute_keyboard_item 로직
         pass
     
-    def _execute_mouse_command(self, logic_sub):
+    def _execute_mouse_command(self, logic_sub: str) -> None:
         """마우스 명령 실행"""
         # 기존 execute_mouse_item 로직
         pass
@@ -85,7 +86,7 @@ class TreeExecutor:
         for item in selected_items:
             self.execute_item(item)
     
-    def execute_item(self, item) -> None:
+    def execute_item(self, item: Item) -> None:
         """단일 아이템을 실행합니다.
         
         Args:
@@ -115,7 +116,7 @@ class TreeExecutor:
                 action = action[2:]
             self.execute_keyboard_item(action, item)
     
-    def execute_mouse_item(self, action: str, item) -> None:
+    def execute_mouse_item(self, action: str, item: Item) -> None:
         """마우스 아이템을 실행합니다.
         
         Args:
@@ -137,7 +138,7 @@ class TreeExecutor:
         else:
             print(f"지원하지 않는 마우스 액션: {action}")
     
-    def execute_keyboard_item(self, action: str, item) -> None:
+    def execute_keyboard_item(self, action: str, item: Item) -> None:
         """키보드 아이템을 실행합니다.
         
         Args:

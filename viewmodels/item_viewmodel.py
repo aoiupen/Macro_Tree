@@ -1,6 +1,6 @@
-"""트리 위젯 아이템 뷰모델 모듈
+"""아이템 뷰모델 모듈
 
-트리 위젯 아이템의 데이터와 상태를 관리하는 클래스를 제공합니다.
+트리 아이템의 데이터와 상태를 관리하는 클래스를 제공합니다.
 """
 from typing import List, Union, TypeVar, Generic, Optional, Any
 from dataclasses import dataclass
@@ -44,10 +44,10 @@ class CyclicList(Generic[T]):
 
 
 @dataclass
-class TreeItemData:
-    """트리 아이템 데이터 클래스
+class ItemData:
+    """아이템 데이터 클래스
     
-    트리 위젯 아이템의 데이터를 저장합니다.
+    트리 아이템의 데이터를 저장합니다.
     불변성을 보장하기 위해 데이터 클래스로 구현되었습니다.
     """
     name: str = ""
@@ -61,15 +61,18 @@ class TreeItemData:
         return self.name.startswith("G:")
     
     @property
-    def is_inst(self) -> bool:
-        """인스턴스 아이템인지 확인합니다."""
+    def is_command(self) -> bool:
+        """명령어 아이템인지 확인합니다.
+        
+        그룹 폴더가 아닌 실제 실행 가능한 명령어인지 확인합니다.
+        """
         return self.name.startswith("I:")
 
 
-class TreeWidgetItemViewModel:
-    """트리 위젯 아이템 뷰모델 클래스
+class ItemViewModel:
+    """아이템 뷰모델 클래스
     
-    트리 위젯 아이템의 상태와 데이터를 관리합니다.
+    아이템의 상태와 데이터를 관리합니다.
     상태 변경 시 새로운 객체를 생성하는 불변 방식으로 구현되었습니다.
     """
     # 입력 타입에 따른 서브 액션 목록 (클래스 변수로 정의)
@@ -85,8 +88,8 @@ class TreeWidgetItemViewModel:
         "K": "K_typing"
     }
 
-    def __init__(self, row: List[str] = None, data: TreeItemData = None) -> None:
-        """TreeWidgetItemViewModel 생성자
+    def __init__(self, row: List[str] = None, data: ItemData = None) -> None:
+        """ItemViewModel 생성자
         
         Args:
             row: 아이템 데이터 리스트 (data가 None인 경우에만 사용)
@@ -94,7 +97,7 @@ class TreeWidgetItemViewModel:
                 [1]: 입력 타입 (M/K)
                 [2]: 서브 액션 값
                 [3]: 서브 액션
-            data: TreeItemData 객체 (우선적으로 사용)
+            data: ItemData 객체 (우선적으로 사용)
         """
         if data is not None:
             self.data = data
@@ -117,7 +120,7 @@ class TreeWidgetItemViewModel:
                 else:
                     sub = sub_value
             
-            self.data = TreeItemData(
+            self.data = ItemData(
                 name=name,
                 inp=inp,
                 sub=sub,
@@ -140,25 +143,6 @@ class TreeWidgetItemViewModel:
     def sub_con(self) -> str:
         return self.data.sub_con
     
-    def with_sub_con(self, value: str) -> 'TreeWidgetItemViewModel':
-        """새로운 sub_con 값을 가진 뷰모델을 반환합니다.
-        
-        불변성을 유지하기 위해 새 객체를 생성하여 반환합니다.
-        
-        Args:
-            value: 새 sub_con 값
-            
-        Returns:
-            새로운 TreeWidgetItemViewModel 인스턴스
-        """
-        new_data = TreeItemData(
-            name=self.data.name,
-            inp=self.data.inp,
-            sub=self.data.sub,
-            sub_con=value
-        )
-        return TreeWidgetItemViewModel(data=new_data)
-    
     def is_group(self) -> bool:
         """그룹 아이템인지 확인합니다.
         
@@ -167,22 +151,22 @@ class TreeWidgetItemViewModel:
         """
         return self.data.is_group
     
-    def is_inst(self) -> bool:
-        """인스턴스 아이템인지 확인합니다.
+    def is_command(self) -> bool:
+        """명령어 아이템인지 확인합니다.
         
         Returns:
-            인스턴스 아이템 여부
+            명령어 아이템 여부
         """
-        return self.data.is_inst
+        return self.data.is_command
     
-    def toggle_input(self) -> 'TreeWidgetItemViewModel':
+    def toggle_input(self) -> 'ItemViewModel':
         """입력 타입을 토글합니다.
         
         현재 입력 타입의 다음 타입으로 전환하고, 해당 타입의 기본 서브 액션으로 설정합니다.
         순환 리스트를 사용하여 toggle_subaction과의 통일성과 확장성을 확보합니다.
         
         Returns:
-            새로운 TreeWidgetItemViewModel 인스턴스
+            새로운 ItemViewModel 인스턴스
         """
         # 다음 입력 타입 가져오기
         next_inp = self._INPUT_ACTIONS.next(self.data.inp)
@@ -191,16 +175,16 @@ class TreeWidgetItemViewModel:
         default_sub = self._DEFAULT_SUB_ACTIONS.get(next_inp, f"{next_inp}_default")
         
         # 새 데이터 객체 생성
-        new_data = TreeItemData(
+        new_data = ItemData(
             name=self.data.name,
             inp=next_inp,
             sub=default_sub,
             sub_con=self.data.sub_con
         )
         
-        return TreeWidgetItemViewModel(data=new_data)
+        return ItemViewModel(data=new_data)
     
-    def toggle_subaction(self) -> 'TreeWidgetItemViewModel':
+    def toggle_subaction(self) -> 'ItemViewModel':
         """서브 액션을 순환합니다.
         
         입력 타입에 따라 다음 순서로 변경됩니다:
@@ -211,21 +195,21 @@ class TreeWidgetItemViewModel:
         상태 변경 시 새로운 객체를 생성하여 불변성을 보장합니다.
         
         Returns:
-            새로운 TreeWidgetItemViewModel 인스턴스
+            새로운 ItemViewModel 인스턴스
         """
         if self.data.inp == "M":
             next_sub = self._M_ACTIONS.next(self.data.sub)
         else:
             next_sub = self._K_ACTIONS.next(self.data.sub)
         
-        new_data = TreeItemData(
+        new_data = ItemData(
             name=self.data.name,
             inp=self.data.inp,
             sub=next_sub,
             sub_con=self.data.sub_con
         )
         
-        return TreeWidgetItemViewModel(data=new_data)
+        return ItemViewModel(data=new_data)
     
     # 하위 호환성을 위한 별칭 메서드
     toggle_sub = toggle_subaction 
