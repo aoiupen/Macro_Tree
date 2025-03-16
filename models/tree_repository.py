@@ -8,9 +8,16 @@ from getpass import getpass
 from dotenv import load_dotenv
 from typing import Dict, List, Optional, Tuple, Any
 from core.tree_state import TreeState
-from viewmodels.snapshot_manager import TreeSnapshotManager
+from core.tree_state_manager import TreeStateManager
 from utils.config_manager import ConfigManager
 from .dummy_data import get_default_tree
+
+
+# 데이터베이스 테이블 관련 상수
+TABLE_CONFIG = {
+    "name": "tree_nodes",
+    "columns": ["id", "parent_id", "name", "inp", "sub_con", "sub"]
+}
 
 
 class DatabaseConnection:
@@ -37,34 +44,29 @@ class DatabaseConnection:
             return self._connection
         
         try:
-            # 설정 관리자에서 데이터베이스 연결 정보 가져오기
-            config = ConfigManager()
-            db_name = config.get("database", "name")
-            db_user = config.get("database", "user")
-            db_host = config.get("database", "host", "localhost")
-            db_port = config.get("database", "port", "5432")
-            db_password = os.environ.get("DB_PASSWORD")
+            # 환경 변수에서 연결 정보 로드
+            load_dotenv()
+            db_host = os.getenv("DB_HOST", "localhost")
+            db_port = os.getenv("DB_PORT", "5432")
+            db_name = os.getenv("DB_NAME", "postgres")
+            db_user = os.getenv("DB_USER", "postgres")
+            db_password = os.getenv("DB_PASSWORD", "")
             
             # 연결 문자열 생성
-            conn_string = f"dbname={db_name} user={db_user} host={db_host} port={db_port}"
-            if db_password:
-                conn_string += f" password={db_password}"
+            conn_string = f"host={db_host} port={db_port} dbname={db_name} user={db_user} password={db_password}"
             
-            # 데이터베이스 연결
+            # 연결 시도
             self._connection = psycopg2.connect(conn_string)
             return self._connection
-            
         except Exception as e:
             print(f"데이터베이스 연결 오류: {e}")
             return None
 
 
 class TreeRepository:
-    """트리 도메인 객체의 저장소(Repository)
+    """트리 저장소 클래스
     
-    Domain-Driven Design 패턴에 따라 구현된 Repository로,
-    단순한 데이터 접근(DAO)을 넘어 트리 도메인 객체의 
-    생명주기 관리, 영속성 추상화, 도메인 로직 캡슐화를 담당합니다.
+    트리 구조의 데이터를 데이터베이스에 저장하고 관리합니다.
     """
     
     def __init__(self, conn_string: Optional[str] = None) -> None:
@@ -74,7 +76,7 @@ class TreeRepository:
             conn_string: 데이터베이스 연결 문자열 (선택적)
         """
         self.db_connection = DatabaseConnection()
-        self.snapshot_manager = TreeSnapshotManager()
+        self.state_manager = TreeStateManager()
         self.conn_string = conn_string
         self.use_db = True  # 데이터베이스 사용 여부
 
@@ -88,128 +90,165 @@ class TreeRepository:
         if conn is None:
             self.use_db = False
         return conn
-
+    
     def _execute_query(self, query: str, params: Optional[Tuple] = None) -> Optional[Tuple[psycopg2.extensions.cursor, psycopg2.extensions.connection]]:
-        """데이터베이스 쿼리를 실행합니다.
+        """SQL 쿼리를 실행합니다.
         
         Args:
             query: 실행할 SQL 쿼리
-            params: 쿼리 매개변수 (선택적)
+            params: 쿼리 파라미터 (선택적)
             
         Returns:
-            커서와 연결 객체 튜플 또는 None
+            (커서, 연결) 튜플 또는 None
         """
+        if not self.use_db:
+            return None
+            
         conn = self.get_connection()
         if conn is None:
             return None
             
-        cur = conn.cursor()
-        if params:
-            cur.execute(query, params)
-        else:
-            cur.execute(query)
-        return cur, conn
-
+        try:
+            cursor = conn.cursor()
+            if params:
+                cursor.execute(query, params)
+            else:
+                cursor.execute(query)
+            return cursor, conn
+        except Exception as e:
+            print(f"쿼리 실행 오류: {e}")
+            if conn:
+                conn.rollback()
+            return None
+    
     def load_tree(self) -> TreeState:
-        """DB에서 전체 트리 구조를 로드하고 초기 스냅샷을 생성합니다.
+        """데이터베이스에서 트리를 로드합니다.
         
         Returns:
             로드된 트리 상태
         """
-        # 데이터베이스 연결 시도
-        TABLE_NAME = "tree_nodes"
-        COLUMNS = ["id", "parent_id", "name", "inp", "sub_con", "sub"]
-        result = self._execute_query(f"SELECT {', '.join(COLUMNS)} FROM {TABLE_NAME}")
-        
-        # 데이터베이스 연결 실패 또는 쿼리 실패 시 기본 트리 상태 반환
-        if result is None:
-            print("데이터베이스 연결 실패. 기본 트리 상태를 사용합니다.")
+        if not self.use_db:
             return self._create_default_tree_state()
             
-        cur, _ = result
-        rows = cur.fetchall()
-
-        # 데이터가 없으면 기본 트리 상태 반환
-        if not rows:
+        # 노드 정보 조회 쿼리 - 간결한 방식으로 작성
+        columns = ", ".join(TABLE_CONFIG["columns"])
+        query = f"SELECT {columns} FROM {TABLE_CONFIG['name']} ORDER BY id"
+        
+        result = self._execute_query(query)
+        if result is None:
             return self._create_default_tree_state()
-
-        nodes = {}
-        structure = {}
-
-        for row in rows:
-            node_id, parent_id, name, inp, sub_con, sub = row
-            nodes[node_id] = {
-                'name': name,
-                'inp': inp,
-                'sub_con': sub_con,
-                'sub': sub,
-                'parent_id': parent_id
-            }
-
-            if parent_id not in structure:
-                structure[parent_id] = []
-            structure[parent_id].append(node_id)
-
-        initial_state = TreeState(nodes, structure)
-        self.snapshot_manager.add_snapshot(initial_state)
-        return initial_state
+            
+        cursor, conn = result
         
+        try:
+            # 노드 정보 저장
+            nodes = {}
+            structure = {}
+            
+            rows = cursor.fetchall()
+            for row in rows:
+                node_id, parent_id, name, inp, sub_con, sub = row
+                
+                # 노드 정보 저장
+                nodes[str(node_id)] = {
+                    'name': name,
+                    'inp': inp,
+                    'sub_con': sub_con,
+                    'sub': sub,
+                    'parent_id': str(parent_id) if parent_id is not None else None
+                }
+                
+                # 구조 정보 저장
+                parent_key = str(parent_id) if parent_id is not None else None
+                if parent_key not in structure:
+                    structure[parent_key] = []
+                structure[parent_key].append(str(node_id))
+            
+            # 트리 상태 생성
+            tree_state = TreeState(nodes, structure)
+            
+            # 스냅샷 저장
+            self.save_state(tree_state)
+            
+            return tree_state
+        finally:
+            cursor.close()
+            conn.commit()
+    
     def _create_default_tree_state(self) -> TreeState:
-        """기본 트리 상태를 생성합니다.
-        
-        Returns:
-            기본 트리 상태
-        """
-        return get_default_tree()
-
+        """기본 트리 상태를 생성합니다."""
+        default_tree = get_default_tree()
+        self.save_state(default_tree)
+        return default_tree
+    
     def save_tree(self, tree_state: TreeState) -> None:
-        """현재 트리 상태를 DB에 저장합니다.
+        """트리 상태를 데이터베이스에 저장합니다.
         
         Args:
             tree_state: 저장할 트리 상태
         """
-        # 데이터베이스를 사용하지 않는 경우 저장하지 않음
         if not self.use_db:
-            print("데이터베이스를 사용하지 않아 저장하지 않습니다.")
             return
             
+        # 기존 데이터 삭제
+        delete_query = f"DELETE FROM {TABLE_CONFIG['name']}"
+        result = self._execute_query(delete_query)
+        if result is None:
+            return
+            
+        cursor, conn = result
+        
         try:
-            result = self._execute_query("BEGIN")
-            if result is None:
-                print("데이터베이스 연결 실패. 저장하지 않습니다.")
-                return
-                
-            cur, conn = result
+            # 새 데이터 삽입 - 간결한 방식으로 작성
+            columns = ", ".join(TABLE_CONFIG["columns"])
+            placeholders = ", ".join(['%s'] * len(TABLE_CONFIG["columns"]))
+            insert_query = f"INSERT INTO {TABLE_CONFIG['name']} ({columns}) VALUES ({placeholders})"
             
-            # 기존 데이터 삭제
-            cur.execute("DELETE FROM tree_nodes")
-            
-            # 일괄 삽입을 위한 데이터 준비
             values = []
             for node_id, node_data in tree_state.nodes.items():
-                values.append((node_id, *node_data.values()))
+                # 문자열 ID를 정수로 변환
+                try:
+                    int_id = int(node_id)
+                except ValueError:
+                    # ID가 정수로 변환할 수 없는 경우 (임시 ID 등) 건너뜀
+                    continue
+                    
+                parent_id = node_data.get('parent_id')
+                int_parent_id = int(parent_id) if parent_id and parent_id != 'null' else None
+                
+                params = (
+                    int_id,
+                    int_parent_id,
+                    node_data.get('name', ''),
+                    node_data.get('inp', ''),
+                    node_data.get('sub_con', ''),
+                    node_data.get('sub', '')
+                )
+                
+                values.append(params)
             
             # 일괄 삽입 실행
-            TABLE_NAME = "tree_nodes"
-            COLUMNS = ["id", "parent_id", "name", "inp", "sub_con", "sub"]
-            INSERT_QUERY = f"INSERT INTO {TABLE_NAME} ({', '.join(COLUMNS)}) VALUES ({', '.join(['%s'] * len(COLUMNS))})"
-            cur.executemany(INSERT_QUERY, values)
+            cursor.executemany(insert_query, values)
             
-            # 트랜잭션 커밋
-            cur.execute("COMMIT")
+            # 변경사항 저장
+            conn.commit()
+            
+            # 스냅샷 저장
+            self.save_state(tree_state)
             
         except Exception as e:
             print(f"트리 저장 오류: {e}")
-            if 'cur' in locals():
-                cur.execute("ROLLBACK")
-        
-    def add_snapshot(self, tree_state: TreeState) -> None:
-        """현재 트리 상태의 스냅샷을 저장합니다.
+            conn.rollback()
+        finally:
+            cursor.close()
+    
+    def save_state(self, tree_state: TreeState) -> None:
+        """현재 트리 상태를 저장합니다.
         
         Args:
-            tree_state: 스냅샷으로 저장할 트리 상태
+            tree_state: 저장할 트리 상태
         """
-        self.snapshot_manager.add_snapshot(tree_state)
+        self.state_manager.save_state(tree_state)
 
     def update_tree(self, changes: Dict[int, Dict[str, Any]]) -> None:
         """트리 상태를 업데이트합니다.
@@ -217,20 +256,55 @@ class TreeRepository:
         Args:
             changes: 변경 사항 딕셔너리
         """
-        # 변경 사항을 적용한 새 스냅샷 생성
-        self.create_snapshot(changes)
+        # 현재 상태 가져오기
+        current_state = self.state_manager.get_current_state()
+        if not current_state:
+            return
+            
+        # 변경 사항 적용
+        str_changes = {str(k): v for k, v in changes.items()}
+        new_state = self._apply_changes(current_state, str_changes)
+        
+        # 새 상태 저장
+        self.save_state(new_state)
     
-    def create_snapshot(self, changes: Dict[int, Dict[str, Any]]) -> TreeState:
-        """변경 사항을 적용한 새 스냅샷을 생성합니다.
+    def _apply_changes(self, state: TreeState, changes: Dict[str, Dict[str, Any]]) -> TreeState:
+        """변경 사항을 적용한 새 상태를 생성합니다.
         
         Args:
+            state: 기존 트리 상태
             changes: 변경 사항 딕셔너리
             
         Returns:
             새로 생성된 트리 상태
         """
-        # 문자열 키로 변환 (JSON 직렬화를 위해)
-        str_changes = {str(k): v for k, v in changes.items()}
+        # 기존 상태 복사
+        new_nodes = state.nodes.copy()
+        new_structure = state.structure.copy()
         
-        # 스냅샷 매니저에 위임
-        return self.snapshot_manager.create_snapshot(str_changes)
+        # 변경 사항 적용
+        for node_id, node_changes in changes.items():
+            if "_deleted" in node_changes:
+                # 노드 삭제
+                if node_id in new_nodes:
+                    del new_nodes[node_id]
+                # 구조에서도 제거
+                for parent_id, children in new_structure.items():
+                    if node_id in children:
+                        children.remove(node_id)
+            else:
+                # 노드 추가/수정
+                if node_id in new_nodes:
+                    new_nodes[node_id].update(node_changes)
+                else:
+                    new_nodes[node_id] = node_changes
+                    
+                    # 부모-자식 관계 설정
+                    if "parent_id" in node_changes:
+                        parent_id = node_changes["parent_id"]
+                        if parent_id not in new_structure:
+                            new_structure[parent_id] = []
+                        if node_id not in new_structure[parent_id]:
+                            new_structure[parent_id].append(node_id)
+        
+        return TreeState(new_nodes, new_structure)
