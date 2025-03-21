@@ -3,9 +3,9 @@
 사용자 정의 위젯 컴포넌트들을 제공합니다.
 """
 from typing import Optional, Tuple, Union
-from PyQt5.QtWidgets import QPushButton, QLineEdit, QWidget, QGridLayout
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QPushButton, QLineEdit, QWidget, QGridLayout
+from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import pyqtSignal
 from package.resources.resources import rsc
 from package.db.tree_snapshot_manager import TreeSnapshotManager
 from package.db.tree_db_dao import TreeDbDao

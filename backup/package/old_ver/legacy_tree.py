@@ -3,9 +3,9 @@ import pyautogui as pag
 from types import NoneType
 from enum import Enum
 from copy import deepcopy
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+from PyQt6.QtWidgets import *
+from PyQt6.QtCore import *
+from PyQt6.QtGui import *
 from package import pos as ps
 from package.components import compo as cp
 from package.old_ver import legacy_tree as tr
@@ -42,7 +42,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.typ = "G" if self.is_group() else "I"
         
         # Column 1 : Check, typ, name
-        self.setCheckState(0, Qt.Checked) # 이것도 csv에 저장해야함
+        self.setCheckState(0, Qt.CheckState.Checked) # 이것도 csv에 저장해야함
         self.setIcon(0, QIcon(rsc[self.typ]["icon"]))
         self.setText(0, self.name)
         self.setFlags(self.flags() | Qt.ItemIsEditable) # editable
@@ -185,7 +185,7 @@ class TreeWidget(QTreeWidget):
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setEditTriggers(QAbstractItemView.DoubleClicked)
-        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.dropEvent = self.treeDropEvent
         self.header().setSectionResizeMode(QHeaderView.ResizeToContents) #adjust
         self.header().setCascadingSectionResizes(True)
@@ -201,11 +201,11 @@ class TreeWidget(QTreeWidget):
         self.cnt = 0
         
     def mousePressEvent(self, event):
-        if event.modifiers() != Qt.ControlModifier:
+        if event.modifiers() != Qt.KeyboardModifier.ControlModifier:
             return super().mousePressEvent(event)
     
     def mouseReleaseEvent(self, event):
-        if event.modifiers() == Qt.ControlModifier:
+        if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
             # 위에서 Select했던 item을 여기로 넘겨줘야함
             super().mousePressEvent(event)
             items = self.currentItem()
@@ -344,7 +344,7 @@ class TreeWidget(QTreeWidget):
     def keyPressEvent(self, event):
         root = self.invisibleRootItem()
         sel_it_list = self.selectedItems()
-        if event.key() == Qt.Key_Delete:
+        if event.key() == Qt.Key.Key_Delete::
             self.snapshot()
             for sel_it in sel_it_list:
                 (sel_it.parent() or root).removeChild(sel_it)
@@ -642,7 +642,7 @@ class TreeWidget(QTreeWidget):
         self.connect_tar_new(tar_p,tar,indp_it,indi)
         # Step 03 : item 재정비
         self.recur_set_widget(indp_it)
-        #mod == Qt.ControlModifier:
+        #mod == Qt.KeyboardModifier.ControlModifier:
             
     def extract_item(self,it):
         # Step 01 : 독립 it 만들기
@@ -712,7 +712,7 @@ class TreeWidget(QTreeWidget):
                 for item in node_lst:
                     self.change_parent_plus(tar_p, tar, item, indi, mod)
                     event.acceptProposedAction()
-            #if (modifiers & Qt.ControlModifier) and (modifiers & Qt.ShiftModifier):
+            #if (modifiers & Qt.KeyboardModifier.ControlModifier) and (modifiers & Qt.ShiftModifier):
             #    print("Control+Shift")   
     # 문제 : group,inst가 위계없이 items에 다 들어가는 중. (왜냐하면, group,inst를 구분하는 코드는 없고, text(1)을 기준으로 나누기 때문에) 중복을 제외하고 넘기기
     # n,0 (role은 0으로  고정하고 n은 0~4)
@@ -745,7 +745,7 @@ class TreeWidget(QTreeWidget):
         for ix in range(self.topLevelItemCount()):
             t_it = self.topLevelItem(ix)
             if t_it:
-                if t_it.checkState(0) == Qt.Checked: # check 된 것만 돌기
+                if t_it.checkState(0) == Qt.CheckState.Checked: # check 된 것만 돌기
                     if t_it.text(1):
                         inst_lst.append(t_it)
                     else:
@@ -757,7 +757,7 @@ class TreeWidget(QTreeWidget):
         if col == 0:
             for num in range(cur.childCount()):
                 child = cur.child(num)
-                child.setCheckState(0, Qt.Checked)
+                child.setCheckState(0, Qt.CheckState.Checked)
                 self.check_child(child, col)
 
     def uncheck_child(self, cur, col):
@@ -784,12 +784,12 @@ class TreeWidget(QTreeWidget):
                     sbl_true = False
                     break
             if sbl_true:
-                p.setCheckState(0, Qt.Checked)
+                p.setCheckState(0, Qt.CheckState.Checked)
                 self.check_parent(p,col)
 
     def change_check(self,cur,col):
         self.blockSignals(True)
-        if cur.checkState(col) == Qt.Checked:
+        if cur.checkState(col) == Qt.CheckState.Checked:
             self.check_child(cur,col) # 자식 전체 check
             self.check_parent(cur,col) # 동료 full check-> 부모 check                                  
         else:
@@ -840,7 +840,7 @@ class TreeWidget(QTreeWidget):
     def recur_child_exec(self,parent,lst):
         for ix in range(parent.childCount()):
             child = parent.child(ix)
-            if child.checkState(0) != Qt.Checked:
+            if child.checkState(0) != Qt.CheckState.Checked:
                 continue
             
             if child.text(1):  # type exists

@@ -3,7 +3,7 @@
 트리의 개별 아이템을 관리하는 클래스를 제공합니다.
 """
 from typing import Optional, List, Dict, Any
-from PyQt5.QtWidgets import QTreeWidgetItem
+from PyQt6.QtWidgets import QTreeWidgetItem
 from viewmodels.item_viewmodel import ItemViewModel
 from core.tree_state import TreeState
 

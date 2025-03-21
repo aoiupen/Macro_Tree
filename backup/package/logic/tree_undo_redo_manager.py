@@ -2,7 +2,7 @@
 
 트리 위젯의 실행 취소/재실행 기능을 관리하는 클래스를 제공합니다.
 """
-from PyQt5.QtWidgets import QUndoCommand, QUndoStack
+from PyQt6.QtWidgets import QUndoCommand, QUndoStack
 from package.db.tree_data import TreeState
 from package.tree_widget import TreeWidget
 

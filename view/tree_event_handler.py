@@ -3,25 +3,22 @@
 트리 위젯의 이벤트를 처리하는 클래스를 제공합니다.
 """
 from typing import List, Optional, cast
-from PyQt5.QtWidgets import QMenu, QAction, QTreeWidgetItem, QTreeWidget
-from PyQt5.QtCore import Qt, QPoint, pyqtSlot
-from PyQt5.QtGui import QCursor, QKeySequence, QDropEvent, QMouseEvent, QKeyEvent
+from PyQt6.QtWidgets import QMenu, QAction, QTreeWidgetItem, QTreeWidget
+from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt6.QtGui import QCursor, QKeySequence, QDropEvent, QMouseEvent, QKeyEvent
 from view.item import Item
 
 
-class TreeWidgetEventHandler:
-    """트리 위젯 이벤트 핸들러 클래스
+class TreeEventHandler(QObject):
+    """트리 이벤트 처리 클래스"""
     
-    트리 위젯의 다양한 이벤트를 처리합니다.
-    """
-
-    def __init__(self, tree_widget: QTreeWidget) -> None:
-        """TreeWidgetEventHandler 생성자
-        
-        Args:
-            tree_widget: 이벤트를 처리할 트리 위젯
-        """
-        self.tree_widget = tree_widget
+    selectionChanged = pyqtSignal(list)
+    dropCompleted = pyqtSignal(bool)
+    treeChanged = pyqtSignal()
+    
+    def __init__(self, model, parent=None):
+        super().__init__(parent)
+        self._model = model
         
         # 컨텍스트 메뉴 설정
         self.tree_widget.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -97,15 +94,15 @@ class TreeWidgetEventHandler:
             event: 키 이벤트 객체
         """
         # Delete 키 처리
-        if event.key() == Qt.Key_Delete:
+        if event.key() == Qt.Key.Key_Delete::
             self.delete_selected_items()
             event.accept()
         # Ctrl+Z (실행 취소)
-        elif event.key() == Qt.Key_Z and event.modifiers() == Qt.ControlModifier:
+        elif event.key() == Qt.Key_Z and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
             self.tree_widget.parent().findChild(QAction, "Undo").trigger()
             event.accept()
         # Ctrl+Y (다시 실행)
-        elif event.key() == Qt.Key_Y and event.modifiers() == Qt.ControlModifier:
+        elif event.key() == Qt.Key_Y and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
             self.tree_widget.parent().findChild(QAction, "Redo").trigger()
             event.accept()
         else:
@@ -217,3 +214,9 @@ class TreeWidgetEventHandler:
         if isinstance(item, Item) and column == 0:
             # 아이템 실행
             self.tree_widget.executor.execute_item(cast(Item, item))
+
+    # QML에서 호출할 메서드들 정의
+    @pyqtSlot(int, int)
+    def moveItem(self, source_index, target_index):
+        # 기존 로직 재활용하되 QML 호환 방식으로 변경
+        # ...

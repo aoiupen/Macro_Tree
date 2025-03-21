@@ -3,11 +3,11 @@
 트리 구조의 데이터를 표시하고 관리하는 위젯을 제공합니다.
 """
 from typing import Dict, List, Optional, Any, Union
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QTreeWidget, QTreeWidgetItem, QAbstractItemView,
     QHeaderView, QMainWindow
 )
-from PyQt5.QtCore import Qt
+from PyQt6.QtCore import Qt
 from package.db.tree_db_dao import TreeDbDao
 from package.db.tree_data import TreeState
 from package.tree_widget_item import TreeWidgetItem
@@ -46,7 +46,7 @@ class TreeWidget(QTreeWidget):
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setEditTriggers(QAbstractItemView.DoubleClicked)
-        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.dropEvent = self.event_handler.tree_drop_event
         self.header().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.header().setCascadingSectionResizes(True)

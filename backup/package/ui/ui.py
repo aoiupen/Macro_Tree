@@ -3,12 +3,12 @@
 애플리케이션의 메인 UI를 구성하는 클래스를 제공합니다.
 """
 from typing import List, Callable
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QWidget, QHBoxLayout, QMainWindow, QMenuBar,
     QAction, QApplication
 )
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import *
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import *
 from package import tree_widget as tr
 from enum import Enum
 from package.resources.resources import *

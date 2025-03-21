@@ -6,7 +6,7 @@ from collections import deque
 from typing import Optional, Deque
 import copy
 from core.tree_state import TreeState
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSignal
 from core.tree_state_interface import ITreeStateManager
 
 

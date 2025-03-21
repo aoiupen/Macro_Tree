@@ -6,9 +6,9 @@ import os
 import sys
 from typing import Optional
 from screeninfo import get_monitors
-from PyQt5.QtGui import QPainter, QPen
-from PyQt5.QtWidgets import QWidget, QLabel, QShortcut, QApplication, QGraphicsOpacityEffect
-from PyQt5.QtCore import Qt, QPoint
+from PyQt6.QtGui import QPainter, QPen
+from PyQt6.QtWidgets import QWidget, QLabel, QShortcut, QApplication, QGraphicsOpacityEffect
+from PyQt6.QtCore import Qt, QPoint
 import pynput
 from pynput.mouse import Controller
 

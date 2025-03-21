@@ -3,7 +3,7 @@
 트리 노드를 효율적으로 관리하는 기능을 제공합니다.
 """
 from typing import Dict, Optional, List
-from PyQt5.QtWidgets import QTreeWidgetItem
+from PyQt6.QtWidgets import QTreeWidgetItem
 from package.tree_widget_item import TreeWidgetItem
 
 

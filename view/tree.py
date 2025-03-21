@@ -3,11 +3,11 @@
 트리 구조의 데이터를 표시하고 관리하는 위젯을 제공합니다.
 """
 from typing import Dict, List, Optional, Any, Union, cast
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QTreeWidget, QTreeWidgetItem, QAbstractItemView,
     QHeaderView, QMainWindow
 )
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal, QObject, pyqtSlot
 from models.tree_repository import TreeRepository
 from core.tree_state_interface import ITreeStateManager
 from core.tree_state_manager import TreeStateManager
@@ -39,7 +39,7 @@ class TreeWidget(QTreeWidget):
         # 트리 위젯 설정
         self.setColumnCount(5)
         self.setHeaderLabels(rsc["header"])
-        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setDropIndicatorShown(True)
@@ -47,7 +47,7 @@ class TreeWidget(QTreeWidget):
         
         # 헤더 설정
         header = self.header()
-        header.setSectionResizeMode(0, QHeaderView.Stretch)
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
@@ -275,4 +275,22 @@ class TreeWidget(QTreeWidget):
         
         for item in selected:
             if isinstance(item, Item):
-                self.executor.execute_item(cast(Item, item)) 
+                self.executor.execute_item(cast(Item, item))
+
+
+class TreeBusinessLogic(QObject):
+    """트리 관련 핵심 비즈니스 로직만 포함하는 클래스"""
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._repository = TreeRepository()
+    
+    @pyqtSlot(str, result=bool)
+    def saveTree(self, filename):
+        """트리 저장 비즈니스 로직"""
+        return self._repository.save_tree(filename)
+    
+    @pyqtSlot(str, str, result=bool)
+    def addNode(self, parent_id, node_name):
+        """노드 추가 비즈니스 로직"""
+        return self._repository.add_node(parent_id, node_name) 

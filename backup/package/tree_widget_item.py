@@ -3,9 +3,9 @@
 트리 위젯의 각 아이템을 관리하는 클래스를 제공합니다.
 """
 from typing import Optional, Union
-from PyQt5.QtWidgets import QTreeWidgetItem, QLineEdit, QLabel, QTreeWidget
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import Qt
+from PyQt6.QtWidgets import QTreeWidgetItem, QLineEdit, QLabel, QTreeWidget
+from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import Qt
 from package.logic.tree_widget_item_logic import TreeWidgetItemLogic
 from package.components.custom_widgets import InpTogBtn, SubTogBtn, PosWidget
 from package.resources.resources import rsc
@@ -29,7 +29,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.tree_widget = tree_widget
         self.logic = TreeWidgetItemLogic(row)
 
-        self.setCheckState(0, Qt.Checked)
+        self.setCheckState(0, Qt.CheckState.Checked)
         self.setIcon(0, QIcon(rsc["tree_icons"][self.logic.typ]["icon"]))
         self.setText(0, self.logic.name)
         self.setFlags(self.flags() | Qt.ItemIsEditable)

@@ -3,7 +3,7 @@
 
 트리 위젯의 상태와 동작을 관리하는 뷰모델을 제공합니다.
 """
-from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
 from viewmodels.tree_executor import TreeExecutor
 from core.tree_state import TreeState
 from typing import Optional

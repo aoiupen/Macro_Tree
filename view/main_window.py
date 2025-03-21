@@ -3,12 +3,12 @@
 애플리케이션의 메인 윈도우를 정의합니다.
 """
 from typing import List, Callable
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QMenuBar, QAction, QApplication
 )
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import *
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import *
 from typing import Optional
 from view.tree import TreeWidget
 from core.tree_state_interface import ITreeStateManager

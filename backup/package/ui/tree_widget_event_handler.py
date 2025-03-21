@@ -3,9 +3,9 @@
 트리 위젯의 이벤트를 처리하는 클래스를 제공합니다.
 """
 from typing import List, Optional
-from PyQt5.QtWidgets import QMenu, QAction, QTreeWidgetItem, QTreeWidget
-from PyQt5.QtCore import Qt, QPoint, pyqtSlot
-from PyQt5.QtGui import QCursor, QKeySequence, QDropEvent, QMouseEvent, QKeyEvent
+from PyQt6.QtWidgets import QMenu, QAction, QTreeWidgetItem, QTreeWidget
+from PyQt6.QtCore import Qt, QPoint, pyqtSlot
+from PyQt6.QtGui import QCursor, QKeySequence, QDropEvent, QMouseEvent, QKeyEvent
 from package.logic.tree_undo_redo_manager import TreeUndoCommand
 
 
@@ -52,7 +52,7 @@ class TreeWidgetEventHandler:
         Args:
             event: 마우스 이벤트 객체
         """
-        if event.modifiers() != Qt.ControlModifier:
+        if event.modifiers() != Qt.KeyboardModifier.ControlModifier:
             super(self.tree_widget.__class__, self.tree_widget).mousePressEvent(event)
 
     def mouse_release_event(self, event: QMouseEvent) -> None:
@@ -61,7 +61,7 @@ class TreeWidgetEventHandler:
         Args:
             event: 마우스 이벤트 객체
         """
-        if event.modifiers() == Qt.ControlModifier:
+        if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
             super(self.tree_widget.__class__, self.tree_widget).mousePressEvent(event)
             items = self.tree_widget.currentItem()
             if items:
@@ -97,7 +97,7 @@ class TreeWidgetEventHandler:
         Args:
             event: 키 이벤트 객체
         """
-        if event.key() == Qt.Key_Delete:
+        if event.key() == Qt.Key.Key_Delete::
             self.delete_selected_items()
         elif event.matches(QKeySequence.Copy):
             self.copy_selected_items()

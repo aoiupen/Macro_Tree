@@ -3,11 +3,11 @@
 마우스 위치를 선택하고 추적하는 윈도우를 제공합니다.
 """
 from typing import Dict, List, Callable, Optional
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QWidget, QShortcut, QGraphicsOpacityEffect
 )
-from PyQt5.QtCore import Qt, QPoint
-from PyQt5.QtGui import QPainter, QPen, QMouseEvent, QPaintEvent
+from PyQt6.QtCore import Qt, QPoint
+from PyQt6.QtGui import QPainter, QPen, QMouseEvent, QPaintEvent
 from package.components import compo as cp
 from screeninfo import get_monitors
 
