@@ -6,7 +6,7 @@ from collections import deque
 from typing import Optional, Deque
 import copy
 from core.tree_state import TreeState
-from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSignal, pyqtProperty, pyqtSlot
 from core.tree_state_interface import ITreeStateManager
 
 
@@ -85,4 +85,22 @@ class TreeStateManager(QObject, ITreeStateManager):
         """모든 상태 이력을 초기화합니다."""
         self._state_deque.clear()
         self._current_index = -1
-        self.stateChanged.emit() 
+        self.stateChanged.emit()
+
+    @pyqtProperty(bool, notify=stateChanged)
+    def canUndo(self):
+        return self.can_undo()
+
+    @pyqtProperty(bool, notify=stateChanged)
+    def canRedo(self):
+        return self.can_redo()
+
+    @pyqtSlot(result=bool)
+    def undoAction(self):
+        result = self.undo()
+        return result is not None
+
+    @pyqtSlot(result=bool)
+    def redoAction(self):
+        result = self.redo()
+        return result is not None 

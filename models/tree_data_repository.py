@@ -20,57 +20,14 @@ TABLE_CONFIG = {
 }
 
 
-class DatabaseConnection:
-    """데이터베이스 연결 싱글톤 클래스
-    
-    데이터베이스 연결을 관리하는 싱글톤 패턴 클래스입니다.
-    """
-    
-    _instance = None
-    _connection = None
-    
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(DatabaseConnection, cls).__new__(cls)
-        return cls._instance
-    
-    def connect(self) -> Optional[psycopg2.extensions.connection]:
-        """데이터베이스에 연결합니다.
-        
-        Returns:
-            데이터베이스 연결 객체 또는 None
-        """
-        if self._connection is not None and not self._connection.closed:
-            return self._connection
-        
-        try:
-            # 환경 변수에서 연결 정보 로드
-            load_dotenv()
-            db_host = os.getenv("DB_HOST", "localhost")
-            db_port = os.getenv("DB_PORT", "5432")
-            db_name = os.getenv("DB_NAME", "postgres")
-            db_user = os.getenv("DB_USER", "postgres")
-            db_password = os.getenv("DB_PASSWORD", "")
-            
-            # 연결 문자열 생성
-            conn_string = f"host={db_host} port={db_port} dbname={db_name} user={db_user} password={db_password}"
-            
-            # 연결 시도
-            self._connection = psycopg2.connect(conn_string)
-            return self._connection
-        except Exception as e:
-            print(f"데이터베이스 연결 오류: {e}")
-            return None
-
-
-class TreeRepository:
-    """트리 저장소 클래스
+class TreeDataRepository:
+    """트리 데이터 저장소 클래스
     
     트리 구조의 데이터를 데이터베이스에 저장하고 관리합니다.
     """
     
     def __init__(self, conn_string: Optional[str] = None) -> None:
-        """TreeRepository 생성자
+        """TreeDataRepository 생성자
         
         Args:
             conn_string: 데이터베이스 연결 문자열 (선택적)
@@ -121,7 +78,7 @@ class TreeRepository:
                 conn.rollback()
             return None
     
-    def load_tree(self) -> TreeState:
+    def load_tree(self) -> Optional[TreeState]:
         """데이터베이스에서 트리를 로드합니다.
         
         Returns:
@@ -181,7 +138,7 @@ class TreeRepository:
         self.save_state(default_tree)
         return default_tree
     
-    def save_tree(self, tree_state: TreeState) -> None:
+    def save_tree(self, tree_state: TreeState) -> bool:
         """트리 상태를 데이터베이스에 저장합니다.
         
         Args:

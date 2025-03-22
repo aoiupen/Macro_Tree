@@ -9,6 +9,7 @@ from PyQt6.QtQml import QQmlApplicationEngine
 from PyQt6.QtCore import QObject, QUrl
 
 from core.tree_state_manager import TreeStateManager
+from models.tree_data_repository import TreeDataRepository
 from viewmodels.tree_viewmodel import TreeViewModel
 from view.tree_event_handler import TreeEventHandler
 
@@ -17,6 +18,7 @@ if __name__ == "__main__":
     
     # 상태 관리자 생성
     state_manager = TreeStateManager()
+    repository = TreeDataRepository()
     
     # QML 엔진 생성
     engine = QQmlApplicationEngine()

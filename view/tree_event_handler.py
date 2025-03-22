@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QMenu, QAction, QTreeWidgetItem, QTreeWidget
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QCursor, QKeySequence, QDropEvent, QMouseEvent, QKeyEvent
 from view.item import Item
-
+from viewmodels.tree_viewmodel import TreeViewModel
 
 class TreeEventHandler(QObject):
     """트리 이벤트 처리 클래스"""
@@ -219,4 +219,4 @@ class TreeEventHandler(QObject):
     @pyqtSlot(int, int)
     def moveItem(self, source_index, target_index):
         # 기존 로직 재활용하되 QML 호환 방식으로 변경
-        # ...
+        pass
