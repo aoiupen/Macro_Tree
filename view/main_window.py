@@ -5,10 +5,10 @@
 from typing import List, Callable
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QMenuBar, QAction, QApplication
+    QMenuBar, QApplication
 )
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import *
+from PyQt6.QtGui import QAction
 from typing import Optional
 from view.tree import TreeWidget
 from core.tree_state_interface import ITreeStateManager

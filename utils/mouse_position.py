@@ -4,10 +4,10 @@
 """
 from typing import Dict, List, Callable, Optional
 from PyQt6.QtWidgets import (
-    QWidget, QShortcut, QGraphicsOpacityEffect, QDesktopWidget
+    QWidget, QGraphicsOpacityEffect
 )
 from PyQt6.QtCore import Qt, QPoint
-from PyQt6.QtGui import QPainter, QPen, QMouseEvent, QPaintEvent
+from PyQt6.QtGui import QPainter, QPen, QMouseEvent, QPaintEvent, QShortcut, QGuiApplication, QAction
 from view.components import compo as cp
 
 # screeninfo 모듈 가져오기 시도
@@ -32,8 +32,8 @@ class PosWin(QWidget):
         """
         super().__init__()
         self.pos_widget = pos_widget
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setStyleSheet("background-color: rgba(0, 0, 0, 0);")
         
         # 화면 크기 설정
@@ -43,10 +43,10 @@ class PosWin(QWidget):
             self.screen_height = monitor.height
         else:
             # PyQt의 QDesktopWidget 사용
-            desktop = QDesktopWidget()
-            screen_rect = desktop.screenGeometry(0)  # 기본 모니터
-            self.screen_width = screen_rect.width()
-            self.screen_height = screen_rect.height()
+            screen = QGuiApplication.primaryScreen()
+            screen_geometry = screen.geometry()
+            self.screen_width = screen_geometry.width()
+            self.screen_height = screen_geometry.height()
             
         self.setGeometry(0, 0, self.screen_width, self.screen_height)
         
@@ -55,7 +55,7 @@ class PosWin(QWidget):
         self.mouse_pos = QPoint(0, 0)
         
         # 단축키 설정
-        self.esc_shortcut = QShortcut(Qt.Key_Escape, self)
+        self.esc_shortcut = QShortcut(Qt.Key.Key_Escape, self)
         self.esc_shortcut.activated.connect(self.close_window)
         
         # 투명도 효과
@@ -82,10 +82,10 @@ class PosWin(QWidget):
             self.screen_height = monitor.height
         else:
             # PyQt의 QDesktopWidget 사용
-            desktop = QDesktopWidget()
-            screen_rect = desktop.screenGeometry(0)  # 기본 모니터
-            self.screen_width = screen_rect.width()
-            self.screen_height = screen_rect.height()
+            screen = QGuiApplication.primaryScreen()
+            screen_geometry = screen.geometry()
+            self.screen_width = screen_geometry.width()
+            self.screen_height = screen_geometry.height()
         
         # 전체 화면으로 설정
         self.setGeometry(0, 0, self.screen_width, self.screen_height)
@@ -97,7 +97,7 @@ class PosWin(QWidget):
         Args:
             event: 마우스 이벤트 객체
         """
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self.tracking = True
             self.mouse_pos = event.pos()
             
@@ -137,7 +137,7 @@ class PosWin(QWidget):
         Args:
             event: 마우스 이벤트 객체
         """
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self.tracking = False
             self.close_window()
 
@@ -153,9 +153,31 @@ class PosWin(QWidget):
             event: 그리기 이벤트 객체
         """
         painter = QPainter(self)
-        painter.setPen(QPen(Qt.red, 2))
+        painter.setPen(QPen(Qt.GlobalColor.red, 2))
         
         # 십자선 그리기
         if self.tracking:
             painter.drawLine(self.mouse_pos.x(), 0, self.mouse_pos.x(), self.screen_height)
-            painter.drawLine(0, self.mouse_pos.y(), self.screen_width, self.mouse_pos.y()) 
+            painter.drawLine(0, self.mouse_pos.y(), self.screen_width, self.mouse_pos.y())
+
+    def center_window(self):
+        qr = self.frameGeometry()
+        cp = QGuiApplication.primaryScreen().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+
+    def get_dpi(self):
+        dpi = QGuiApplication.primaryScreen().physicalDotsPerInchX()
+        return dpi
+
+# 모든 화면 목록 얻기
+screens = QGuiApplication.screens()
+
+# 기본 화면(주 모니터) 정보 얻기
+primary_screen = QGuiApplication.primaryScreen()
+
+# 특정 화면의 크기 정보
+for i, screen in enumerate(screens):
+    print(f"Screen {i}: {screen.name()}")
+    print(f" - Size: {screen.size().width()}x{screen.size().height()}")
+    print(f" - Available geometry: {screen.availableGeometry().width()}x{screen.availableGeometry().height()}") 

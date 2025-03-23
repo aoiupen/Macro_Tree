@@ -2,27 +2,28 @@
 
 트리의 상태 이력을 관리하고 undo/redo 기능을 제공합니다.
 """
-from collections import deque
-from typing import Optional, Deque
-import copy
-from core.tree_state import TreeState
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtProperty, pyqtSlot
+from core.tree_state import TreeState
+from typing import Optional, List, Deque
 from core.tree_state_interface import ITreeStateManager
+from collections import deque
 
 
-class TreeStateManager(QObject, ITreeStateManager):
+class TreeStateManager(QObject):
     """트리 상태 관리자
     
-    트리의 전체 상태 이력을 관리하고 undo/redo 기능을 제공합니다.
-    현재는 전체 상태를 저장하는 방식을 사용하며, 추후 필요시 변경사항만 저장하는 방식으로 개선될 수 있습니다.
+    ITreeStateManager 프로토콜을 구현합니다.
+    상태 이력을 관리하고 undo/redo 기능을 제공합니다.
     """
     
     stateChanged = pyqtSignal()  # 상태 변경 시그널
+    canUndoChanged = pyqtSignal()
+    canRedoChanged = pyqtSignal()
     
     def __init__(self):
         """TreeStateManager 생성자"""
         super().__init__()
-        self._state_deque: Deque[TreeState] = deque(maxlen=50)  # 최대 50개 상태 저장
+        self._states: Deque[TreeState] = deque(maxlen=50)  # 최대 50개 상태 저장
         self._current_index: int = -1
     
     def save_state(self, tree_state: TreeState) -> None:
@@ -34,12 +35,18 @@ class TreeStateManager(QObject, ITreeStateManager):
             tree_state: 저장할 트리 상태
         """
         # 현재 위치 이후의 상태들은 제거
-        while len(self._state_deque) > self._current_index + 1:
-            self._state_deque.pop()
-            
-        self._state_deque.append(copy.deepcopy(tree_state))
-        self._current_index = len(self._state_deque) - 1
+        if self._current_index < len(self._states) - 1:
+            # 슬라이싱 대신 반복적으로 제거
+            while len(self._states) > self._current_index + 1:
+                self._states.pop()
+        
+        self._states.append(tree_state.clone())
+        self._current_index = len(self._states) - 1
+        
+        # 신호 발생
         self.stateChanged.emit()
+        self.canUndoChanged.emit()
+        self.canRedoChanged.emit()
     
     def can_undo(self) -> bool:
         """Undo 가능 여부를 반환합니다.
@@ -55,7 +62,7 @@ class TreeStateManager(QObject, ITreeStateManager):
         Returns:
             Redo 가능 여부
         """
-        return self._current_index < len(self._state_deque) - 1
+        return self._current_index < len(self._states) - 1
     
     def undo(self) -> Optional[TreeState]:
         """이전 상태로 되돌립니다.
@@ -63,11 +70,18 @@ class TreeStateManager(QObject, ITreeStateManager):
         Returns:
             이전 상태. Undo가 불가능한 경우 None
         """
-        if self.can_undo():
-            self._current_index -= 1
-            self.stateChanged.emit()
-            return copy.deepcopy(self._state_deque[self._current_index])
-        return None
+        if not self.can_undo():
+            return None
+            
+        self._current_index -= 1
+        state = self._states[self._current_index]
+        
+        # 신호 발생
+        self.stateChanged.emit()
+        self.canUndoChanged.emit()
+        self.canRedoChanged.emit()
+        
+        return state
     
     def redo(self) -> Optional[TreeState]:
         """다음 상태로 복원합니다.
@@ -75,17 +89,26 @@ class TreeStateManager(QObject, ITreeStateManager):
         Returns:
             다음 상태. Redo가 불가능한 경우 None
         """
-        if self.can_redo():
-            self._current_index += 1
-            self.stateChanged.emit()
-            return copy.deepcopy(self._state_deque[self._current_index])
-        return None
+        if not self.can_redo():
+            return None
+            
+        self._current_index += 1
+        state = self._states[self._current_index]
+        
+        # 신호 발생
+        self.stateChanged.emit()
+        self.canUndoChanged.emit()
+        self.canRedoChanged.emit()
+        
+        return state
     
     def clear(self) -> None:
         """모든 상태 이력을 초기화합니다."""
-        self._state_deque.clear()
+        self._states.clear()
         self._current_index = -1
         self.stateChanged.emit()
+        self.canUndoChanged.emit()
+        self.canRedoChanged.emit()
 
     @pyqtProperty(bool, notify=stateChanged)
     def canUndo(self):

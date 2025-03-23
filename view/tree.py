@@ -8,12 +8,12 @@ from PyQt6.QtWidgets import (
     QHeaderView, QMainWindow
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QObject, pyqtSlot
-from models.tree_repository import TreeRepository
+from models.tree_data_repository import TreeDataRepository
 from core.tree_state_interface import ITreeStateManager
 from core.tree_state_manager import TreeStateManager
 from core.tree_state import TreeState
 from view.item import Item
-from view.tree_event_handler import TreeWidgetEventHandler
+from view.tree_event_handler import TreeEventHandler
 from viewmodels.tree_executor import TreeExecutor
 from resources.resources import rsc
 from viewmodels.item_viewmodel import ItemData, ItemViewModel
@@ -54,7 +54,7 @@ class TreeWidget(QTreeWidget):
         header.setSectionResizeMode(4, QHeaderView.ResizeToContents)
         
         # 데이터 관리 객체 초기화
-        self.tree_repository = TreeRepository()
+        self.tree_repository = TreeDataRepository()
         self.executor = TreeExecutor(self)
 
         # 선택적 의존성 주입
@@ -283,7 +283,7 @@ class TreeBusinessLogic(QObject):
     
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._repository = TreeRepository()
+        self._repository = TreeDataRepository()
     
     @pyqtSlot(str, result=bool)
     def saveTree(self, filename):

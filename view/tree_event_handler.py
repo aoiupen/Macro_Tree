@@ -3,11 +3,10 @@
 트리 위젯의 이벤트를 처리하는 클래스를 제공합니다.
 """
 from typing import List, Optional, cast
-from PyQt6.QtWidgets import QMenu, QAction, QTreeWidgetItem, QTreeWidget
-from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
-from PyQt6.QtGui import QCursor, QKeySequence, QDropEvent, QMouseEvent, QKeyEvent
+from PyQt6.QtWidgets import QMenu, QTreeWidgetItem, QTreeWidget
+from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QPoint
+from PyQt6.QtGui import QCursor, QKeySequence, QDropEvent, QMouseEvent, QKeyEvent, QAction
 from view.item import Item
-from viewmodels.tree_viewmodel import TreeViewModel
 
 class TreeEventHandler(QObject):
     """트리 이벤트 처리 클래스"""
@@ -94,7 +93,7 @@ class TreeEventHandler(QObject):
             event: 키 이벤트 객체
         """
         # Delete 키 처리
-        if event.key() == Qt.Key.Key_Delete::
+        if event.key() == Qt.Key.Key_Delete:
             self.delete_selected_items()
             event.accept()
         # Ctrl+Z (실행 취소)
