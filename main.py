@@ -21,18 +21,18 @@ if __name__ == "__main__":
     # QML 엔진 생성
     engine = QQmlApplicationEngine()
     
-    # 모델과 이벤트 핸들러 생성
-    tree_model = TreeViewModel()
-    event_handler = TreeEventHandler(tree_model)
+    # ViewModel 생성
+    tree_model = TreeViewModel(state_manager)
     
-    # QML 컨텍스트에 객체 등록
-    engine.rootContext().setContextProperty("_stateManager", state_manager)
-    engine.rootContext().setContextProperty("_treeModel", tree_model)
-    engine.rootContext().setContextProperty("_eventHandler", event_handler)
+    # QML 컨텍스트에 ViewModel만 등록
+    engine.rootContext().setContextProperty("viewModel", tree_model)
     
     # QML 파일 로드
     qml_file = os.path.join(os.path.dirname(__file__), "view", "qml", "main.qml")
     engine.load(QUrl.fromLocalFile(qml_file))
+    
+    # TreeEventHandler는 QML에서 직접 생성하지 않고, 
+    # Widget 생성 시 함께 생성되도록 구조 개선 필요
     
     # 애플리케이션 실행
     sys.exit(app.exec())

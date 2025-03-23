@@ -15,9 +15,10 @@ class TreeEventHandler(QObject):
     dropCompleted = pyqtSignal(bool)
     treeChanged = pyqtSignal()
     
-    def __init__(self, model, parent=None):
+    def __init__(self, view_model, tree_widget, parent=None):
         super().__init__(parent)
-        self._model = model
+        self._view_model = view_model
+        self.tree_widget = tree_widget
         
         # 컨텍스트 메뉴 설정
         self.tree_widget.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -108,54 +109,34 @@ class TreeEventHandler(QObject):
             event.ignore()
     
     def drop_event(self, event: QDropEvent) -> None:
-        """드롭 이벤트를 처리합니다.
-        
-        Args:
-            event: 드롭 이벤트 객체
-        """
-        # 드래그 앤 드롭 작업 전에 상태 저장
-        self.create_undo_point()
+        """드롭 이벤트를 처리합니다."""
+        # ViewModel에 위임
+        self._view_model.begin_change()
         
         # 기본 드롭 이벤트 처리
         QTreeWidget.dropEvent(self.tree_widget, event)
         
-        # 드래그 앤 드롭 작업 후 상태 변경 알림
-        self.tree_widget.stateChanged.emit(self.tree_widget.get_current_state())
+        # 상태 변경을 ViewModel에 전달
+        current_state = self.tree_widget.get_current_state()
+        self._view_model.end_change(current_state)
     
     def create_undo_point(self) -> None:
         """실행 취소 지점을 생성합니다."""
-        # 현재 상태를 저장하여 실행 취소 지점 생성
-        self.tree_widget.stateChanged.emit(self.tree_widget.get_current_state())
+        # ViewModel에 위임하도록 변경
+        current_state = self.tree_widget.get_current_state()
+        self._view_model.save_state(current_state)
     
     def handle_item_change(self, item: QTreeWidgetItem, column: int) -> None:
-        """아이템 변경 이벤트를 처리합니다.
-        
-        Args:
-            item: 변경된 아이템
-            column: 변경된 열 인덱스
-        """
-        # 아이템이 Item 클래스인 경우에만 처리
+        """아이템 변경 이벤트를 처리합니다."""
         if not isinstance(item, Item):
             return
             
         item_obj = cast(Item, item)
+        item_id = item_obj.logic.id
+        value = item.text(column)
         
-        # 첫 번째 열(이름)이 변경된 경우
-        if column == 0:
-            # 아이템 이름 업데이트
-            item_obj.logic.name = item.text(0)
-        # 두 번째 열(입력 타입)이 변경된 경우
-        elif column == 1:
-            # 입력 타입 업데이트
-            item_obj.logic.inp = item.text(1)
-        # 세 번째 열(서브 컨디션)이 변경된 경우
-        elif column == 2:
-            # 서브 컨디션 업데이트
-            item_obj.logic.sub_con = item.text(2)
-        # 네 번째 열(서브)이 변경된 경우
-        elif column == 3:
-            # 서브 업데이트
-            item_obj.logic.sub = item.text(3)
+        # ViewModel에 변경 위임
+        self._view_model.update_item_property(item_id, column, value)
     
     def handle_item_selection_change(self) -> None:
         """아이템 선택 변경 이벤트를 처리합니다."""
@@ -164,58 +145,33 @@ class TreeEventHandler(QObject):
     
     def delete_selected_items(self) -> None:
         """선택된 아이템들을 삭제합니다."""
-        # 실행 취소 지점 생성
-        self.create_undo_point()
-        
-        # 선택된 아이템 삭제
         selected = self.tree_widget.selectedItems()
-        for item in selected:
-            parent = item.parent()
-            if parent:
-                parent.removeChild(item)
-            else:
-                index = self.tree_widget.indexOfTopLevelItem(item)
-                self.tree_widget.takeTopLevelItem(index)
-        
-        # 상태 변경 알림
-        self.tree_widget.stateChanged.emit(self.tree_widget.get_current_state())
+        # ViewModel에 작업 위임
+        self._view_model.delete_items([item.logic.id for item in selected])
     
     def handle_item_expanded(self, item: QTreeWidgetItem) -> None:
-        """아이템 확장 이벤트를 처리합니다.
-        
-        Args:
-            item: 확장된 아이템
-        """
-        # 아이템이 Item 클래스인 경우에만 처리
+        """아이템 확장 이벤트를 처리합니다."""
         if isinstance(item, Item):
-            # 확장 상태 저장
-            cast(Item, item).logic.expanded = True
+            item_id = cast(Item, item).logic.id
+            # ViewModel에 위임
+            self._view_model.update_item_expanded_state(item_id, True)
     
     def handle_item_collapsed(self, item: QTreeWidgetItem) -> None:
-        """아이템 축소 이벤트를 처리합니다.
-        
-        Args:
-            item: 축소된 아이템
-        """
-        # 아이템이 Item 클래스인 경우에만 처리
+        """아이템 축소 이벤트를 처리합니다."""
         if isinstance(item, Item):
-            # 축소 상태 저장
-            cast(Item, item).logic.expanded = False
+            item_id = cast(Item, item).logic.id
+            # ViewModel에 위임
+            self._view_model.update_item_expanded_state(item_id, False)
     
     def handle_item_double_clicked(self, item: QTreeWidgetItem, column: int) -> None:
-        """아이템 더블 클릭 이벤트를 처리합니다.
-        
-        Args:
-            item: 더블 클릭된 아이템
-            column: 더블 클릭된 열 인덱스
-        """
-        # 아이템이 Item 클래스인 경우에만 처리
+        """아이템 더블 클릭 이벤트를 처리합니다."""
         if isinstance(item, Item) and column == 0:
-            # 아이템 실행
-            self.tree_widget.executor.execute_item(cast(Item, item))
+            # 직접 실행하지 않고 ViewModel에 위임
+            self._view_model.execute_item(cast(Item, item).logic.id)
 
     # QML에서 호출할 메서드들 정의
     @pyqtSlot(int, int)
     def moveItem(self, source_index, target_index):
-        # 기존 로직 재활용하되 QML 호환 방식으로 변경
-        pass
+        """항목 위치를 이동합니다."""
+        # ViewModel의 moveItem 호출
+        return self._view_model.moveItem(source_index, target_index)

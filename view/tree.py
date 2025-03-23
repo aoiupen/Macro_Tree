@@ -61,7 +61,7 @@ class TreeWidget(QTreeWidget):
         self._state_manager = state_manager or TreeStateManager()
 
         # 이벤트 핸들러 설정
-        self.event_handler = TreeWidgetEventHandler(self)
+        self.event_handler = TreeEventHandler(self)
         
         # 액션 아이템 딕셔너리 초기화
         self.act_items = {
