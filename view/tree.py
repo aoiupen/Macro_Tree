@@ -8,7 +8,8 @@ from PyQt6.QtWidgets import (
     QHeaderView, QMainWindow
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QObject, pyqtSlot
-from models.tree_data_repository import TreeDataRepository
+from viewmodels.interfaces.repository_viewmodel_interface import IRepositoryViewModel
+from viewmodels.tree_data_repository_viewmodel import TreeDataRepositoryViewModel
 from core.tree_state_interface import ITreeStateManager
 from core.tree_state_manager import TreeStateManager
 from core.tree_state import TreeState
@@ -28,11 +29,14 @@ class TreeWidget(QTreeWidget):
     stateChanged = pyqtSignal(TreeState)  # 상태 변경 시그널
     
     def __init__(self, parent=None, 
-                 state_manager: Optional[ITreeStateManager] = None):
+                 state_manager: Optional[ITreeStateManager] = None,
+                 repository_viewmodel: Optional[IRepositoryViewModel] = None):
         """TreeWidget 생성자
         
         Args:
             parent: 부모 위젯
+            state_manager: 상태 관리자 (선택적)
+            repository_viewmodel: 저장소 뷰모델 (선택적)
         """
         super().__init__(parent)
         
@@ -54,7 +58,7 @@ class TreeWidget(QTreeWidget):
         header.setSectionResizeMode(4, QHeaderView.ResizeToContents)
         
         # 데이터 관리 객체 초기화
-        self.tree_repository = TreeDataRepository()
+        self.repository_viewmodel = repository_viewmodel or TreeDataRepositoryViewModel()
         self.executor = TreeExecutor(self)
 
         # 선택적 의존성 주입
@@ -69,8 +73,9 @@ class TreeWidget(QTreeWidget):
             "K": ["typing", "copy", "paste"]
         }
         
-        # 아이템 변경 시그널 연결
+        # 시그널 연결
         self.itemChanged.connect(self._on_item_changed)
+        self.repository_viewmodel.dataLoaded.connect(self.restore_state)
         
         # 트리 로드
         self.load_tree()
@@ -89,11 +94,8 @@ class TreeWidget(QTreeWidget):
         """DB에서 트리를 로드합니다."""
         try:
             # 트리 상태 로드
-            tree_state = self.tree_repository.load_tree()
-            
-            # UI에 트리 상태 적용
-            self.restore_state(tree_state)
-            
+            self.repository_viewmodel.load_tree()
+            # 이제 시그널에 연결된 restore_state 함수가 호출됨
         except Exception as e:
             print(f"트리 로드 오류: {e}")
     
@@ -103,11 +105,14 @@ class TreeWidget(QTreeWidget):
             # 현재 트리 상태 가져오기
             tree_state = self.get_current_state()
             
-            # DB에 저장
-            self.tree_repository.save_tree(tree_state)
+            # 저장소 뷰모델을 통해 DB에 저장
+            success = self.repository_viewmodel.save_tree(tree_state)
             
-            print("트리가 성공적으로 저장되었습니다.")
-            
+            if success:
+                print("트리가 성공적으로 저장되었습니다.")
+            else:
+                print("트리 저장에 실패했습니다.")
+                
         except Exception as e:
             print(f"트리 저장 오류: {e}")
     
@@ -281,9 +286,9 @@ class TreeWidget(QTreeWidget):
 class TreeBusinessLogic(QObject):
     """트리 관련 핵심 비즈니스 로직만 포함하는 클래스"""
     
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, repository: Optional[IRepositoryViewModel] = None):
         super().__init__(parent)
-        self._repository = TreeDataRepository()
+        self._repository: IRepositoryViewModel = repository or TreeDataRepositoryViewModel()
     
     @pyqtSlot(str, result=bool)
     def saveTree(self, filename):

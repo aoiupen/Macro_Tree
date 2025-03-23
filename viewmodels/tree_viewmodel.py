@@ -1,7 +1,5 @@
 from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
-from viewmodels.tree_executor import TreeExecutor
 from core.tree_state import TreeState
-from models.tree_data_repository import TreeDataRepository
 from typing import Optional
 
 class TreeViewModel(QObject):

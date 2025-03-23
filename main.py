@@ -10,7 +10,6 @@ from PyQt6.QtCore import QObject, QUrl
 
 from core.tree_state_manager import TreeStateManager
 from viewmodels.tree_viewmodel import TreeViewModel
-from view.tree_event_handler import TreeEventHandler
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

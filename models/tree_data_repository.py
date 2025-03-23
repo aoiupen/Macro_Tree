@@ -9,8 +9,8 @@ from dotenv import load_dotenv
 from typing import Dict, List, Optional, Tuple, Any
 from core.tree_state import TreeState
 from core.tree_state_manager import TreeStateManager
-from utils.config_manager import ConfigManager
 from .dummy_data import get_default_tree
+from .database_connection import DatabaseConnection
 
 
 # 데이터베이스 테이블 관련 상수

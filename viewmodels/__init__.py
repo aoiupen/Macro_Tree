@@ -6,10 +6,12 @@
 from viewmodels.tree_executor import TreeExecutor
 from viewmodels.item_viewmodel import ItemData, ItemViewModel
 from viewmodels.tree_viewmodel import TreeViewModel
+from viewmodels.tree_data_repository_viewmodel import TreeDataRepositoryViewModel
 
 __all__ = [
     'TreeExecutor',
     'ItemData',
     'ItemViewModel',
-    'TreeViewModel'
+    'TreeViewModel',
+    'TreeDataRepositoryViewModel'
 ] 
