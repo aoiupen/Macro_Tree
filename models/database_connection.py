@@ -37,9 +37,8 @@ class DatabaseConnection:
         port = os.getenv("DB_PORT", "5432")
         dbname = os.getenv("DB_NAME", "postgres")
         user = os.getenv("DB_USER", "postgres")
-        
         # 비밀번호는 포함하지 않음 (나중에 직접 입력)
-        return f"host={host} port={port} dbname={dbname} user={user}"
+        return f"host={host} port={port} dbname='{dbname}' user={user}"
     
     def connect(self) -> Optional[psycopg2.extensions.connection]:
         """데이터베이스에 연결합니다.
