@@ -15,11 +15,11 @@ class TreeExecutor(IExecutor):
     트리 위젯 아이템의 실행 로직을 처리합니다.
     """
     
-    def __init__(self, tree_view_model: ITreeViewModel) -> None:
+    def __init__(self, tree_view_model: Optional[ITreeViewModel] = None) -> None:
         """TreeExecutor 생성자
         
         Args:
-            tree_view_model: 트리 뷰모델
+            tree_view_model: 트리 뷰모델 (선택적)
         """
         self.command_buffer: List[str] = []  # Item 대신 ID 저장
         self._tree_view_model = tree_view_model
@@ -38,34 +38,59 @@ class TreeExecutor(IExecutor):
             self.execute_item(item_id)
         self.clear_buffer()
     
-    def execute_item(self, item_id: str) -> bool:
-        """아이템 ID로 실행"""
-        item_vm = self._tree_view_model.get_item(item_id)
+    def execute_item(self, item: Any) -> bool:
+        """아이템을 실행합니다.
+        
+        Args:
+            item: 실행할 아이템 또는 아이템 ID
+        
+        Returns:
+            실행 성공 여부
+        """
+        item_vm = None
+        
+        # item이 문자열 ID인 경우 트리 뷰모델에서 아이템 객체 가져오기
+        if isinstance(item, str) and self._tree_view_model:
+            item_vm = self._tree_view_model.get_item(item)
+        # item이 이미 아이템 객체인 경우 그대로 사용
+        elif hasattr(item, 'name') and hasattr(item, 'inp') and hasattr(item, 'sub'):
+            item_vm = item
+            
         if not item_vm:
+            print(f"실행할 아이템을 찾을 수 없습니다: {item}")
             return False
             
         # 그룹 아이템인 경우 자식 아이템들을 모두 실행
-        if item_vm.is_group():
-            children_ids = self._tree_view_model.get_children_ids(item_id)
+        if hasattr(item_vm, 'is_group') and item_vm.is_group():
+            children_ids = []
+            if self._tree_view_model and isinstance(item, str):
+                children_ids = self._tree_view_model.get_children_ids(item)
+            
             for child_id in children_ids:
                 self.execute_item(child_id)
             return True
             
         # 인스턴스 아이템인 경우 실행하지 않음
-        if item_vm.is_inst():
+        if hasattr(item_vm, 'is_inst') and item_vm.is_inst():
             return False
             
         # 입력 타입에 따라 실행
-        if item_vm.inp == "M":
-            action = item_vm.sub
+        inp_type = getattr(item_vm, 'inp', '')
+        sub_action = getattr(item_vm, 'sub', '')
+        
+        if inp_type == "M":
+            action = sub_action
             if action.startswith("M_"):
                 action = action[2:]
             return self._execute_mouse_action(action, item_vm)
-        else:  # item_vm.inp == "K"
-            action = item_vm.sub
+        elif inp_type == "K":
+            action = sub_action
             if action.startswith("K_"):
                 action = action[2:]
             return self._execute_keyboard_action(action, item_vm)
+        else:
+            print(f"지원하지 않는 입력 타입: {inp_type}")
+            return False
     
     def _execute_mouse_action(self, action: str, item_vm: IItemViewModel) -> bool:
         """마우스 액션 실행"""

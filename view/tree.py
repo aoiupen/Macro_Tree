@@ -290,10 +290,15 @@ class TreeBusinessLogic(QObject):
         super().__init__(parent)
         self._repository: IRepositoryViewModel = repository or TreeDataRepositoryViewModel()
     
-    @pyqtSlot(str, result=bool)
-    def saveTree(self, filename):
+    @pyqtSlot(result=bool)
+    def saveTree(self):
         """트리 저장 비즈니스 로직"""
-        return self._repository.save_tree(filename)
+        return self._repository.save_tree()
+    
+    @pyqtSlot(result=bool)
+    def executeSelectedItems(self):
+        """선택된 아이템 실행 비즈니스 로직"""
+        return self._repository.execute_selected()
     
     @pyqtSlot(str, str, result=bool)
     def addNode(self, parent_id, node_name):

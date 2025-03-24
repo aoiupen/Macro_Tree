@@ -39,7 +39,7 @@ class CyclicList(Generic[T]):
         try:
             idx = self.items.index(current)
             return self.items[(idx + 1) % len(self.items)]
-        except (ValueError, IndexError):
+        except ValueError:
             return self.items[0] if self.items else current
 
 
@@ -82,24 +82,75 @@ class ItemViewModel(QObject):
     expandedChanged = pyqtSignal()
     childrenChanged = pyqtSignal()
     
-    def __init__(self, parent: Optional[QObject] = None):
+    def __init__(self, parent: Optional[QObject] = None, data: Optional[ItemData] = None):
         """ItemViewModel 생성자
         
         Args:
-            parent: 부모 객체
+            parent: 부모 객체 (선택적)
+            data: 아이템 데이터 (선택적)
         """
         super().__init__(parent)
-        
-        # 데이터 초기화
-        self._data = ItemData()
-        
-        # 액션 타입 순환 리스트
-        self._m_actions_cyclic = CyclicList(self._M_ACTIONS)
+        self._data = data or ItemData()
+        self._input_cycler = CyclicList(["M", "K"])
     
-    # QML 프로퍼티 정의
+    @classmethod
+    def from_node_data(cls, node_data: Dict[str, Any]) -> 'ItemViewModel':
+        """노드 데이터로부터 ItemViewModel 객체를 생성합니다.
+        
+        Args:
+            node_data: 노드 데이터 딕셔너리
+            
+        Returns:
+            생성된 ItemViewModel 인스턴스
+        """
+        data = ItemData(
+            name=node_data.get('name', ''),
+            inp=node_data.get('inp', 'M'),
+            sub_con=node_data.get('sub_con', ''),
+            sub=node_data.get('sub', 'click'),
+            parent_id=node_data.get('parent_id')
+        )
+        return cls(data=data)
+    
+    @classmethod
+    def create_group(cls, name: str) -> 'ItemViewModel':
+        """그룹 아이템을 생성합니다.
+        
+        Args:
+            name: 그룹 이름
+            
+        Returns:
+            생성된 그룹 아이템
+        """
+        data = ItemData(
+            name=f"G:{name}",
+            inp="",
+            sub_con="",
+            sub=""
+        )
+        return cls(data=data)
+    
+    @classmethod
+    def create_instance(cls, name: str) -> 'ItemViewModel':
+        """인스턴스 아이템을 생성합니다.
+        
+        Args:
+            name: 인스턴스 이름
+            
+        Returns:
+            생성된 인스턴스 아이템
+        """
+        data = ItemData(
+            name=f"I:{name}",
+            inp="M",
+            sub_con="",
+            sub="click"
+        )
+        return cls(data=data)
+    
     @pyqtProperty(str, notify=nameChanged)
     def name(self) -> str:
-        """아이템 이름 프로퍼티"""
+        """아이템 이름"""
         return self._data.name
     
     @name.setter
@@ -110,7 +161,7 @@ class ItemViewModel(QObject):
     
     @pyqtProperty(str, notify=inpChanged)
     def inp(self) -> str:
-        """입력 타입 프로퍼티"""
+        """입력 타입"""
         return self._data.inp
     
     @inp.setter
@@ -120,19 +171,19 @@ class ItemViewModel(QObject):
             self.inpChanged.emit()
     
     @pyqtProperty(str, notify=subConChanged)
-    def subCon(self) -> str:
-        """서브 컨디션 프로퍼티"""
+    def sub_con(self) -> str:
+        """하위 연결"""
         return self._data.sub_con
     
-    @subCon.setter
-    def subCon(self, value: str) -> None:
+    @sub_con.setter
+    def sub_con(self, value: str) -> None:
         if self._data.sub_con != value:
             self._data.sub_con = value
             self.subConChanged.emit()
     
     @pyqtProperty(str, notify=subChanged)
     def sub(self) -> str:
-        """서브 프로퍼티"""
+        """하위 액션"""
         return self._data.sub
     
     @sub.setter
@@ -143,7 +194,7 @@ class ItemViewModel(QObject):
     
     @pyqtProperty(bool, notify=expandedChanged)
     def expanded(self) -> bool:
-        """확장 상태 프로퍼티"""
+        """확장 상태"""
         return self._data.expanded
     
     @expanded.setter
@@ -154,81 +205,83 @@ class ItemViewModel(QObject):
     
     @pyqtProperty(str)
     def id(self) -> str:
-        """아이템 ID 프로퍼티"""
+        """아이템 ID"""
         return self._data.id
     
     @pyqtProperty(str)
     def parentId(self) -> str:
-        """부모 아이템 ID 프로퍼티"""
+        """부모 아이템 ID"""
         return self._data.parent_id or ""
     
     @pyqtProperty('QVariantList', notify=childrenChanged)
     def childrenIds(self) -> List[str]:
-        """자식 아이템 ID 리스트 프로퍼티"""
+        """자식 아이템 ID 목록"""
         return self._data.children_ids
     
-    # 액션 관련 메서드
     @pyqtSlot(result=str)
     def getNextInputType(self) -> str:
         """다음 입력 타입을 반환합니다."""
-        return self._m_actions_cyclic.next(self._data.inp)
+        return self._input_cycler.next(self._data.inp)
     
     @pyqtSlot(str, result='QVariantList')
     def getSubActions(self, input_type: str) -> List[str]:
-        """입력 타입에 따른 서브 액션 리스트를 반환합니다."""
+        """입력 타입에 따른 하위 액션 목록을 반환합니다."""
         return self._SUB_ACTIONS.get(input_type, [])
     
     @pyqtSlot(result=bool)
     def toggleInputType(self) -> bool:
         """입력 타입을 토글합니다."""
-        next_type = self.getNextInputType()
-        self.inp = next_type
-        return True
+        try:
+            next_inp = self._input_cycler.next(self.inp)
+            self.inp = next_inp
+            return True
+        except Exception as e:
+            print(f"입력 타입 토글 오류: {e}")
+            return False
     
-    # 데이터 관리 메서드
     @pyqtSlot(dict)
     def updateFromDict(self, data_dict: Dict[str, Any]) -> None:
-        """딕셔너리에서 데이터를 업데이트합니다."""
-        if 'name' in data_dict and self._data.name != data_dict['name']:
-            self._data.name = data_dict['name']
-            self.nameChanged.emit()
+        """딕셔너리로부터 데이터를 업데이트합니다."""
+        if 'name' in data_dict and data_dict['name'] != self.name:
+            self.name = data_dict['name']
             
-        if 'inp' in data_dict and self._data.inp != data_dict['inp']:
-            self._data.inp = data_dict['inp']
-            self.inpChanged.emit()
+        if 'inp' in data_dict and data_dict['inp'] != self.inp:
+            self.inp = data_dict['inp']
             
-        if 'sub_con' in data_dict and self._data.sub_con != data_dict['sub_con']:
-            self._data.sub_con = data_dict['sub_con']
-            self.subConChanged.emit()
+        if 'sub_con' in data_dict and data_dict['sub_con'] != self.sub_con:
+            self.sub_con = data_dict['sub_con']
             
-        if 'sub' in data_dict and self._data.sub != data_dict['sub']:
-            self._data.sub = data_dict['sub']
-            self.subChanged.emit()
+        if 'sub' in data_dict and data_dict['sub'] != self.sub:
+            self.sub = data_dict['sub']
             
-        if 'expanded' in data_dict and self._data.expanded != data_dict['expanded']:
-            self._data.expanded = data_dict['expanded']
-            self.expandedChanged.emit()
-            
-        if 'id' in data_dict:
-            self._data.id = data_dict['id']
-            
-        if 'parent_id' in data_dict:
-            self._data.parent_id = data_dict['parent_id']
+        if 'expanded' in data_dict and data_dict['expanded'] != self.expanded:
+            self.expanded = data_dict['expanded']
             
         if 'children_ids' in data_dict:
             self._data.children_ids = data_dict['children_ids']
             self.childrenChanged.emit()
+            
+        if 'parent_id' in data_dict:
+            self._data.parent_id = data_dict['parent_id']
     
     @pyqtSlot(result=dict)
     def toDict(self) -> Dict[str, Any]:
-        """아이템 데이터를 딕셔너리로 변환합니다."""
+        """객체를 딕셔너리로 변환합니다."""
         return {
-            'id': self._data.id,
-            'name': self._data.name,
-            'inp': self._data.inp,
-            'sub_con': self._data.sub_con,
-            'sub': self._data.sub,
-            'expanded': self._data.expanded,
-            'parent_id': self._data.parent_id,
-            'children_ids': self._data.children_ids
+            'id': self.id,
+            'name': self.name,
+            'inp': self.inp,
+            'sub_con': self.sub_con,
+            'sub': self.sub,
+            'expanded': self.expanded,
+            'parent_id': self.parentId,
+            'children_ids': self.childrenIds
         }
+    
+    def is_group(self) -> bool:
+        """그룹 아이템인지 확인합니다."""
+        return self.name.startswith("G:")
+    
+    def is_inst(self) -> bool:
+        """인스턴스 아이템인지 확인합니다."""
+        return self.name.startswith("I:")

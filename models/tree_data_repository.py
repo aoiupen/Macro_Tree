@@ -8,7 +8,6 @@ from getpass import getpass
 from dotenv import load_dotenv
 from typing import Dict, List, Optional, Tuple, Any
 from core.tree_state import TreeState
-from core.tree_state_manager import TreeStateManager
 from .dummy_data import get_default_tree
 from .database_connection import DatabaseConnection
 
@@ -33,9 +32,14 @@ class TreeDataRepository:
             conn_string: 데이터베이스 연결 문자열 (선택적)
         """
         self.db_connection = DatabaseConnection()
-        self.state_manager = TreeStateManager()
         self.conn_string = conn_string
         self.use_db = True  # 데이터베이스 사용 여부
+        
+        # 데이터베이스에 연결 시도
+        conn = self.get_connection()
+        if conn is None:
+            print("데이터베이스 연결에 실패했습니다. 더미 데이터를 사용합니다.")
+            self.use_db = False
 
     def get_connection(self) -> Optional[psycopg2.extensions.connection]:
         """데이터베이스 연결을 반환합니다.
@@ -60,20 +64,17 @@ class TreeDataRepository:
         """
         if not self.use_db:
             return None
-            
+        
         conn = self.get_connection()
         if conn is None:
             return None
             
         try:
             cursor = conn.cursor()
-            if params:
-                cursor.execute(query, params)
-            else:
-                cursor.execute(query)
+            cursor.execute(query, params)
             return cursor, conn
-        except Exception as e:
-            print(f"쿼리 실행 오류: {e}")
+        except (Exception, psycopg2.Error) as error:
+            print(f"데이터베이스 쿼리 실행 오류: {error}")
             if conn:
                 conn.rollback()
             return None
@@ -82,76 +83,82 @@ class TreeDataRepository:
         """데이터베이스에서 트리를 로드합니다.
         
         Returns:
-            로드된 트리 상태
+            트리 상태 객체 또는 None
         """
+        # 데이터베이스 사용 불가능하면 더미 데이터 반환
         if not self.use_db:
-            return self._create_default_tree_state()
+            print("데이터베이스를 사용할 수 없어 더미 데이터를 로드합니다.")
+            return get_default_tree()
             
-        # 노드 정보 조회 쿼리 - 간결한 방식으로 작성
-        columns = ", ".join(TABLE_CONFIG["columns"])
-        query = f"SELECT {columns} FROM {TABLE_CONFIG['name']} ORDER BY id"
-        
+        # 노드 데이터 가져오기
+        query = f"SELECT {', '.join(TABLE_CONFIG['columns'])} FROM {TABLE_CONFIG['name']}"
         result = self._execute_query(query)
+        
         if result is None:
-            return self._create_default_tree_state()
+            print("데이터베이스 쿼리 실행 실패, 더미 데이터를 로드합니다.")
+            return get_default_tree()
             
         cursor, conn = result
         
         try:
-            # 노드 정보 저장
+            # 결과에서 노드와 구조 데이터 구성
             nodes = {}
-            structure = {}
+            structure = {None: []}
             
-            rows = cursor.fetchall()
-            for row in rows:
-                node_id, parent_id, name, inp, sub_con, sub = row
+            for row in cursor.fetchall():
+                node_id = str(row[0])
+                parent_id = str(row[1]) if row[1] is not None else None
                 
-                # 노드 정보 저장
-                nodes[str(node_id)] = {
-                    'name': name,
-                    'inp': inp,
-                    'sub_con': sub_con,
-                    'sub': sub,
-                    'parent_id': str(parent_id) if parent_id is not None else None
+                # 노드 데이터 저장
+                nodes[node_id] = {
+                    'parent_id': parent_id,
+                    'name': row[2],
+                    'inp': row[3],
+                    'sub_con': row[4],
+                    'sub': row[5]
                 }
                 
-                # 구조 정보 저장
-                parent_key = str(parent_id) if parent_id is not None else None
-                if parent_key not in structure:
-                    structure[parent_key] = []
-                structure[parent_key].append(str(node_id))
+                # 구조 데이터 저장
+                if parent_id not in structure:
+                    structure[parent_id] = []
+                structure[parent_id].append(node_id)
+                
+                # 자식 노드 목록 초기화
+                if node_id not in structure:
+                    structure[node_id] = []
             
             # 트리 상태 생성
-            tree_state = TreeState(nodes, structure)
+            if nodes:
+                print(f"데이터베이스에서 {len(nodes)}개의 노드를 로드했습니다.")
+                return TreeState(nodes, structure)
+            else:
+                print("데이터베이스에 데이터가 없어 더미 데이터를 로드합니다.")
+                return get_default_tree()
             
-            # 스냅샷 저장
-            self.save_state(tree_state)
-            
-            return tree_state
+        except Exception as e:
+            print(f"트리 로드 오류: {e}, 더미 데이터를 로드합니다.")
+            return get_default_tree()
         finally:
             cursor.close()
-            conn.commit()
-    
-    def _create_default_tree_state(self) -> TreeState:
-        """기본 트리 상태를 생성합니다."""
-        default_tree = get_default_tree()
-        self.save_state(default_tree)
-        return default_tree
     
     def save_tree(self, tree_state: TreeState) -> bool:
-        """트리 상태를 데이터베이스에 저장합니다.
+        """트리를 데이터베이스에 저장합니다.
         
         Args:
             tree_state: 저장할 트리 상태
+            
+        Returns:
+            성공 여부
         """
         if not self.use_db:
-            return
+            print("데이터베이스를 사용할 수 없어 트리를 저장할 수 없습니다.")
+            return False
             
         # 기존 데이터 삭제
         delete_query = f"DELETE FROM {TABLE_CONFIG['name']}"
         result = self._execute_query(delete_query)
         if result is None:
-            return
+            return False
             
         cursor, conn = result
         
@@ -185,45 +192,41 @@ class TreeDataRepository:
                 values.append(params)
             
             # 일괄 삽입 실행
-            cursor.executemany(insert_query, values)
+            if values:
+                cursor.executemany(insert_query, values)
+                print(f"데이터베이스에 {len(values)}개의 노드를 저장했습니다.")
             
             # 변경사항 저장
             conn.commit()
-            
-            # 스냅샷 저장
-            self.save_state(tree_state)
+            return True
             
         except Exception as e:
             print(f"트리 저장 오류: {e}")
             conn.rollback()
+            return False
         finally:
             cursor.close()
-    
-    def save_state(self, tree_state: TreeState) -> None:
-        """현재 트리 상태를 저장합니다.
-        
-        Args:
-            tree_state: 저장할 트리 상태
-        """
-        self.state_manager.save_state(tree_state)
 
-    def update_tree(self, changes: Dict[int, Dict[str, Any]]) -> None:
+    def update_tree(self, changes: Dict[int, Dict[str, Any]]) -> bool:
         """트리 상태를 업데이트합니다.
         
         Args:
             changes: 변경 사항 딕셔너리
+            
+        Returns:
+            성공 여부
         """
-        # 현재 상태 가져오기
-        current_state = self.state_manager.get_current_state()
-        if not current_state:
-            return
+        # 현재 트리 로드
+        current_tree = self.load_tree()
+        if not current_tree:
+            return False
             
         # 변경 사항 적용
         str_changes = {str(k): v for k, v in changes.items()}
-        new_state = self._apply_changes(current_state, str_changes)
+        new_state = self._apply_changes(current_tree, str_changes)
         
         # 새 상태 저장
-        self.save_state(new_state)
+        return self.save_tree(new_state)
     
     def _apply_changes(self, state: TreeState, changes: Dict[str, Dict[str, Any]]) -> TreeState:
         """변경 사항을 적용한 새 상태를 생성합니다.
@@ -265,3 +268,35 @@ class TreeDataRepository:
                             new_structure[parent_id].append(node_id)
         
         return TreeState(new_nodes, new_structure)
+    
+    def create_database_table(self) -> bool:
+        """필요한 데이터베이스 테이블을 생성합니다."""
+        if not self.use_db:
+            return False
+            
+        create_table_query = f"""
+        CREATE TABLE IF NOT EXISTS {TABLE_CONFIG['name']} (
+            id INTEGER PRIMARY KEY,
+            parent_id INTEGER REFERENCES {TABLE_CONFIG['name']}(id) ON DELETE CASCADE,
+            name TEXT NOT NULL,
+            inp TEXT,
+            sub_con TEXT,
+            sub TEXT
+        )
+        """
+        
+        result = self._execute_query(create_table_query)
+        if result is None:
+            return False
+            
+        cursor, conn = result
+        try:
+            conn.commit()
+            print(f"테이블 {TABLE_CONFIG['name']}가 성공적으로 생성되었습니다.")
+            return True
+        except Exception as e:
+            print(f"테이블 생성 오류: {e}")
+            conn.rollback()
+            return False
+        finally:
+            cursor.close()

@@ -6,6 +6,6 @@
 from view.main_window import MainWindow
 from view.tree import TreeWidget
 from view.item import Item
-from view.tree_event_handler import TreeWidgetEventHandler
+from view.tree_event_handler import TreeEventHandler
 
-__all__ = ['MainWindow', 'TreeWidget', 'Item', 'TreeWidgetEventHandler'] 
+__all__ = ['MainWindow', 'TreeWidget', 'Item', 'TreeEventHandler'] 

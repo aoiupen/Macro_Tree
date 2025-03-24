@@ -118,9 +118,19 @@ class TreeState:
     
     def clear(self):
         """모든 노드를 제거합니다."""
-        self._node_states.clear()
         self.nodes.clear()
         self.structure.clear()
+        self._node_states.clear()
+    
+    def clone(self) -> 'TreeState':
+        """현재 트리 상태의 복제본을 생성합니다.
+        
+        Returns:
+            복제된 TreeState 객체
+        """
+        cloned_nodes = copy.deepcopy(self.nodes)
+        cloned_structure = copy.deepcopy(self.structure)
+        return TreeState(cloned_nodes, cloned_structure)
     
     def serialize_to_json(self) -> str:
         """트리 상태를 JSON 문자열로 직렬화합니다.

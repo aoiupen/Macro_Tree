@@ -4,7 +4,7 @@
 """
 from typing import List, Optional, cast
 from PyQt6.QtWidgets import QMenu, QTreeWidgetItem, QTreeWidget
-from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QPoint
+from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QPoint, Qt
 from PyQt6.QtGui import QCursor, QKeySequence, QDropEvent, QMouseEvent, QKeyEvent, QAction
 from view.item import Item
 
@@ -15,27 +15,29 @@ class TreeEventHandler(QObject):
     dropCompleted = pyqtSignal(bool)
     treeChanged = pyqtSignal()
     
-    def __init__(self, view_model, tree_widget, parent=None):
+    def __init__(self, view_model, tree_widget=None, parent=None):
         super().__init__(parent)
         self._view_model = view_model
         self.tree_widget = tree_widget
         
-        # 컨텍스트 메뉴 설정
-        self.tree_widget.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.tree_widget.customContextMenuRequested.connect(self.show_context_menu)
-        
-        # 이벤트 핸들러 연결
-        self.tree_widget.itemChanged.connect(self.handle_item_change)
-        self.tree_widget.itemSelectionChanged.connect(self.handle_item_selection_change)
-        self.tree_widget.itemExpanded.connect(self.handle_item_expanded)
-        self.tree_widget.itemCollapsed.connect(self.handle_item_collapsed)
-        self.tree_widget.itemDoubleClicked.connect(self.handle_item_double_clicked)
-        
-        # 이벤트 필터 설정
-        self.tree_widget.installEventFilter(self.tree_widget)
-        
-        # 드래그 앤 드롭 설정
-        self.tree_widget.setDragDropMode(QTreeWidget.InternalMove)
+        # QML 환경에서는 tree_widget이 None일 수 있음
+        if self.tree_widget:
+            # 컨텍스트 메뉴 설정
+            self.tree_widget.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+            self.tree_widget.customContextMenuRequested.connect(self.show_context_menu)
+            
+            # 이벤트 핸들러 연결
+            self.tree_widget.itemChanged.connect(self.handle_item_change)
+            self.tree_widget.itemSelectionChanged.connect(self.handle_item_selection_change)
+            self.tree_widget.itemExpanded.connect(self.handle_item_expanded)
+            self.tree_widget.itemCollapsed.connect(self.handle_item_collapsed)
+            self.tree_widget.itemDoubleClicked.connect(self.handle_item_double_clicked)
+            
+            # 이벤트 필터 설정
+            self.tree_widget.installEventFilter(self.tree_widget)
+            
+            # 드래그 앤 드롭 설정
+            self.tree_widget.setDragDropMode(QTreeWidget.DragDropMode.InternalMove)
         
         # 선택된 아이템 추적
         self.selected_items: List[QTreeWidgetItem] = []
@@ -175,3 +177,27 @@ class TreeEventHandler(QObject):
         """항목 위치를 이동합니다."""
         # ViewModel의 moveItem 호출
         return self._view_model.moveItem(source_index, target_index)
+
+    # QML에서 호출 가능한 메소드들 추가
+    @pyqtSlot(int)
+    def selectItem(self, index):
+        """QML에서 아이템 선택 시 호출
+        
+        Args:
+            index: 아이템 인덱스
+        """
+        if self._view_model:
+            # set_selected_item 대신 setSelectedItems 메소드 사용
+            self._view_model.select_item(index)
+            self.treeChanged.emit()
+    
+    @pyqtSlot(int)
+    def toggleExpand(self, index):
+        """QML에서 아이템 확장/접기 토글 시 호출
+        
+        Args:
+            index: 아이템 인덱스
+        """
+        if self._view_model:
+            self._view_model.toggle_expand(index)
+            self.treeChanged.emit()

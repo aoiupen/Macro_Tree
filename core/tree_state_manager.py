@@ -109,6 +109,16 @@ class TreeStateManager(QObject):
         self.stateChanged.emit()
         self.canUndoChanged.emit()
         self.canRedoChanged.emit()
+    
+    def current_state(self) -> Optional[TreeState]:
+        """현재 상태를 반환합니다.
+        
+        Returns:
+            현재 상태. 상태가 없는 경우 None
+        """
+        if not self._states or self._current_index < 0:
+            return None
+        return self._states[self._current_index]
 
     @pyqtProperty(bool, notify=stateChanged)
     def canUndo(self):

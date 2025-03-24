@@ -54,8 +54,20 @@ ApplicationWindow {
         Menu {
             title: "파일"
             MenuItem {
+                text: "새로 만들기"
+                onTriggered: if (_repository) _repository.create_new_tree()
+            }
+            MenuItem {
+                text: "열기"
+                onTriggered: if (_repository) _repository.load_tree_from_db()
+            }
+            MenuItem {
                 text: "저장"
                 onTriggered: if (_treeBusinessLogic) _treeBusinessLogic.saveTree()
+            }
+            MenuItem {
+                text: "다른 이름으로 저장"
+                enabled: false  // 아직 구현되지 않음
             }
         }
         

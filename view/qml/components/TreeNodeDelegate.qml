@@ -12,7 +12,7 @@ Rectangle {
     
     // 속성
     property var itemData: null
-    property bool isSelected: itemData ? itemData.isSelected || false : false
+    property bool isSelected: itemData && itemData.isSelected ? itemData.isSelected : false
     property int indentation: 20
     
     // 시그널
@@ -30,11 +30,11 @@ Rectangle {
         Item {
             width: 16
             height: 16
-            visible: itemData && itemData.hasChildren
+            visible: itemData && itemData.hasChildren ? itemData.hasChildren : false
             
             Text {
                 anchors.centerIn: parent
-                text: (itemData && itemData.isExpanded) ? "▼" : "▶"
+                text: (itemData && itemData.isExpanded !== undefined) ? (itemData.isExpanded ? "▼" : "▶") : "▶"
                 font.pixelSize: 10
                 color: Style.textColor
             }
