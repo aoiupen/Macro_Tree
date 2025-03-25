@@ -1,7 +1,7 @@
 // qml/components/TreeItem.qml
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick 6.0
+import QtQuick.Controls 6.0
+import QtQuick.Layouts 6.0
 
 Item {
     id: root
@@ -65,6 +65,15 @@ Item {
         anchors.rightMargin: 5
         spacing: 10
         
+        // 테스트 이미지
+        Image {
+            source: "qrc:/images/test.png"
+            width: 16
+            height: 16
+            fillMode: Image.PreserveAspectFit
+            Layout.alignment: Qt.AlignVCenter
+        }
+        
         // 텍스트 라벨
         Label {
             text: root.text
@@ -73,9 +82,44 @@ Item {
         }
         
         // 입력 타입 라벨
-        Label {
-            text: root.inputType
+        RowLayout {
+            spacing: 5
             visible: root.inputType !== ""
+            Layout.alignment: Qt.AlignVCenter
+            
+            Image {
+                id: inputTypeIcon
+                source: {
+                    var imgSource = ""
+                    if (root.inputType === "mouse") {
+                        imgSource = "qrc:/images/mouse.png"
+                        console.log("마우스 이미지 경로:", imgSource)
+                    }
+                    else if (root.inputType === "keyboard") {
+                        imgSource = "qrc:/images/key.png"
+                        console.log("키보드 이미지 경로:", imgSource)
+                    }
+                    return imgSource
+                }
+                visible: source !== ""
+                width: 16
+                height: 16
+                fillMode: Image.PreserveAspectFit
+                Layout.alignment: Qt.AlignVCenter
+                
+                // 이미지 로딩 상태에 따른 처리
+                onStatusChanged: {
+                    console.log("이미지 상태:", status, "소스:", source)
+                    if (status === Image.Error) {
+                        console.log("이미지 로드 실패:", source)
+                    }
+                }
+            }
+            
+            Label {
+                text: root.inputType
+                Layout.alignment: Qt.AlignVCenter
+            }
         }
         
         // 서브 액션 라벨

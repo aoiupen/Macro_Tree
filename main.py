@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import QApplication
 from PyQt6.QtQml import QQmlApplicationEngine, QQmlContext
 from PyQt6.QtCore import QUrl, QObject, pyqtSlot, pyqtSignal, QVariant
 from PyQt6.QtGui import QFontDatabase
+from PyQt6.QtCore import QResource
 
 from viewmodels.tree_viewmodel import TreeViewModel
 from viewmodels.tree_data_repository_viewmodel import TreeDataRepositoryViewModel
@@ -136,6 +137,10 @@ def main():
     try:
         # PyQt 애플리케이션 생성
         app = QApplication(sys.argv)
+        
+        # 리소스 파일 로드
+        resource_file = os.path.join(os.path.dirname(__file__), "platform", "src", "resources.qrc")
+        QResource.registerResource(resource_file)
         
         # 폰트 설정
         QFontDatabase.addApplicationFont("resources/fonts/NanumGothic.ttf")

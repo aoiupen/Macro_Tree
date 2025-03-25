@@ -1,0 +1,31 @@
+.tree-view {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.tree-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.tree-item:hover {
+  background-color: #f0f0f0;
+}
+
+.tree-item.selected {
+  background-color: #e0e0e0;
+}
+
+.item-icon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.item-name {
+  font-size: 14px;
+  color: #333;
+} 

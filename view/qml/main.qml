@@ -1,7 +1,7 @@
 // qml/main.qml
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick 6.0
+import QtQuick.Controls 6.0
+import QtQuick.Layouts 6.0
 import QtQuick.Window 2.15
 import QtQuick.Controls.Basic 2.15  // 기본 스타일 명시적 임포트
 import "./components"

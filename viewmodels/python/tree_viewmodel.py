@@ -6,9 +6,10 @@ from typing import Dict, List, Optional, Any, Set, Tuple, Union
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QModelIndex, Qt, QAbstractListModel
 from core.tree_state import TreeState
 from viewmodels.item_viewmodel import ItemViewModel
+from viewmodels.interfaces.tree_interface import ITreeViewModel
 
 
-class TreeViewModel(QAbstractListModel):
+class TreeViewModel(QAbstractListModel, ITreeViewModel):
     """트리 뷰모델 클래스
     
     트리 구조의 데이터를 UI와 연결합니다.
@@ -248,45 +249,47 @@ class TreeViewModel(QAbstractListModel):
     
     @pyqtSlot(str, result='QVariant')
     def get_item(self, item_id: str) -> Optional[ItemViewModel]:
-        """ID로 아이템을 가져옵니다.
+        """아이템을 ID로 조회합니다.
         
         Args:
-            item_id: 가져올 아이템의 ID
+            item_id: 조회할 아이템 ID
             
         Returns:
-            아이템 또는 None
+            조회된 아이템 또는 None
         """
         return self._items.get(item_id)
     
     @pyqtSlot(result=int)
     def count(self) -> int:
-        """아이템 개수를 반환합니다."""
+        """아이템 수를 반환합니다."""
         return len(self._flat_items)
     
     @pyqtSlot(int, result='QVariant')
     def get(self, index: int) -> dict:
-        """인덱스로 아이템 데이터를 가져옵니다."""
-        if index < 0 or index >= len(self._flat_items):
-            return {}
+        """인덱스로 아이템을 조회합니다.
         
-        item_id = self._flat_items[index]
-        item = self._items.get(item_id)
-        
-        if not item:
-            return {}
-        
-        return {
-            'name': item.name,
-            'id': item.id,
-            'depth': self._get_item_depth(item_id),
-            'hasChildren': len(self._structure.get(item_id, [])) > 0,
-            'isExpanded': item_id in self._expanded,
-            'isSelected': item_id in self._selected,
-            'inputType': item.inp,
-            'subAction': item.sub,
-            'subContent': item.sub_con,
-            'index': index
-        }
+        Args:
+            index: 조회할 인덱스
+            
+        Returns:
+            아이템 데이터 딕셔너리
+        """
+        if 0 <= index < len(self._flat_items):
+            item_id = self._flat_items[index]
+            item = self._items.get(item_id)
+            if item:
+                return {
+                    'id': item.id,
+                    'name': item.name,
+                    'inp': item.inp,
+                    'sub': item.sub,
+                    'sub_con': item.sub_con,
+                    'depth': self._get_item_depth(item_id),
+                    'hasChildren': len(self._structure.get(item_id, [])) > 0,
+                    'isExpanded': item_id in self._expanded,
+                    'isSelected': item_id in self._selected
+                }
+        return {}
     
     @pyqtSlot('QVariant', 'QVariant', result=bool)
     def add_item(self, item, parent_id: Optional[str] = None) -> bool:
@@ -297,37 +300,34 @@ class TreeViewModel(QAbstractListModel):
             parent_id: 부모 아이템 ID (선택적)
             
         Returns:
-            성공 여부
+            추가 성공 여부
         """
         try:
-            # 새 아이템 ID 생성
-            item_id = str(id(item))
+            # 아이템 데이터 변환
+            if isinstance(item, dict):
+                item_data = item
+            else:
+                item_data = item.toDict()
             
-            # 모델 업데이트 시작
-            self.beginResetModel()
+            # 새 아이템 생성
+            new_item = ItemViewModel.from_node_data(item_data)
             
             # 아이템 저장
-            self._items[item_id] = item
+            self._items[new_item.id] = new_item
             
-            # 구조 업데이트
+            # 구조에 추가
             if parent_id not in self._structure:
                 self._structure[parent_id] = []
-            self._structure[parent_id].append(item_id)
+            self._structure[parent_id].append(new_item.id)
             
-            # 빈 자식 목록 초기화
-            if item_id not in self._structure:
-                self._structure[item_id] = []
-            
-            # 평면화된 아이템 목록 다시 구성
+            # 평면화된 목록 업데이트
             self._rebuild_flat_items()
-            
-            # 모델 업데이트 완료
-            self.endResetModel()
             
             # 상태 변경 시그널 발생
             self.stateChanged.emit(self.get_current_state())
             
             return True
+            
         except Exception as e:
             print(f"아이템 추가 오류: {e}")
             return False
@@ -340,113 +340,102 @@ class TreeViewModel(QAbstractListModel):
             item_id: 제거할 아이템 ID
             
         Returns:
-            성공 여부
+            제거 성공 여부
         """
         try:
-            # 아이템 존재 확인
+            # 아이템이 존재하는지 확인
             if item_id not in self._items:
                 return False
             
-            # 모델 업데이트 시작
-            self.beginResetModel()
+            # 자식 아이템 재귀적으로 제거
+            def remove_children(parent_id: str):
+                children = self._structure.get(parent_id, [])
+                for child_id in children:
+                    remove_children(child_id)
+                    if child_id in self._items:
+                        del self._items[child_id]
+                    if child_id in self._selected:
+                        self._selected.remove(child_id)
+                    if child_id in self._expanded:
+                        self._expanded.remove(child_id)
             
-            # 자식 목록 가져오기
-            children = self._structure.get(item_id, []).copy()
+            # 아이템과 자식 제거
+            remove_children(item_id)
             
-            # 재귀적으로 자식 제거
-            for child_id in children:
-                self.remove_item(child_id)
+            # 부모의 자식 목록에서 제거
+            for parent_id, children in self._structure.items():
+                if item_id in children:
+                    children.remove(item_id)
+                    break
             
-            # 구조에서 아이템 제거
-            for parent_id, items in self._structure.items():
-                if item_id in items:
-                    items.remove(item_id)
-            
-            # 구조에서 자식 목록 제거
+            # 구조에서 제거
             if item_id in self._structure:
                 del self._structure[item_id]
             
-            # 아이템 제거
-            del self._items[item_id]
-            
-            # 선택 및 확장 상태에서 제거
-            if item_id in self._selected:
-                self._selected.remove(item_id)
-            
-            if item_id in self._expanded:
-                self._expanded.remove(item_id)
-            
-            # 평면화된 아이템 목록 다시 구성
+            # 평면화된 목록 업데이트
             self._rebuild_flat_items()
-            
-            # 모델 업데이트 완료
-            self.endResetModel()
             
             # 상태 변경 시그널 발생
             self.stateChanged.emit(self.get_current_state())
             
             return True
+            
         except Exception as e:
             print(f"아이템 제거 오류: {e}")
             return False
     
     @pyqtSlot(str, str, result=bool)
     def move_item(self, item_id: str, new_parent_id: Optional[str]) -> bool:
-        """아이템을 다른 부모로 이동합니다.
+        """아이템을 이동합니다.
         
         Args:
             item_id: 이동할 아이템 ID
-            new_parent_id: 새 부모 아이템 ID
+            new_parent_id: 새로운 부모 아이템 ID
             
         Returns:
-            성공 여부
+            이동 성공 여부
         """
         try:
-            # 아이템 존재 확인
+            # 아이템이 존재하는지 확인
             if item_id not in self._items:
                 return False
             
-            # 자기 자신이 부모가 되지 않도록 방지
-            if item_id == new_parent_id:
-                return False
-            
-            # 모델 업데이트 시작
-            self.beginResetModel()
-            
-            # 기존 부모에서 제거
-            old_parent_id = None
+            # 현재 부모 찾기
+            current_parent = None
             for parent_id, children in self._structure.items():
                 if item_id in children:
-                    old_parent_id = parent_id
-                    children.remove(item_id)
+                    current_parent = parent_id
                     break
             
-            # 새 부모에 추가
+            if current_parent is None:
+                return False
+            
+            # 현재 부모의 자식 목록에서 제거
+            self._structure[current_parent].remove(item_id)
+            
+            # 새 부모의 자식 목록에 추가
             if new_parent_id not in self._structure:
                 self._structure[new_parent_id] = []
             self._structure[new_parent_id].append(item_id)
             
-            # 평면화된 아이템 목록 다시 구성
-            self._rebuild_flat_items()
+            # 아이템의 부모 ID 업데이트
+            self._items[item_id]._data.parent_id = new_parent_id
             
-            # 모델 업데이트 완료
-            self.endResetModel()
+            # 평면화된 목록 업데이트
+            self._rebuild_flat_items()
             
             # 상태 변경 시그널 발생
             self.stateChanged.emit(self.get_current_state())
             
             return True
+            
         except Exception as e:
             print(f"아이템 이동 오류: {e}")
             return False
     
     @pyqtSlot(result=list)
     def get_selected_items(self) -> List[str]:
-        """선택된 아이템 ID 목록을 반환합니다.
-        
-        Returns:
-            선택된 아이템 ID 목록
-        """
+        """선택된 아이템 ID 목록을 반환합니다."""
         return list(self._selected)
     
     @pyqtSlot(str)
@@ -457,27 +446,18 @@ class TreeViewModel(QAbstractListModel):
             item_id: 선택할 아이템 ID
         """
         if item_id in self._items:
-            # 기존 선택 초기화
-            old_selected = self._selected.copy()
-            self._selected.clear()
-            
-            # 새 선택 설정
             self._selected.add(item_id)
             
-            # 선택 변경 시그널 발생
-            self.selectionChanged.emit(list(self._selected))
-            
-            # 모델 데이터 변경 알림
-            for old_id in old_selected:
-                if old_id in self._flat_items:
-                    idx = self._flat_items.index(old_id)
-                    model_idx = self.index(idx, 0)
-                    self.dataChanged.emit(model_idx, model_idx, [self.IsSelectedRole])
-            
+            # 인덱스 찾기
             if item_id in self._flat_items:
                 idx = self._flat_items.index(item_id)
                 model_idx = self.index(idx, 0)
+                
+                # 데이터 변경 알림
                 self.dataChanged.emit(model_idx, model_idx, [self.IsSelectedRole])
+            
+            # 선택 변경 시그널 발생
+            self.selectionChanged.emit(list(self._selected))
     
     @pyqtSlot(str)
     def toggle_select_item(self, item_id: str) -> None:
@@ -492,10 +472,12 @@ class TreeViewModel(QAbstractListModel):
             else:
                 self._selected.add(item_id)
             
-            # 모델 데이터 변경 알림
+            # 인덱스 찾기
             if item_id in self._flat_items:
                 idx = self._flat_items.index(item_id)
                 model_idx = self.index(idx, 0)
+                
+                # 데이터 변경 알림
                 self.dataChanged.emit(model_idx, model_idx, [self.IsSelectedRole])
             
             # 선택 변경 시그널 발생
@@ -503,30 +485,31 @@ class TreeViewModel(QAbstractListModel):
     
     @pyqtSlot(str)
     def toggle_expand(self, item_id: str) -> None:
-        """아이템 확장 상태를 토글합니다.
+        """아이템 확장을 토글합니다.
         
         Args:
             item_id: 토글할 아이템 ID
         """
-        if item_id in self._items and len(self._structure.get(item_id, [])) > 0:
-            # 확장 상태 토글
+        if item_id in self._items:
             if item_id in self._expanded:
                 self._expanded.remove(item_id)
             else:
                 self._expanded.add(item_id)
             
-            # 평면화된 아이템 목록 다시 구성
-            self._rebuild_flat_items()
-            
-            # 모델 데이터 변경 알림
+            # 인덱스 찾기
             if item_id in self._flat_items:
                 idx = self._flat_items.index(item_id)
                 model_idx = self.index(idx, 0)
+                
+                # 데이터 변경 알림
                 self.dataChanged.emit(model_idx, model_idx, [self.IsExpandedRole])
+            
+            # 평면화된 목록 업데이트
+            self._rebuild_flat_items()
     
     @pyqtSlot(str, result=bool)
     def is_expanded(self, item_id: str) -> bool:
-        """아이템이 확장되었는지 여부를 반환합니다.
+        """아이템이 확장되었는지 확인합니다.
         
         Args:
             item_id: 확인할 아이템 ID
@@ -538,12 +521,18 @@ class TreeViewModel(QAbstractListModel):
     
     @pyqtSlot(result=bool)
     def addGroup(self) -> bool:
-        """그룹 아이템을 추가합니다."""
-        group = ItemViewModel.create_group("새 그룹")
-        return self.add_item(group, None)  # 루트에 추가
+        """새 그룹을 추가합니다.
+        
+        Returns:
+            추가 성공 여부
+        """
+        return self.add_item(ItemViewModel.create_group("새 그룹"))
     
     @pyqtSlot(result=bool)
     def addInstance(self) -> bool:
-        """인스턴스 아이템을 추가합니다."""
-        instance = ItemViewModel.create_instance("새 인스턴스")
-        return self.add_item(instance, None)  # 루트에 추가
+        """새 인스턴스를 추가합니다.
+        
+        Returns:
+            추가 성공 여부
+        """
+        return self.add_item(ItemViewModel.create_instance("새 인스턴스"))
