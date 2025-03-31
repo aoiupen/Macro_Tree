@@ -1,4 +1,4 @@
-from typing import Protocol, List, Optional, Dict, Any, Union, Tuple
+from typing import Protocol, List, Optional, Dict, Any, Union
 from enum import Enum
 
 
@@ -64,48 +64,48 @@ class MTKeyboardActionData:
         """시퀀스 초기화"""
         self.key_sequence.clear()
 
-class MTTreeItemId(Protocol):
-    """트리 아이템 ID 프로토콜"""
-    @property # 단일 값은 Optional으로 표현하는 것이 관용적
-    def parent_id(self) -> Optional[str]: ...
-    
-    @property
-    def self_id(self) -> str: ...
-    
-    @property # 컬렉션은 빈 컬렉션으로 표현하는 것이 관용적
-    def child_ids(self) -> List[str]: 
-        """Instruction 타입은 이 메서드가 빈 리스트 반환 또는 예외 발생"""
-        ...
 
-class MTTreeItem(Protocol):
-    """트리 아이템 핵심 프로토콜"""
-    @property
-    def id(self) -> MTTreeItemId: ...
+class IMTTreeItem(Protocol):
+    """매크로 트리 아이템 인터페이스
     
+    트리에서 사용되는 개별 아이템의 인터페이스입니다.
+    id만 직접 접근 속성으로 제공하고, 나머지는 data 딕셔너리를 통해 액세스합니다.
+    """
     @property
-    def node(self) -> MTNode: ...
-    
-    @property
-    def input_device(self) -> MTInputDevice: ...
-    
-    @property
-    def action(self) -> Union[MTMouseAction, MTKeyboardAction]: ...
-    
-    @property
-    def parameters(self) -> Dict[str, Any]: 
-        """
-        추가 매개변수 및 메타데이터.
-        액션 데이터도 여기에 저장됨.
-        """
+    def id(self) -> str:
+        """아이템 고유 식별자"""
         ...
     
     @property
-    def action_data(self) -> Union[MTMouseActionData, MTKeyboardActionData]: ...
-    
-    def execute(self) -> None:
-        """아이템 실행"""
+    def data(self) -> Dict[str, Any]:
+        """아이템의 모든 데이터"""
         ...
     
-    def can_have_children(self) -> bool:
-        """자식 아이템을 가질 수 있는지 여부"""
+    def set_property(self, key: str, value: Any) -> None:
+        """아이템 속성을 설정합니다.
+        
+        Args:
+            key: 속성 키
+            value: 설정할 값
+        """
+        ...
+    
+    def get_property(self, key: str, default: Any = None) -> Any:
+        """아이템 속성을 가져옵니다.
+        
+        Args:
+            key: 속성 키
+            default: 속성이 없을 경우 반환할 기본값
+            
+        Returns:
+            속성 값 또는 기본값
+        """
+        ...
+    
+    def clone(self) -> 'IMTTreeItem':
+        """아이템의 복제본을 생성합니다.
+        
+        Returns:
+            복제된 아이템
+        """
         ...
