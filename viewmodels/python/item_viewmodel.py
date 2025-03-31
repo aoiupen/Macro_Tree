@@ -5,6 +5,7 @@
 from typing import List, Union, TypeVar, Generic, Optional, Any, Dict
 from dataclasses import dataclass
 from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
+from viewmodels.interfaces.item_interface import IItemViewModel
 
 # 순환 리스트 클래스 정의
 T = TypeVar('T')
@@ -60,7 +61,7 @@ class ItemData:
             self.children_ids = []
 
 
-class ItemViewModel(QObject):
+class ItemViewModel(QObject, IItemViewModel):
     """아이템 뷰모델 클래스
     
     트리 아이템의 데이터와 상태를 관리합니다.
@@ -257,16 +258,16 @@ class ItemViewModel(QObject):
         if 'expanded' in data_dict and data_dict['expanded'] != self.expanded:
             self.expanded = data_dict['expanded']
             
-        if 'children_ids' in data_dict:
+        if 'parent_id' in data_dict and data_dict['parent_id'] != self.parentId:
+            self._data.parent_id = data_dict['parent_id']
+            
+        if 'children_ids' in data_dict and data_dict['children_ids'] != self.childrenIds:
             self._data.children_ids = data_dict['children_ids']
             self.childrenChanged.emit()
-            
-        if 'parent_id' in data_dict:
-            self._data.parent_id = data_dict['parent_id']
     
     @pyqtSlot(result=dict)
     def toDict(self) -> Dict[str, Any]:
-        """객체를 딕셔너리로 변환합니다."""
+        """현재 데이터를 딕셔너리로 변환합니다."""
         return {
             'id': self.id,
             'name': self.name,
@@ -279,9 +280,9 @@ class ItemViewModel(QObject):
         }
     
     def is_group(self) -> bool:
-        """그룹 아이템인지 확인합니다."""
+        """그룹 아이템 여부를 반환합니다."""
         return self.name.startswith("G:")
     
     def is_inst(self) -> bool:
-        """인스턴스 아이템인지 확인합니다."""
+        """인스턴스 아이템 여부를 반환합니다."""
         return self.name.startswith("I:")

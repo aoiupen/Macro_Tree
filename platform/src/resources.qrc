@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RCC>
+    <qresource prefix="/">
+        <file>platform/src/mouse.png</file>
+        <file>platform/src/key.png</file>
+        <file>platform/src/test.png</file>
+    </qresource>
+</RCC> 
