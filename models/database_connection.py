@@ -81,8 +81,7 @@ class DatabaseConnection:
             
             # 환경변수에 비밀번호가 없으면 입력받음
             if not password:
-                print(f"PostgreSQL 데이터베이스 비밀번호를 입력하세요 (시도 {self._password_attempts+1}/{self._max_attempts}):")
-                password = getpass()
+                password = getpass(f"PostgreSQL 데이터베이스 비밀번호를 입력하세요 (시도 {self._password_attempts+1}/{self._max_attempts}): ")
             
             # 연결 파라미터에 비밀번호 추가
             conn_params["password"] = password
