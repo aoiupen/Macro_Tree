@@ -104,7 +104,7 @@ class DatabaseConnection:
             # 비밀번호 인증 실패 시에 시도 횟수 증가
             if "password authentication failed" in str(e):
                 self._password_attempts += 1
-                print(f"비밀번호가 일치하지 않습니다. ({self._password_attempts}/{self._max_attempts})")
+                print("비밀번호가 일치하지 않습니다. 다시 시도해 주세요.")
                 
                 # 최대 시도 횟수 미만이면 재귀적으로 다시 시도
                 if self._password_attempts < self._max_attempts:
