@@ -1,4 +1,4 @@
-from typing import Protocol, List, Optional, Dict, Any, Union
+from typing import Protocol, List, Optional, Dict, Any, Tuple, Union, TypedDict, TypeVar, Generic
 from enum import Enum
 
 
@@ -7,13 +7,14 @@ class MTNode(Enum):
     GROUP = "group"
     INSTRUCTION = "instruction"
 
+
 class MTInputDevice(Enum):
     """매크로 트리에서 사용하는 입력 장치 유형"""
     MOUSE = "mouse"
     KEYBOARD = "keyboard"
     JOYSTICK = "joystick"
 
-# 마우스 액션 Enum
+
 class MTMouseAction(Enum):
     """마우스 액션 유형"""
     CLICK = "click"
@@ -22,48 +23,71 @@ class MTMouseAction(Enum):
     DRAG = "drag"
     MOVE = "move"
 
-# 키보드 액션 Enum
+
 class MTKeyboardAction(Enum):
     """키보드 액션 유형"""
     TYPE = "type"          # 일반 타이핑
     SHORTCUT = "shortcut"  # 단축키 조합
 
-# 키 상태 Enum
+
 class MTKeyState(Enum):
     """키 상태"""
     PRESSED = "pressed"
     RELEASED = "released"
 
-# 마우스 좌표 클래스
-class MTPoint:
-    """2D 좌표 표현"""
-    def __init__(self, x: int, y: int):
-        self.x = x
-        self.y = y
 
-# 마우스 액션 데이터
-class MTMouseActionData:
-    """마우스 액션 관련 데이터"""
-    def __init__(self, position: MTPoint, 
-                 end_position: Optional[MTPoint] = None,
-                 button: str = "left"):
-        self.position = position
-        self.end_position = end_position  # drag용
-        self.button = button
-
-class MTKeyboardActionData:
-    """키보드 액션 관련 데이터"""
-    def __init__(self):
-        self.key_sequence = []  # [(key, state), ...]
+class IMTPoint(Protocol):
+    """2D 좌표 인터페이스"""
+    @property
+    def x(self) -> int: ...
     
-    def add_key(self, key: str, state: MTKeyState = MTKeyState.PRESSED):
-        """키 상태 추가"""
-        self.key_sequence.append((key, state))
+    @property
+    def y(self) -> int: ...
     
-    def clear(self):
-        """시퀀스 초기화"""
-        self.key_sequence.clear()
+    def clone(self) -> 'IMTPoint': ...
 
+
+class IMTInputActionData(Protocol):
+    """입력 액션 데이터 기본 인터페이스"""
+    def get_device_type(self) -> MTInputDevice: ...
+    
+    def clone(self) -> 'IMTInputActionData': ...
+
+
+class IMTMouseActionData(IMTInputActionData, Protocol):
+    """마우스 액션 데이터 인터페이스"""
+    @property
+    def position(self) -> IMTPoint: ...
+    
+    @property
+    def end_position(self) -> Optional[IMTPoint]: ...
+    
+    @property
+    def button(self) -> str: ...
+
+
+class IMTKeyboardActionData(IMTInputActionData, Protocol):
+    """키보드 액션 데이터 인터페이스"""
+    @property
+    def action_type(self) -> MTKeyboardAction: ...
+    
+    def get_key_sequence(self) -> List[Tuple[str, MTKeyState]]: ...
+    
+    def add_key(self, key: str, state: MTKeyState) -> None: ...
+    
+    def clear(self) -> None: ...
+
+
+class TreeItemData(TypedDict, total=False):
+    """트리 아이템 데이터 구조 (total=False: 모든 필드 선택적)"""
+    node_type: MTNode  # 노드 유형 (그룹/지시 등)
+    name: str  # 아이템 이름
+    parent_id: Optional[str]  # 부모 아이템 ID
+    children_ids: List[str]  # 자식 아이템 ID 목록
+    action_type: Optional[Union[MTMouseAction, MTKeyboardAction]]  # 입력 장치 유형
+    action_data: Optional[Union[IMTMouseActionData, IMTKeyboardActionData]]  # 입력 액션 데이터
+
+T = TypeVar('T')  # 제네릭 타입 변수 정의
 
 class IMTTreeItem(Protocol):
     """매크로 트리 아이템 인터페이스
@@ -77,35 +101,18 @@ class IMTTreeItem(Protocol):
         ...
     
     @property
-    def data(self) -> Dict[str, Any]:
+    def data(self) -> TreeItemData:
         """아이템의 모든 데이터"""
         ...
     
-    def set_property(self, key: str, value: Any) -> None:
-        """아이템 속성을 설정합니다.
-        
-        Args:
-            key: 속성 키
-            value: 설정할 값
-        """
+    def set_property(self, key: str, value: T) -> None:
+        """아이템 속성을 설정합니다."""
         ...
     
-    def get_property(self, key: str, default: Any = None) -> Any:
-        """아이템 속성을 가져옵니다.
-        
-        Args:
-            key: 속성 키
-            default: 속성이 없을 경우 반환할 기본값
-            
-        Returns:
-            속성 값 또는 기본값
-        """
+    def get_property(self, key: str, default: Optional[T] = None) -> Optional[T]:
+        """아이템 속성을 가져옵니다."""
         ...
     
     def clone(self) -> 'IMTTreeItem':
-        """아이템의 복제본을 생성합니다.
-        
-        Returns:
-            복제된 아이템
-        """
+        """아이템의 복제본을 생성합니다."""
         ...
