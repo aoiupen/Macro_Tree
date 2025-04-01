@@ -101,7 +101,7 @@ class DatabaseConnection:
             return self._connection
             
         except psycopg2.OperationalError as e:
-            # 비밀번호 인증 실패 시 시도 횟수 증가
+            # 비밀번호 인증 실패 시에 시도 횟수 증가
             if "password authentication failed" in str(e):
                 self._password_attempts += 1
                 print(f"비밀번호가 일치하지 않습니다. ({self._password_attempts}/{self._max_attempts})")
