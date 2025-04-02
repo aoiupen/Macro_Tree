@@ -1,6 +1,6 @@
 from typing import Protocol, Dict, Any, Callable, List, Optional
-from ..tree_state_manager_interface import ITreeStateManager
-from ..tree_item_interface import ITreeItem
+from ..model.tree_state_manager_interface import ITreeStateManager
+from ..model.tree_item_interface import ITreeItem
 
 class ITreeUIStateManager(Protocol):
     """UI와 트리 상태 연계 관리자"""

@@ -1,5 +1,5 @@
 from typing import Protocol, Dict, Any, Optional, List, Callable
-from ..tree_item_interface import ITreeItem
+from ..model.tree_item_interface import ITreeItem
 
 class IUIElement(Protocol):
     """UI 요소의 기본 인터페이스"""

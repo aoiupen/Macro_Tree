@@ -1,6 +1,6 @@
 from typing import Protocol, Dict, Any, List, Type, Optional
 from .ui_element_interface import IUIElement
-from ..tree_item_interface import ITreeItem
+from ..model.tree_item_interface import ITreeItem
 
 class IPlatformAdapter(Protocol):
     """플랫폼 특화 UI 생성 어댑터"""
