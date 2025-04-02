@@ -9,3 +9,7 @@ updates:
     # 보안 취약점 대응 우선순위 높임
     security:
       updates: "daily"
+      
+on:
+  pull_request:
+    branches: [ main ]

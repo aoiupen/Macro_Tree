@@ -12,3 +12,7 @@ documentation:
 
 refactor:
   - 'refactor/*'
+
+on:
+  pull_request:
+    branches: [ main ]
