@@ -1,5 +1,5 @@
 from typing import Protocol, Iterator, List, Optional, TypeVar, Generic, Callable, Dict, Any
-from temp.tree_item_interface import IMTTreeItem, TreeItemData
+from temp.model.tree_item import IMTTreeItem, TreeItemData
 from enum import Enum
 
 class MTTreeEvent(Enum):
@@ -14,7 +14,7 @@ class MTTreeEvent(Enum):
 TreeEventCallback = Callable[[MTTreeEvent, Dict[str, Any]], None]
 
 # 트리 메타데이터 인터페이스
-class ITreeMetadata(Protocol):
+class IMTTreeMetadata(Protocol):
     """트리 메타데이터 인터페이스"""
     
     @property
@@ -33,7 +33,7 @@ class ITreeMetadata(Protocol):
         ...
 
 # 트리 읽기 작업 인터페이스
-class ITreeReadable(Protocol):
+class IMTTreeReadable(Protocol):
     """트리 읽기 작업 인터페이스"""
     
     @property
@@ -50,7 +50,7 @@ class ITreeReadable(Protocol):
         ...
 
 # 트리 수정 작업 인터페이스
-class ITreeModifiable(Protocol):
+class IMTTreeModifiable(Protocol):
     """트리 수정 작업 인터페이스"""
     
     def add_item(self, item: IMTTreeItem, parent_id: Optional[str] = None) -> bool:
@@ -66,7 +66,7 @@ class ITreeModifiable(Protocol):
         ...
 
 # 트리 순회 인터페이스
-class ITreeTraversable(Protocol):
+class IMTTreeTraversable(Protocol):
     """트리 순회 인터페이스"""
     
     def traverse_dfs(self) -> Iterator[IMTTreeItem]:
@@ -78,7 +78,7 @@ class ITreeTraversable(Protocol):
         ...
 
 # 트리 직렬화 인터페이스
-class ITreeSerializable(Protocol):
+class IMTTreeSerializable(Protocol):
     """트리 직렬화 인터페이스"""
     
     def to_dict(self) -> Dict[str, Any]:
@@ -95,7 +95,7 @@ class ITreeSerializable(Protocol):
         ...
 
 # 트리 이벤트 관리 인터페이스
-class ITreeObservable(Protocol):
+class IMTTreeObservable(Protocol):
     """트리 이벤트 관리 인터페이스"""
     
     def subscribe(self, event_type: MTTreeEvent, callback: TreeEventCallback) -> None:
@@ -108,7 +108,7 @@ class ITreeObservable(Protocol):
 
 # 필터링 기능이 있는 고급 순회 인터페이스
 T = TypeVar('T', bound=IMTTreeItem)
-class ITreeAdvancedTraversable(Protocol, Generic[T]):
+class IMTTreeAdvancedTraversable(Protocol, Generic[T]):
     """확장된 매크로 트리 순회 인터페이스 - 필터링 기능 포함"""
     
     def traverse_filtered(self, predicate: Callable[[T], bool]) -> Iterator[T]:
@@ -116,6 +116,6 @@ class ITreeAdvancedTraversable(Protocol, Generic[T]):
         ...
 
 # 통합 트리 인터페이스
-class IMTTree(ITreeMetadata, ITreeReadable, ITreeModifiable, ITreeTraversable, ITreeSerializable, ITreeObservable, Protocol):
+class IMTTree(IMTTreeMetadata, IMTTreeReadable, IMTTreeModifiable, IMTTreeTraversable, IMTTreeSerializable, IMTTreeObservable, Protocol):
     """매크로 트리 통합 인터페이스"""
     pass

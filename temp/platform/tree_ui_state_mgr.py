@@ -1,11 +1,11 @@
 from typing import Protocol, Dict, Any, Callable, List, Optional
-from ..model.tree_state_manager_interface import ITreeStateManager
-from ..model.tree_item_interface import ITreeItem
+from temp.model.tree_state_mgr import IMTTreeStateManager
+from temp.model.tree_item import IMTTreeItem
 
-class ITreeUIStateManager(Protocol):
+class IMTTreeUIStateManager(Protocol):
     """UI와 트리 상태 연계 관리자"""
     
-    def connect_tree_state(self, state_manager: ITreeStateManager) -> None:
+    def connect_tree_state(self, state_manager: IMTTreeStateManager) -> None:
         """트리 상태 관리자 연결"""
         pass
     
@@ -17,7 +17,7 @@ class ITreeUIStateManager(Protocol):
         """UI 상태 업데이트"""
         pass
     
-    def subscribe_to_item_change(self, callback: Callable[[ITreeItem], None]) -> None:
+    def subscribe_to_item_change(self, callback: Callable[[IMTTreeItem], None]) -> None:
         """아이템 변경 구독"""
         pass
     

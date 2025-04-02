@@ -1,7 +1,7 @@
 from typing import Protocol, Dict, Any, Optional, List, Callable
-from ..model.tree_item_interface import ITreeItem
+from temp.model.tree_item import IMTTreeItem
 
-class IUIElement(Protocol):
+class IMTUIElement(Protocol):
     """UI 요소의 기본 인터페이스"""
     
     def render(self) -> None:
@@ -12,7 +12,7 @@ class IUIElement(Protocol):
         """UI 상태 업데이트"""
         pass
     
-    def bind_item(self, item: Optional[ITreeItem]) -> None:
+    def bind_item(self, item: Optional[IMTTreeItem]) -> None:
         """트리 아이템 바인딩"""
         pass
     

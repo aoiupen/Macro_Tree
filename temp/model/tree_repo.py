@@ -1,5 +1,5 @@
 from typing import Protocol, Optional, Dict, Any, List
-from temp.tree_interface import IMTTree
+from temp.core.tree import IMTTree
 
 
 class IMTTreeRepository(Protocol):
