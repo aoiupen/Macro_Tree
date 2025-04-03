@@ -66,15 +66,23 @@ class IMTTreeModifiable(Protocol):
         ...
 
 # 트리 순회 인터페이스
+class TraversalMode(Enum):
+    BFS = "breadth_first"
+    DFS = "depth_first"
+
 class IMTTreeTraversable(Protocol):
     """트리 순회 인터페이스"""
     
-    def traverse_dfs(self) -> Iterator[IMTTreeItem]:
-        """깊이 우선 순회(DFS)로 트리를 순회합니다."""
-        ...
-    
-    def traverse_bfs(self, parent_id: Optional[str] = None) -> Iterator[IMTTreeItem]:
-        """너비 우선 순회(BFS)로 트리를 순회합니다."""
+    def traverse(self, visitor: Callable[[IMTTreeItem], None], 
+                 mode: TraversalMode = TraversalMode.BFS,
+                 parent_id: Optional[str] = None) -> None:
+        """트리를 순회하면서 각 아이템에 방문자 함수를 적용합니다.
+        
+        Args:
+            visitor: 각 아이템에 적용할 함수
+            mode: 순회 방식 (BFS 또는 DFS)
+            parent_id: 순회를 시작할 부모 아이템 ID (None이면 루트부터)
+        """
         ...
 
 # 트리 직렬화 인터페이스
@@ -104,15 +112,6 @@ class IMTTreeObservable(Protocol):
     
     def unsubscribe(self, event_type: MTTreeEvent, callback: TreeEventCallback) -> None:
         """이벤트 구독을 해제합니다."""
-        ...
-
-# 필터링 기능이 있는 고급 순회 인터페이스
-T = TypeVar('T', bound=IMTTreeItem)
-class IMTTreeAdvancedTraversable(Protocol, Generic[T]):
-    """확장된 매크로 트리 순회 인터페이스 - 필터링 기능 포함"""
-    
-    def traverse_filtered(self, predicate: Callable[[T], bool]) -> Iterator[T]:
-        """트리를 순회하며 조건에 맞는 아이템 선택"""
         ...
 
 # 통합 트리 인터페이스
