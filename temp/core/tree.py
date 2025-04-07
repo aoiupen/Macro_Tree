@@ -36,8 +36,7 @@ class IMTTreeMetadata(Protocol):
 class IMTTreeReadable(Protocol):
     """트리 읽기 작업 인터페이스"""
     
-    @property
-    def items(self) -> Dict[str, IMTTreeItem]:
+    def get_all_items(self) -> Dict[str, IMTTreeItem]:
         """모든 트리 아이템"""
         ...
     
@@ -64,17 +63,22 @@ class IMTTreeModifiable(Protocol):
     def move_item(self, item_id: str, new_parent_id: Optional[str]) -> bool:
         """아이템을 새 부모로 이동합니다. Raises: ValueError-유효하지 않은 아이템/부모 ID"""
         ...
+    
+    def modify_item(self, item_id: str, changes: Dict[str, Any]) -> bool:
+        """아이템의 속성을 변경합니다."""
+        ...
+    
+    def reset_tree(self) -> None:
+        """트리를 초기 상태로 리셋합니다."""
+        ...
 
 # 트리 순회 인터페이스
 class IMTTreeTraversable(Protocol):
     """트리 순회 인터페이스"""
     
-    def traverse_dfs(self) -> Iterator[IMTTreeItem]:
-        """깊이 우선 순회(DFS)로 트리를 순회합니다."""
-        ...
-    
-    def traverse_bfs(self, parent_id: Optional[str] = None) -> Iterator[IMTTreeItem]:
-        """너비 우선 순회(BFS)로 트리를 순회합니다."""
+    def traverse(self, visitor: Callable[[IMTTreeItem], None], 
+                node_id: Optional[str] = None) -> None:
+        """트리를 BFS로 순회하면서 각 아이템에 방문자 함수를 적용합니다."""
         ...
 
 # 트리 직렬화 인터페이스
