@@ -7,6 +7,7 @@
 # Tree : 매크로 실행시 값 전달 확인
 # Tree : IMTTreeAdvancedTraversal는 따로 interface 파일을 만들기
 # Tree : 트리 아이템, 트리, 상태 히스토리 객체에 대한 불변성 보장(방어적 복사)
+# Tree : 트리 순회 방식 BFS, DFS
 # Tree : 확장된 트리 순회 인터페이스# 필터링 기능이 있는 고급 순회 인터페이스
 T = TypeVar('T', bound=IMTTreeItem)
 class IMTTreeAdvancedTraversable(Protocol, Generic[T]):
@@ -20,6 +21,8 @@ class IMTTreeAdvancedTraversable(Protocol, Generic[T]):
 # Tree : test 준비
 # Tree : model, core 의존성 (MTTreeItem)
 # Tree : UIFramework와의 통합 구체화
+# Tree : Repository, StateManager의 interface는 model에, 구현체는 infra 폴더에
+# Tree : 비동기 처리 (load_tree_async : 콜백 기반 또는 async/await 사용)
 
 # Tree : inst 추가 삭제
 # Tree : Lock(실행시 제외)

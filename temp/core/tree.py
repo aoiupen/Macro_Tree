@@ -1,4 +1,4 @@
-from typing import Protocol, Iterator, List, Optional, TypeVar, Generic, Callable, Dict, Any
+from typing import Protocol, Iterator, List, Optional, TypeVar, Generic, Callable, Dict, Any, runtime_checkable
 from temp.model.tree_item import IMTTreeItem, TreeItemData
 from enum import Enum
 
@@ -33,19 +33,20 @@ class IMTTreeMetadata(Protocol):
         ...
 
 # 트리 읽기 작업 인터페이스
-class IMTTreeReadable(Protocol):
+T = TypeVar('T')
+@runtime_checkable
+class IMTTreeReadable(Protocol[T]):
     """트리 읽기 작업 인터페이스"""
     
-    @property
-    def items(self) -> Dict[str, IMTTreeItem]:
+    def get_all_items(self) -> Dict[str, T]:
         """모든 트리 아이템"""
         ...
     
-    def get_item(self, item_id: str) -> Optional[IMTTreeItem]:
+    def get_item(self, item_id: str) -> Optional[T]:
         """지정된 ID의 아이템을 가져옵니다."""
         ...
     
-    def get_children(self, parent_id: Optional[str]) -> List[IMTTreeItem]:
+    def get_children(self, parent_id: Optional[str]) -> List[T]:
         """지정된 부모의 모든 자식 아이템을 가져옵니다."""
         ...
 
@@ -64,25 +65,22 @@ class IMTTreeModifiable(Protocol):
     def move_item(self, item_id: str, new_parent_id: Optional[str]) -> bool:
         """아이템을 새 부모로 이동합니다. Raises: ValueError-유효하지 않은 아이템/부모 ID"""
         ...
+    
+    def modify_item(self, item_id: str, changes: Dict[str, Any]) -> bool:
+        """아이템의 속성을 변경합니다."""
+        ...
+    
+    def reset_tree(self) -> None:
+        """트리를 초기 상태로 리셋합니다."""
+        ...
 
 # 트리 순회 인터페이스
-class TraversalMode(Enum):
-    BFS = "breadth_first"
-    DFS = "depth_first"
-
 class IMTTreeTraversable(Protocol):
     """트리 순회 인터페이스"""
     
     def traverse(self, visitor: Callable[[IMTTreeItem], None], 
-                 mode: TraversalMode = TraversalMode.BFS,
-                 parent_id: Optional[str] = None) -> None:
-        """트리를 순회하면서 각 아이템에 방문자 함수를 적용합니다.
-        
-        Args:
-            visitor: 각 아이템에 적용할 함수
-            mode: 순회 방식 (BFS 또는 DFS)
-            parent_id: 순회를 시작할 부모 아이템 ID (None이면 루트부터)
-        """
+                node_id: Optional[str] = None) -> None:
+        """트리를 BFS로 순회하면서 각 아이템에 방문자 함수를 적용합니다."""
         ...
 
 # 트리 직렬화 인터페이스
@@ -112,6 +110,15 @@ class IMTTreeObservable(Protocol):
     
     def unsubscribe(self, event_type: MTTreeEvent, callback: TreeEventCallback) -> None:
         """이벤트 구독을 해제합니다."""
+        ...
+
+# 필터링 기능이 있는 고급 순회 인터페이스
+T_co = TypeVar('T_co', covariant=True)
+class IMTTreeAdvancedTraversable(Protocol, Generic[T_co]):
+    """확장된 매크로 트리 순회 인터페이스 - 필터링 기능 포함"""
+    
+    def traverse_filtered(self, predicate: Callable[[T_co], bool]) -> Iterator[T_co]:
+        """트리를 순회하며 조건에 맞는 아이템 선택"""
         ...
 
 # 통합 트리 인터페이스

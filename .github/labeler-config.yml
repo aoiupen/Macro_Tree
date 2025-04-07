@@ -1,0 +1,14 @@
+feature:
+  - 'feature/*'
+  - '**/feature/**'
+
+bugfix:
+  - 'bugfix/*'
+  - 'fix/*'
+
+documentation:
+  - '**/*.md'
+  - 'docs/**/*'
+
+refactor:
+  - 'refactor/*'
