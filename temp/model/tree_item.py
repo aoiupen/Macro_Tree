@@ -1,7 +1,6 @@
 from typing import Protocol, List, Optional, Dict, Any, Tuple, Union, TypedDict, TypeVar, Generic
 from enum import Enum
 from temp.core.base_item import IMTBaseItem
-from temp.model.tree_item_keys import TreeItemKeys
 
 
 class MTNode(Enum):
@@ -17,24 +16,43 @@ class MTInputDevice(Enum):
     JOYSTICK = "joystick"
 
 
-class MTActionType(Protocol):
-    def get_device_type(self) -> MTInputDevice: ...
+class IMTActionType(Protocol):
+    def get_action_id(self) -> str:
+        ...
+    
+    def get_action_params(self) -> Dict[str, Any]:
+        ...
+    
+    def get_device_type(self) -> MTInputDevice:
+        ...
 
 
-class MTMouseAction(Enum, MTActionType):
+class MTMouseAction(Enum):
     CLICK = "click"
     DOUBLE_CLICK = "doubleclick"
     RIGHT_CLICK = "rightclick"
     DRAG = "drag"
     MOVE = "move"
     
+    def get_action_id(self) -> str:
+        return self.value
+    
+    def get_action_params(self) -> Dict[str, Any]:
+        return {}
+    
     def get_device_type(self) -> MTInputDevice:
         return MTInputDevice.MOUSE
 
 
-class MTKeyboardAction(Enum, MTActionType):
+class MTKeyboardAction(Enum):
     TYPE = "type"
     SHORTCUT = "shortcut"
+    
+    def get_action_id(self) -> str:
+        return self.value
+    
+    def get_action_params(self) -> Dict[str, Any]:
+        return {}
     
     def get_device_type(self) -> MTInputDevice:
         return MTInputDevice.KEYBOARD
@@ -94,10 +112,25 @@ class TreeItemData(TypedDict, total=False): # dict 의 value 값 검증을 위�
     name: str  # 아이템 이름
     parent_id: Optional[str]  # 부모 아이템 ID
     children_ids: List[str]  # 자식 아이템 ID 목록
-    action_type: Optional[MTActionType]  # Union 대신 공통 인터페이스
+    action_type: Optional[IMTActionType]  # MTActionType에서 IMTActionType으로 수정
     action_data: Optional[IMTInputActionData]  # Union 대신 공통 인터페이스
 
 T = TypeVar('T')  # 제네릭 타입 변수 정의
+
+class TreeItemKeys:
+    """트리 아이템 속성 키 상수 정의"""
+    ID = "id"
+    NAME = "name"
+    PARENT_ID = "parent_id"
+    CHILDREN = "children"
+    DATA = "data"
+    TYPE = "type"
+    ACTION = "action"
+    ACTION_DATA = "action_data"
+    EXPANDED = "expanded"
+    SELECTED = "selected"
+    VISIBLE = "visible"
+    ICON = "icon"
 
 class IMTTreeItem(IMTBaseItem, Protocol):
     """매크로 트리 아이템 인터페이스

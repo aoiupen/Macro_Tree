@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # 보안 업데이트는 일일 단위로
+    security-updates-only: false
+    # 보안 취약점 대응 우선순위 높임
+    security:
+      updates: "daily"
+      
+on:
+  pull_request:
+    branches: [ main ]

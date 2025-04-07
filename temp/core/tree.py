@@ -1,4 +1,4 @@
-from typing import Protocol, Iterator, List, Optional, TypeVar, Generic, Callable, Dict, Any
+from typing import Protocol, Iterator, List, Optional, TypeVar, Generic, Callable, Dict, Any, runtime_checkable
 from temp.model.tree_item import IMTTreeItem, TreeItemData
 from enum import Enum
 
@@ -33,18 +33,20 @@ class IMTTreeMetadata(Protocol):
         ...
 
 # 트리 읽기 작업 인터페이스
-class IMTTreeReadable(Protocol):
+T = TypeVar('T')
+@runtime_checkable
+class IMTTreeReadable(Protocol[T]):
     """트리 읽기 작업 인터페이스"""
     
-    def get_all_items(self) -> Dict[str, IMTTreeItem]:
+    def get_all_items(self) -> Dict[str, T]:
         """모든 트리 아이템"""
         ...
     
-    def get_item(self, item_id: str) -> Optional[IMTTreeItem]:
+    def get_item(self, item_id: str) -> Optional[T]:
         """지정된 ID의 아이템을 가져옵니다."""
         ...
     
-    def get_children(self, parent_id: Optional[str]) -> List[IMTTreeItem]:
+    def get_children(self, parent_id: Optional[str]) -> List[T]:
         """지정된 부모의 모든 자식 아이템을 가져옵니다."""
         ...
 
@@ -111,11 +113,11 @@ class IMTTreeObservable(Protocol):
         ...
 
 # 필터링 기능이 있는 고급 순회 인터페이스
-T = TypeVar('T', bound=IMTTreeItem)
-class IMTTreeAdvancedTraversable(Protocol, Generic[T]):
+T_co = TypeVar('T_co', covariant=True)
+class IMTTreeAdvancedTraversable(Protocol, Generic[T_co]):
     """확장된 매크로 트리 순회 인터페이스 - 필터링 기능 포함"""
     
-    def traverse_filtered(self, predicate: Callable[[T], bool]) -> Iterator[T]:
+    def traverse_filtered(self, predicate: Callable[[T_co], bool]) -> Iterator[T_co]:
         """트리를 순회하며 조건에 맞는 아이템 선택"""
         ...
 

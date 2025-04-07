@@ -1,18 +1,13 @@
-feature:
-  - 'feature/*'
-  - '**/feature/**'
-
-bugfix:
-  - 'bugfix/*'
-  - 'fix/*'
-
-documentation:
-  - '**/*.md'
-  - 'docs/**/*'
-
-refactor:
-  - 'refactor/*'
-
+name: "Pull Request Labeler"
 on:
   pull_request:
     branches: [ main ]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/labeler@v4
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        configuration-path: .github/labeler-config.yml
