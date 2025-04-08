@@ -52,3 +52,11 @@ class IMTTreeUIStateManager(Protocol):
     def select_item(self, item_id: str, multi_select: bool = False) -> None:
         """아이템 선택"""
         pass
+
+    def unsubscribe_from_item_change(self, callback: Callable[[IMTTreeItem], None]) -> None:
+        """아이템 변경 구독 해제"""
+        pass
+
+    def unsubscribe_from_selection_change(self, callback: Callable[[List[str]], None]) -> None:
+        """선택 변경 구독 해제"""
+        pass
