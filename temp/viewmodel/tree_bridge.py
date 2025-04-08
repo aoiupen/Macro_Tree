@@ -1,5 +1,7 @@
-from typing import Protocol, Dict, Any, List
+from typing import Any, Dict, List, Protocol
+
 from temp.viewmodel.tree_viewmodel import IMTTreeViewModel
+
 
 class IMTTreeBridge(Protocol):
     """QML-PyQt 브릿지 인터페이스"""

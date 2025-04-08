@@ -1,5 +1,7 @@
-from typing import Protocol, Dict, Any, Optional, List, Callable
+from typing import Any, Callable, Dict, List, Optional, Protocol
+
 from temp.model.tree_item import IMTTreeItem
+
 
 class IMTUIElement(Protocol):
     """UI 요소의 기본 인터페이스"""

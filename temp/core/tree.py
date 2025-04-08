@@ -1,6 +1,19 @@
-from typing import Protocol, Iterator, List, Optional, TypeVar, Generic, Callable, Dict, Any, runtime_checkable
-from temp.model.tree_item import IMTTreeItem, TreeItemData
 from enum import Enum
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    Iterator,
+    List,
+    Optional,
+    Protocol,
+    TypeVar,
+    runtime_checkable,
+)
+
+from temp.model.tree_item import IMTTreeItem, TreeItemData
+
 
 class MTTreeEvent(Enum):
     """트리 이벤트 유형"""

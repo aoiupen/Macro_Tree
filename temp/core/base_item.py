@@ -1,4 +1,5 @@
-from typing import Protocol, Dict, Any
+from typing import Any, Dict, Protocol
+
 
 class IMTBaseItem(Protocol):
     """기본 아이템 인터페이스"""

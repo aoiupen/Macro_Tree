@@ -1,11 +1,12 @@
 from typing import Protocol, Dict, Any, List, Type, Optional
-from temp.platform.ui_element import IMTUIElement
+from temp.platform.interfaces.ui_element import IMTUIElement
 from temp.model.tree_item import IMTTreeItem
+from temp.platform.interfaces.tree_view import IMTTreeView
 
 class IMTPlatformAdapter(Protocol):
     """플랫폼 특화 UI 생성 어댑터"""
     
-    def create_tree_view(self) -> IMTUIElement:
+    def create_tree_view(self) -> IMTTreeView:
         """트리 뷰 생성"""
         pass
     

@@ -1,4 +1,5 @@
-from typing import Protocol, Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional, Protocol
+
 from temp.core.tree import IMTTree
 
 

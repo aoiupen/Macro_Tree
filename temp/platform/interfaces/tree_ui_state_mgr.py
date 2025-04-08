@@ -1,6 +1,8 @@
-from typing import Protocol, Dict, Any, Callable, List, Optional
-from temp.model.tree_state_mgr import IMTTreeStateManager
+from typing import Any, Callable, Dict, List, Optional, Protocol
+
 from temp.model.tree_item import IMTTreeItem
+from temp.model.tree_state_mgr import IMTTreeStateManager
+
 
 class IMTTreeUIStateManager(Protocol):
     """UI 상태 관리자 인터페이스
@@ -51,4 +53,12 @@ class IMTTreeUIStateManager(Protocol):
     
     def select_item(self, item_id: str, multi_select: bool = False) -> None:
         """아이템 선택"""
+        pass
+
+    def unsubscribe_from_item_change(self, callback: Callable[[IMTTreeItem], None]) -> None:
+        """아이템 변경 구독 해제"""
+        pass
+
+    def unsubscribe_from_selection_change(self, callback: Callable[[List[str]], None]) -> None:
+        """선택 변경 구독 해제"""
         pass
