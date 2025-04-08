@@ -21,7 +21,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pytest flake8 mypy
-          pip install $(grep -v "pywin32" requirements.txt | grep -v "pypiwin32" | grep -v "pywinpty")
+          
+          # Windows 패키지 제거 후 설치
+          sed -i '/pywin32/d; /pypiwin32/d; /pywinpty/d' requirements.txt
+          pip install -r requirements.txt
       
       - name: Lint with flake8
         run: flake8 . --count --select=E9,F63,F7,F82 --max-line-length=127

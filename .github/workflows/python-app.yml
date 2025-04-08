@@ -27,8 +27,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pytest flake8
-        # Windows 전용 패키지 제외하고 설치
-        pip install $(grep -v "pywin32" requirements.txt | grep -v "pypiwin32" | grep -v "pywinpty")
+        
+        # Windows 패키지 제거 후 설치
+        sed -i '/pywin32/d; /pypiwin32/d; /pywinpty/d' requirements.txt
+        pip install -r requirements.txt
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
