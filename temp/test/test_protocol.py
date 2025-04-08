@@ -1,8 +1,10 @@
-import pytest
 from typing import Protocol, runtime_checkable
+
+import pytest
 
 from temp.core.tree import IMTTreeReadable
 from temp.test.mocks.mock_tree import MockTree
+
 
 def test_mock_tree_implements_readable_protocol():
     """MockTree가 IMTTreeReadable 프로토콜을 구현하는지 검증"""

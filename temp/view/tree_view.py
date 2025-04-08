@@ -1,4 +1,5 @@
-from typing import Protocol, List, Dict, Any, Callable, TypeVar, runtime_checkable
+from typing import Any, Callable, Dict, List, Protocol, TypeVar, runtime_checkable
+
 from temp.core.tree import IMTTreeReadable
 from temp.viewmodel.tree_viewmodel import IMTTreeViewModel
 

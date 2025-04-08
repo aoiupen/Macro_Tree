@@ -1,4 +1,4 @@
-from temp.platform.platform_adapter import IMTPlatformAdapter
+from temp.platform.adapters.adapter import IMTPlatformAdapter
 from temp.viewmodel.tree_viewmodel import IMTTreeViewModel
 from PyQt5.QtWidgets import QTreeView, QWidget
 

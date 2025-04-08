@@ -1,8 +1,10 @@
-from typing import Protocol, List, Dict, Any, Optional, Callable
-from temp.core.tree import IMTTree, IMTTreeReadable, IMTTreeModifiable, IMTTreeTraversable
+from typing import Any, Callable, Dict, List, Optional, Protocol
+
+from temp.core.tree import IMTTree, IMTTreeModifiable, IMTTreeReadable, IMTTreeTraversable
+from temp.model.tree_item import IMTTreeItem
 from temp.model.tree_repo import IMTTreeRepository
 from temp.model.tree_state_mgr import IMTTreeStateManager
-from temp.model.tree_item import IMTTreeItem
+
 
 class IMTTreeViewModel(Protocol):
     """트리 뷰모델 인터페이스 - 플랫폼 독립적"""

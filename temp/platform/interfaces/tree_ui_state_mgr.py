@@ -1,6 +1,8 @@
-from typing import Protocol, Dict, Any, Callable, List, Optional
-from temp.model.tree_state_mgr import IMTTreeStateManager
+from typing import Any, Callable, Dict, List, Optional, Protocol
+
 from temp.model.tree_item import IMTTreeItem
+from temp.model.tree_state_mgr import IMTTreeStateManager
+
 
 class IMTTreeUIStateManager(Protocol):
     """UI 상태 관리자 인터페이스

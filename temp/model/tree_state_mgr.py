@@ -1,4 +1,5 @@
-from typing import Protocol, Optional, Dict, Any, List, Callable
+from typing import Any, Callable, Dict, List, Optional, Protocol
+
 from temp.core.tree import IMTTree
 from temp.model.tree_item import IMTTreeItem
 

@@ -1,5 +1,6 @@
-from typing import Protocol, List, Optional, Dict, Any, Tuple, Union, TypedDict, TypeVar, Generic
 from enum import Enum
+from typing import Any, Dict, Generic, List, Optional, Protocol, Tuple, TypedDict, TypeVar, Union
+
 from temp.core.base_item import IMTBaseItem
 
 
