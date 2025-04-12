@@ -39,8 +39,8 @@ class MainWindow(QMainWindow):
         self.tree = SimpleTree()
         
         # 샘플 데이터 추가
-        for i in range(5):
-            item = SimpleTreeItem(f"item-{i}", f"Item {i}")
+        for i in range(7):
+            item = SimpleTreeItem(f"item-{i}", f"Items {i}")
             self.tree.add_item(item)
         
         # ViewModel 생성

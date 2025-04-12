@@ -8,14 +8,14 @@ class SimpleTreeViewModel:
         self._selected_ids: List[str] = []
     
     def get_items_for_display(self) -> List[Dict[str, Any]]:
-        result = []
-        for item_id, item in self._tree.get_all_items().items():
-            result.append({
-                "id": item.get_id(),
-                "name": item.get_property("name", ""),
-                "selected": item.get_id() in self._selected_ids
-            })
-        return result
+        tree_items = self._tree.get_all_items()
+        
+        # 리스트 컴프리헨션 사용
+        return [{
+            "id": item.get_id(),
+            "name": item.get_property("name", ""),
+            "selected": item.get_id() in self._selected_ids
+        } for item_id, item in tree_items.items()]
     
     def select_item(self, item_id: str) -> bool:
         item = self._tree.get_item(item_id)
