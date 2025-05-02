@@ -10,6 +10,18 @@ updates:
     security:
       updates: "daily"
       
+  # npm 패키지 업데이트 설정 - 사용하지 않는 npm 패키지 무시
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # 사용하지 않는 @nestjs/common 무시
+    ignore:
+      - dependency-name: "@nestjs/common"
+        versions: ["*"]
+    # 프로젝트가 주로 Python 기반이므로 npm 업데이트의 중요도 낮춤
+    open-pull-requests-limit: 0
+
 on:
   pull_request:
     branches: [ main ]
