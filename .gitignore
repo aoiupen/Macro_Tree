@@ -196,3 +196,6 @@ node_modules/
 
 # 빌드 결과물
 *.pyc
+
+# node.js 패키지 관리
+package-lock.json
