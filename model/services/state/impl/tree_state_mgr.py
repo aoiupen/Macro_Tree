@@ -2,10 +2,10 @@ from typing import Any, Callable, Dict, List, Set
 from copy import deepcopy
 
 from core.interfaces.base_tree import IMTTree
-from model.state.tree_state_mgr import IMTTreeStateManager
+from model.services.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
 
-class SimpleTreeStateManager(IMTTreeStateManager):
-    """매크로 트리 상태 관리자 간단 구현"""
+class TreeStateManager(IMTTreeStateManager):
+    """매크로 트리 상태 관리자 구현"""
     
     def __init__(self, max_history: int = 50):
         """상태 관리자를 초기화합니다."""

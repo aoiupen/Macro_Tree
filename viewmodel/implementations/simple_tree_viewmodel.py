@@ -1,10 +1,10 @@
 from typing import Dict, List, Any, Optional, Callable, Set
 import os
 from uuid import uuid4
-from model.implementations.simple_tree import SimpleTree
-from model.implementations.simple_tree_item import SimpleTreeItem
-from model.tree_repo import IMTTreeRepository
-from model.tree_state_mgr import IMTTreeStateManager
+from model.impl.simple_tree import SimpleTree
+from model.impl.simple_tree_item import SimpleTreeItem
+from model.persistence.interfaces.tree_repo import IMTTreeRepository
+from model.state.tree_state_mgr import IMTTreeStateManager
 from viewmodel.tree_viewmodel import IMTTreeViewModel
 
 class SimpleTreeViewModel(IMTTreeViewModel):
