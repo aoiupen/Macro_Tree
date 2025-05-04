@@ -3,7 +3,7 @@ import json
 
 from core.interfaces.base_item import IMTTreeItem
 from core.interfaces.base_tree import IMTTree, MTTreeEvent, TreeEventCallback
-from core.impl.tree_item import MTTreeItem, SimpleTreeItem
+from core.impl.item import MTTreeItem, SimpleTreeItem
 
 T = TypeVar('T', bound=IMTTreeItem)
 

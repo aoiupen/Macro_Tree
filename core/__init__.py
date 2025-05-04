@@ -9,5 +9,4 @@ from core.interfaces import *
 # 구현체
 from core.impl import *
 
-# 타입 정의
-from core.types import * 
+# 타입 정의는 interfaces로 이동됨 

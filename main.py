@@ -10,11 +10,12 @@ from PyQt6.QtCore import QUrl, QObject, pyqtSlot, pyqtSignal, QVariant
 from PyQt6.QtGui import QFontDatabase
 from PyQt6.QtCore import QResource
 
-from viewmodels.tree_viewmodel import TreeViewModel
-from viewmodels.tree_data_repository_viewmodel import TreeDataRepositoryViewModel
+from viewmodel.implementations.simple_tree_viewmodel import SimpleTreeViewModel
+from viewmodel.tree_data_repository_viewmodel import TreeDataRepositoryViewModel
 from view.tree_event_handler import TreeEventHandler
-from viewmodels.tree_executor import TreeExecutor
+from viewmodel.tree_executor import TreeExecutor
 from core.tree_state import TreeState
+from model.state.simple_tree_state_mgr import SimpleTreeStateManager
 from dotenv import load_dotenv
 
 # 환경변수 로드
@@ -151,8 +152,11 @@ def main():
         # 저장소 뷰모델 생성
         repository_viewmodel = TreeDataRepositoryViewModel()
         
+        # 상태 관리자 생성
+        state_manager = SimpleTreeStateManager()
+        
         # 트리 뷰모델 생성
-        tree_viewmodel = TreeViewModel()
+        tree_viewmodel = SimpleTreeViewModel(repository_viewmodel, state_manager)
         
         # 이벤트 핸들러 생성
         event_handler = TreeEventHandler(tree_viewmodel)
