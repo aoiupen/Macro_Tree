@@ -1,7 +1,7 @@
 from typing import Any, Callable, Dict, List, Protocol
 
-from core.tree import IMTTree, IMTTreeModifiable, IMTTreeData, IMTTreeTraversable
-from model.tree_item import IMTTreeItem
+from core.interfaces.base_tree import IMTTree, IMTTreeModifiable, IMTTreeData, IMTTreeTraversable
+from core.interfaces.base_item import IMTTreeItem
 from model.tree_repo import IMTTreeRepository
 from model.tree_state_mgr import IMTTreeStateManager
 

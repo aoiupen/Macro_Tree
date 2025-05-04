@@ -1,7 +1,7 @@
 from typing import Any, Dict, TypeVar
 
 from core.interfaces.base_item import IMTTreeItem
-from core.types.item_types import TreeItemData
+from core.interfaces.base_item_types import TreeItemData
 
 T = TypeVar('T')  # 제네릭 타입 변수 정의
 

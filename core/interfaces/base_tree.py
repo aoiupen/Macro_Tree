@@ -2,21 +2,13 @@ from enum import Enum
 from typing import Any, Callable, Dict, Generic, Iterator, List, Protocol, TypeVar
 
 from core.interfaces.base_item import IMTTreeItem
+from model.events.interfaces.base_tree_event_mgr import MTTreeEvent, TreeEventCallback, IMTTreeObservable
+from model.persistence.interfaces.base_tree_repository import IMTTreeSerializable
+from model.services.traversal.interfaces.base_advanced_traversal import IMTTreeAdvancedTraversable
 
 # 타입 변수 선언
 T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)  # 공변성 타입 변수
-
-class MTTreeEvent(Enum):
-    """트리 이벤트 유형"""
-    ITEM_ADDED = "item_added"
-    ITEM_REMOVED = "item_removed"
-    ITEM_MODIFIED = "item_modified"
-    ITEM_MOVED = "item_moved"
-    TREE_RESET = "tree_reset"
-
-# 명확한 콜백 타입 정의
-TreeEventCallback = Callable[[MTTreeEvent, Dict[str, Any]], None]
 
 # 트리 메타데이터 인터페이스
 class IMTTreeData(Protocol[T]):
@@ -70,44 +62,7 @@ class IMTTreeTraversable(Protocol):
         """트리를 BFS로 순회하면서 각 아이템에 방문자 함수를 적용합니다."""
         ...
 
-# 트리 직렬화 인터페이스
-class IMTTreeSerializable(Protocol):
-    """트리 직렬화 인터페이스"""
-    
-    def to_dict(self) -> Dict[str, Any]:
-        """트리를 딕셔너리로 변환합니다."""
-        ...
-    
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'IMTTree':
-        """딕셔너리에서 트리를 생성합니다."""
-        ...
-    
-    def clone(self) -> 'IMTTree':
-        """트리의 복제본을 생성합니다."""
-        ...
-
-# 트리 이벤트 관리 인터페이스
-class IMTTreeObservable(Protocol):
-    """트리 이벤트 관리 인터페이스"""
-    
-    def subscribe(self, event_type: MTTreeEvent, callback: TreeEventCallback) -> None:
-        """이벤트를 구독합니다."""
-        ...
-    
-    def unsubscribe(self, event_type: MTTreeEvent, callback: TreeEventCallback) -> None:
-        """이벤트 구독을 해제합니다."""
-        ...
-
-# 필터링 기능이 있는 고급 순회 인터페이스
-class IMTTreeAdvancedTraversable(Protocol, Generic[T_co]):
-    """확장된 매크로 트리 순회 인터페이스 - 필터링 기능 포함"""
-    
-    def traverse_filtered(self, predicate: Callable[[T_co], bool]) -> Iterator[T_co]:
-        """트리를 순회하며 조건에 맞는 아이템 선택"""
-        ...
-
 # 통합 트리 인터페이스
-class IMTTree(IMTTreeData, IMTTreeModifiable, IMTTreeTraversable, IMTTreeSerializable, IMTTreeObservable, Protocol):
+class IMTTree(IMTTreeData, IMTTreeModifiable, IMTTreeTraversable, IMTTreeSerializable, IMTTreeObservable, IMTTreeAdvancedTraversable, Protocol):
     """매크로 트리 통합 인터페이스"""
     pass 

@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, TypedDict, TypeVar
 
-from core.interfaces.base_action import IMTAction, IMTActionData, MTNode
+from core.interfaces.base_item_action import IMTAction, IMTActionData, MTNode
 
 class TreeItemData(TypedDict, total=False): # dict 의 value 값 검증을 위해 타입을 규정함
     """트리 아이템 데이터 구조 (total=False: 모든 필드 선택적)"""
