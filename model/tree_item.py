@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, Generic, List, Optional, Protocol, Tuple, TypedDict, TypeVar, Union
 
-from temp.core.base_item import IMTBaseItem
+from core.base_item import IMTBaseItem
 
 
 class MTNode(Enum):

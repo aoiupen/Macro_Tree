@@ -12,7 +12,7 @@ from typing import (
     runtime_checkable,
 )
 
-from temp.model.tree_item import IMTTreeItem
+from model.tree_item import IMTTreeItem, TreeItemData
 class MTTreeEvent(Enum):
     """트리 이벤트 유형"""
     ITEM_ADDED = "item_added"
