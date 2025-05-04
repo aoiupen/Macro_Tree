@@ -1,21 +1,11 @@
 from enum import Enum
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Generic,
-    Iterator,
-    List,
-    Optional,
-    Protocol,
-    TypeVar,
-    runtime_checkable,
-)
+from typing import Any, Callable, Dict, Generic, Iterator, List, Optional, Protocol, TypeVar
 
-from model.tree_item import IMTTreeItem, TreeItemData
+from core.interfaces.base_item import IMTTreeItem
 
 # 타입 변수 선언
 T = TypeVar('T')
+T_co = TypeVar('T_co', covariant=True)  # 공변성 타입 변수
 
 class MTTreeEvent(Enum):
     """트리 이벤트 유형"""
@@ -110,7 +100,6 @@ class IMTTreeObservable(Protocol):
         ...
 
 # 필터링 기능이 있는 고급 순회 인터페이스
-T_co = TypeVar('T_co', covariant=True)
 class IMTTreeAdvancedTraversable(Protocol, Generic[T_co]):
     """확장된 매크로 트리 순회 인터페이스 - 필터링 기능 포함"""
     
@@ -121,4 +110,4 @@ class IMTTreeAdvancedTraversable(Protocol, Generic[T_co]):
 # 통합 트리 인터페이스
 class IMTTree(IMTTreeData, IMTTreeModifiable, IMTTreeTraversable, IMTTreeSerializable, IMTTreeObservable, Protocol):
     """매크로 트리 통합 인터페이스"""
-    pass
+    pass 

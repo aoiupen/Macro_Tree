@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Protocol
 
-from core.tree import IMTTree
+from core.interfaces.base_tree import IMTTree
 
 
 class IMTTreeRepository(Protocol):

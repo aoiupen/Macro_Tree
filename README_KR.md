@@ -19,12 +19,11 @@
 ### 구현 완료된 기능
 - MVVM 아키텍처 구현
 - Protocol 기반 인터페이스 설계
+- 인터페이스-구현체 분리를 통한 클린 아키텍처
 - 트리 상태 관리 및 조작
 - PyQt6 기반 사용자 인터페이스
-- 데이터 저장소 레이어
+- 다양한 구현체를 가진 데이터 저장소 레이어
 - API 문서 생성 (pdoc3 활용)
-- 코드베이스 정리 (temp 패키지 참조 제거)
-- 타입 시스템 개선 (TypeVar 정의 등)
 
 ### 진행 중인 기능
 - 다크 테마
@@ -46,43 +45,63 @@
   - screeninfo (화면 정보)
 
 ## 아키텍처 개요
-- **코어 모듈:** 기본 트리 구조 및 핵심 비즈니스 로직
-- **모델 레이어:** 데이터 관리, 트리 상태 및 저장소 구현
+- **코어 모듈:** 
+  - 코어 인터페이스(IMTTree, IMTTreeItem)와 구현체
+  - 기본 트리 구조 및 핵심 데이터 타입
+  - 기반 컴포넌트에 대한 추상 인터페이스
+- **모델 레이어:** 
+  - 비즈니스 로직 인터페이스와 구현체
+  - 데이터 저장소, 상태 관리 및 액션 처리기
+  - 도메인 특화 작업
 - **뷰모델 레이어:** 모델과 뷰 레이어 간의 브릿지
 - **뷰 레이어:** UI 컴포넌트 및 이벤트 처리
 - **상태 관리:** 트리 상태 및 작업 추적
 
 ## 프로젝트 구조
 ```
-├── core/                  # 핵심 비즈니스 로직
-│   ├── tree.py            # 트리 구조 구현
-│   ├── base_item.py       # 기본 아이템 클래스
-│   └── __init__.py        # 코어 모듈 초기화
-├── model/                 # 데이터 계층
-│   ├── implementations/   # 구체적인 구현체
-│   ├── tree_state_mgr.py  # 트리 상태 매니저
-│   ├── tree_item.py       # 트리 아이템 모델
-│   ├── tree_repo.py       # 트리 저장소
-│   └── __init__.py        # 모델 모듈 초기화
-├── viewmodel/             # 뷰모델 계층
-│   ├── implementations/   # 구체적인 구현체
-│   └── tree_viewmodel.py  # 트리 뷰모델
-├── view/                  # 뷰 계층
-│   ├── implementations/   # 뷰 구현체
-│   ├── tree_bridge.py     # UI와 로직 사이의 브릿지
-│   └── tree_view.py       # 트리 뷰 컴포넌트
-├── docs/                  # API 문서
-│   ├── core/              # 코어 모듈 문서
-│   ├── model/             # 모델 레이어 문서
-│   └── viewmodel/         # 뷰모델 레이어 문서
-├── platform/              # 플랫폼 특화 코드
-│   └── src/               # 플랫폼 기능 소스 코드
-├── test/                  # 테스트 모듈
-├── examples/              # 예제 구현
-└── .venv/                 # 가상 환경
+├── core/                     # 핵심 비즈니스 로직
+│   ├── interfaces/           # 코어 인터페이스
+│   │   ├── base_tree.py      # 트리 인터페이스
+│   │   ├── base_item.py      # 아이템 인터페이스
+│   │   └── __init__.py       # 인터페이스 초기화
+│   ├── impl/                 # 코어 구현체
+│   │   ├── tree.py           # 트리 구현
+│   │   ├── tree_item.py      # 트리 아이템 구현
+│   │   └── __init__.py       # 구현체 초기화
+│   ├── types/                # 타입 정의
+│   │   └── item_types.py     # 아이템 타입 정의
+│   └── __init__.py           # 코어 모듈 초기화
+├── model/                    # 비즈니스 로직 계층
+│   ├── repository/           # 저장소 구현체
+│   │   ├── simple_tree_repository.py   # 파일 기반 저장소
+│   │   ├── postgresql_tree_repository.py # 데이터베이스 저장소
+│   │   └── __init__.py       # 저장소 초기화
+│   ├── state/                # 상태 관리
+│   │   ├── simple_tree_state_mgr.py    # 트리 상태 관리자
+│   │   └── __init__.py       # 상태 관리 초기화
+│   ├── action/               # 액션 처리
+│   │   └── __init__.py       # 액션 모듈 초기화
+│   ├── tree_repo.py          # 저장소 인터페이스
+│   ├── tree_state_mgr.py     # 상태 관리자 인터페이스
+│   └── __init__.py           # 모델 모듈 초기화
+├── viewmodel/                # 뷰모델 계층
+│   ├── implementations/      # 뷰모델 구현체
+│   └── tree_viewmodel.py     # 트리 뷰모델 인터페이스
+├── view/                     # 뷰 계층
+│   ├── implementations/      # 뷰 구현체
+│   ├── tree_bridge.py        # UI와 로직 사이의 브릿지
+│   └── tree_view.py          # 트리 뷰 컴포넌트
+├── docs/                     # API 문서
+├── platform/                 # 플랫폼 특화 코드
+├── test/                     # 테스트 모듈
+├── examples/                 # 예제 구현
+└── .venv/                    # 가상 환경
 ```
 
 ## 인터페이스 구조
+- **코어 인터페이스:** 트리 및 아이템 컴포넌트의 기본 인터페이스
+- **모델 인터페이스:** 비즈니스 로직 인터페이스 (저장소, 상태 관리자)
+- **구현 클래스:** 인터페이스의 구체적인 구현체
 - **TreeStateManager:** 트리 상태 추적 및 관리
 - **TreeRepository:** 데이터 영속성 작업
 - **TreeViewModel:** 트리 데이터를 위한 표현 로직
