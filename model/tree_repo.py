@@ -9,11 +9,11 @@ class IMTTreeRepository(Protocol):
     트리 데이터의 영속성을 관리합니다.
     """
     
-    def save(self, tree: IMTTree, name: Optional[str] = None) -> str:
+    def save(self, tree: IMTTree, name: str | None = None) -> str:
         """트리를 저장합니다. Raises: TreeSaveError-저장 실패 시"""
         ...
     
-    def load(self, identifier: Optional[str] = None) -> IMTTree:
+    def load(self, identifier: str | None = None) -> IMTTree:
         """트리를 불러옵니다. Raises: TreeNotFoundError-트리를 찾을 수 없을 때"""
         ...
     

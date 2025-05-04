@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Optional, Protocol
+from typing import Any, Callable, Dict, List, Protocol
 
 from core.tree import IMTTree, IMTTreeModifiable, IMTTreeData, IMTTreeTraversable
 from model.tree_item import IMTTreeItem
@@ -17,11 +17,11 @@ class IMTTreeViewModel(Protocol):
         """저장소에서 트리 로드"""
         ...
     
-    def save_tree(self, tree_id: Optional[str] = None) -> str:
+    def save_tree(self, tree_id: str | None = None) -> str:
         """현재 트리를 저장소에 저장"""
         ...
     
-    def get_current_tree(self) -> Optional[IMTTree]:
+    def get_current_tree(self) -> IMTTree | None:
         """현재 로드된 트리 반환"""
         ...
     
@@ -37,7 +37,7 @@ class IMTTreeViewModel(Protocol):
         """선택된 아이템 ID 목록 반환"""
         ...
     
-    def add_item(self, parent_id: Optional[str], data: Dict[str, Any]) -> str:
+    def add_item(self, parent_id: str | None, data: Dict[str, Any]) -> str:
         """부모 아래에 새 아이템 추가 (IMTTreeModifiable 사용)"""
         ...
     
@@ -45,11 +45,11 @@ class IMTTreeViewModel(Protocol):
         """아이템 제거 (IMTTreeModifiable 사용)"""
         ...
     
-    def move_item(self, item_id: str, new_parent_id: Optional[str]) -> bool:
+    def move_item(self, item_id: str, new_parent_id: str | None) -> bool:
         """아이템 이동 (IMTTreeModifiable 사용)"""
         ...
     
-    def get_item_children(self, parent_id: Optional[str]) -> List[Dict[str, Any]]:
+    def get_item_children(self, parent_id: str | None) -> List[Dict[str, Any]]:
         """특정 부모의 자식 아이템 목록 (IMTTreeReadable 사용)"""
         ...
     

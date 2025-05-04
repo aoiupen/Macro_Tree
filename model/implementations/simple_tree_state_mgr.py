@@ -1,7 +1,7 @@
 from typing import Any, Callable, Dict, List, Optional, Set
 from copy import deepcopy
 
-from core.tree import IMTTree
+from core.interfaces.base_tree import IMTTree
 from model.tree_state_mgr import IMTTreeStateManager
 
 class SimpleTreeStateManager(IMTTreeStateManager):

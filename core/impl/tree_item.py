@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, TypeVar
+from typing import Any, Dict, TypeVar
 
 from core.interfaces.base_item import IMTTreeItem
 from core.types.item_types import TreeItemData
@@ -8,7 +8,7 @@ T = TypeVar('T')  # 제네릭 타입 변수 정의
 class MTTreeItem(IMTTreeItem):
     """매크로 트리 아이템 구현 클래스"""
     
-    def __init__(self, item_id: str, initial_data: Optional[Dict[str, Any]] = None):
+    def __init__(self, item_id: str, initial_data: Dict[str, Any] | None = None):
         """아이템 초기화
         
         Args:
@@ -28,11 +28,7 @@ class MTTreeItem(IMTTreeItem):
         """아이템 데이터를 반환합니다."""
         return self._data.copy()
     
-    def get_id(self) -> str:
-        """아이템 ID를 반환합니다."""
-        return self._id
-    
-    def get_property(self, key: str, default: Optional[T] = None) -> Optional[T]:
+    def get_property(self, key: str, default: T | None = None) -> T | None:
         """아이템 속성을 가져옵니다."""
         return self._data.get(key, default)
     
