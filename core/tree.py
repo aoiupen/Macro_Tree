@@ -13,6 +13,10 @@ from typing import (
 )
 
 from model.tree_item import IMTTreeItem, TreeItemData
+
+# 타입 변수 선언
+T = TypeVar('T')
+
 class MTTreeEvent(Enum):
     """트리 이벤트 유형"""
     ITEM_ADDED = "item_added"

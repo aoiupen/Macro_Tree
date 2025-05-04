@@ -1,7 +1,7 @@
 from typing import Any, Callable, Dict, List, Optional, Protocol
 
-from temp.core.tree import IMTTree
-from temp.model.tree_item import IMTTreeItem
+from core.tree import IMTTree
+from model.tree_item import IMTTreeItem
 
 
 class IMTTreeStateManager(Protocol):

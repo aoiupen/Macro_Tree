@@ -1,0 +1,1181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>model.tree_item API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>model.tree_item</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="model.tree_item.IMTActionType"><code class="flex name class">
+<span>class <span class="ident">IMTActionType</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class IMTActionType(Protocol):
+    def get_action_id(self) -&gt; str:
+        ...
+    
+    def get_action_params(self) -&gt; Dict[str, Any]:
+        ...
+    
+    def get_device_type(self) -&gt; MTInputDevice:
+        ...</code></pre>
+</details>
+<div class="desc"><p>Base class for protocol classes.</p>
+<p>Protocol classes are defined as::</p>
+<pre><code>class Proto(Protocol):
+    def meth(self) -&gt; int:
+        ...
+</code></pre>
+<p>Such classes are primarily used with static type checkers that recognize
+structural subtyping (static duck-typing).</p>
+<p>For example::</p>
+<pre><code>class C:
+    def meth(self) -&gt; int:
+        return 0
+
+def func(x: Proto) -&gt; int:
+    return x.meth()
+
+func(C())  # Passes static type check
+</code></pre>
+<p>See PEP 544 for details. Protocol classes decorated with
+@typing.runtime_checkable act as simple-minded runtime protocols that check
+only the presence of given attributes, ignoring their type signatures.
+Protocol classes can be generic, they are defined as::</p>
+<pre><code>class GenProto[T](Protocol):
+    def meth(self) -&gt; T:
+        ...
+</code></pre></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="model.tree_item.IMTActionType.get_action_id"><code class="name flex">
+<span>def <span class="ident">get_action_id</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_action_id(self) -&gt; str:
+    ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.IMTActionType.get_action_params"><code class="name flex">
+<span>def <span class="ident">get_action_params</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_action_params(self) -&gt; Dict[str, Any]:
+    ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.IMTActionType.get_device_type"><code class="name flex">
+<span>def <span class="ident">get_device_type</span></span>(<span>self) ‑> <a title="model.tree_item.MTInputDevice" href="#model.tree_item.MTInputDevice">MTInputDevice</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_device_type(self) -&gt; MTInputDevice:
+    ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="model.tree_item.IMTInputActionData"><code class="flex name class">
+<span>class <span class="ident">IMTInputActionData</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class IMTInputActionData(Protocol):
+    &#34;&#34;&#34;입력 액션 데이터 기본 인터페이스&#34;&#34;&#34;
+    def get_device_type(self) -&gt; MTInputDevice: ...
+    
+    def clone(self) -&gt; &#39;IMTInputActionData&#39;: ...</code></pre>
+</details>
+<div class="desc"><p>입력 액션 데이터 기본 인터페이스</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="model.tree_item.IMTKeyboardActionData" href="#model.tree_item.IMTKeyboardActionData">IMTKeyboardActionData</a></li>
+<li><a title="model.tree_item.IMTMouseActionData" href="#model.tree_item.IMTMouseActionData">IMTMouseActionData</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="model.tree_item.IMTInputActionData.clone"><code class="name flex">
+<span>def <span class="ident">clone</span></span>(<span>self) ‑> <a title="model.tree_item.IMTInputActionData" href="#model.tree_item.IMTInputActionData">IMTInputActionData</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clone(self) -&gt; &#39;IMTInputActionData&#39;: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.IMTInputActionData.get_device_type"><code class="name flex">
+<span>def <span class="ident">get_device_type</span></span>(<span>self) ‑> <a title="model.tree_item.MTInputDevice" href="#model.tree_item.MTInputDevice">MTInputDevice</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_device_type(self) -&gt; MTInputDevice: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="model.tree_item.IMTKeyboardActionData"><code class="flex name class">
+<span>class <span class="ident">IMTKeyboardActionData</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class IMTKeyboardActionData(IMTInputActionData, Protocol):
+    &#34;&#34;&#34;키보드 액션 데이터 인터페이스&#34;&#34;&#34;
+    @property
+    def action_type(self) -&gt; MTKeyboardAction: ...
+    
+    def get_key_sequence(self) -&gt; List[Tuple[str, MTKeyState]]: ...
+    
+    def add_key(self, key: str, state: MTKeyState) -&gt; None: ...
+    
+    def clear(self) -&gt; None: ...</code></pre>
+</details>
+<div class="desc"><p>키보드 액션 데이터 인터페이스</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="model.tree_item.IMTInputActionData" href="#model.tree_item.IMTInputActionData">IMTInputActionData</a></li>
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="model.tree_item.IMTKeyboardActionData.action_type"><code class="name">prop <span class="ident">action_type</span> : <a title="model.tree_item.MTKeyboardAction" href="#model.tree_item.MTKeyboardAction">MTKeyboardAction</a></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def action_type(self) -&gt; MTKeyboardAction: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="model.tree_item.IMTKeyboardActionData.add_key"><code class="name flex">
+<span>def <span class="ident">add_key</span></span>(<span>self,<br>key: str,<br>state: <a title="model.tree_item.MTKeyState" href="#model.tree_item.MTKeyState">MTKeyState</a>) ‑> None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_key(self, key: str, state: MTKeyState) -&gt; None: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.IMTKeyboardActionData.clear"><code class="name flex">
+<span>def <span class="ident">clear</span></span>(<span>self) ‑> None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clear(self) -&gt; None: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.IMTKeyboardActionData.get_key_sequence"><code class="name flex">
+<span>def <span class="ident">get_key_sequence</span></span>(<span>self) ‑> List[Tuple[str, <a title="model.tree_item.MTKeyState" href="#model.tree_item.MTKeyState">MTKeyState</a>]]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_key_sequence(self) -&gt; List[Tuple[str, MTKeyState]]: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="model.tree_item.IMTMouseActionData"><code class="flex name class">
+<span>class <span class="ident">IMTMouseActionData</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class IMTMouseActionData(IMTInputActionData, Protocol):
+    &#34;&#34;&#34;마우스 액션 데이터 인터페이스&#34;&#34;&#34;
+    @property
+    def position(self) -&gt; IMTPoint: ...
+    
+    @property
+    def end_position(self) -&gt; Optional[IMTPoint]: ...
+    
+    @property
+    def button(self) -&gt; str: ...</code></pre>
+</details>
+<div class="desc"><p>마우스 액션 데이터 인터페이스</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="model.tree_item.IMTInputActionData" href="#model.tree_item.IMTInputActionData">IMTInputActionData</a></li>
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="model.tree_item.IMTMouseActionData.button"><code class="name">prop <span class="ident">button</span> : str</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def button(self) -&gt; str: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.IMTMouseActionData.end_position"><code class="name">prop <span class="ident">end_position</span> : <a title="model.tree_item.IMTPoint" href="#model.tree_item.IMTPoint">IMTPoint</a> | None</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def end_position(self) -&gt; Optional[IMTPoint]: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.IMTMouseActionData.position"><code class="name">prop <span class="ident">position</span> : <a title="model.tree_item.IMTPoint" href="#model.tree_item.IMTPoint">IMTPoint</a></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def position(self) -&gt; IMTPoint: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="model.tree_item.IMTPoint"><code class="flex name class">
+<span>class <span class="ident">IMTPoint</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class IMTPoint(Protocol):
+    &#34;&#34;&#34;2D 좌표 인터페이스&#34;&#34;&#34;
+    @property
+    def x(self) -&gt; int: ...
+    
+    @property
+    def y(self) -&gt; int: ...
+    
+    def clone(self) -&gt; &#39;IMTPoint&#39;: ...</code></pre>
+</details>
+<div class="desc"><p>2D 좌표 인터페이스</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="model.tree_item.IMTPoint.x"><code class="name">prop <span class="ident">x</span> : int</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def x(self) -&gt; int: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.IMTPoint.y"><code class="name">prop <span class="ident">y</span> : int</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def y(self) -&gt; int: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="model.tree_item.IMTPoint.clone"><code class="name flex">
+<span>def <span class="ident">clone</span></span>(<span>self) ‑> <a title="model.tree_item.IMTPoint" href="#model.tree_item.IMTPoint">IMTPoint</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clone(self) -&gt; &#39;IMTPoint&#39;: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="model.tree_item.IMTTreeItem"><code class="flex name class">
+<span>class <span class="ident">IMTTreeItem</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class IMTTreeItem(IMTBaseItem, Protocol):
+    &#34;&#34;&#34;매크로 트리 아이템 인터페이스
+    
+    트리에서 사용되는 개별 아이템의 인터페이스입니다.
+    id만 직접 접근 속성으로 제공하고, 나머지는 data 딕셔너리를 통해 액세스합니다.
+    &#34;&#34;&#34;
+    # id와 data 프로퍼티는 IMTBaseItem에서 이미 정의됨
+    
+    def get_id(self) -&gt; str:
+        &#34;&#34;&#34;아이템 ID 반환&#34;&#34;&#34;
+        ...
+    
+    def get_property(self, key: str, default: Optional[T] = None) -&gt; Optional[T]:
+        &#34;&#34;&#34;아이템 속성을 가져옵니다.
+        
+        사용 예:
+            item.get_property(TreeItemKeys.NAME)
+            item.get_property(TreeItemKeys.PARENT_ID)
+        &#34;&#34;&#34;
+        ...
+    
+    def set_property(self, key: str, value: T) -&gt; None:
+        &#34;&#34;&#34;아이템 속성을 설정합니다.
+        
+        사용 예:
+            item.set_property(TreeItemKeys.NAME, &#34;새 이름&#34;)
+            item.set_property(TreeItemKeys.PARENT_ID, parent_id)
+        &#34;&#34;&#34;
+        ...
+    
+    def clone(self) -&gt; &#39;IMTTreeItem&#39;:
+        &#34;&#34;&#34;아이템의 복제본을 생성합니다.&#34;&#34;&#34;
+        ...</code></pre>
+</details>
+<div class="desc"><p>매크로 트리 아이템 인터페이스</p>
+<p>트리에서 사용되는 개별 아이템의 인터페이스입니다.
+id만 직접 접근 속성으로 제공하고, 나머지는 data 딕셔너리를 통해 액세스합니다.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>core.base_item.IMTBaseItem</li>
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="model.tree_item.IMTTreeItem.clone"><code class="name flex">
+<span>def <span class="ident">clone</span></span>(<span>self) ‑> <a title="model.tree_item.IMTTreeItem" href="#model.tree_item.IMTTreeItem">IMTTreeItem</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clone(self) -&gt; &#39;IMTTreeItem&#39;:
+    &#34;&#34;&#34;아이템의 복제본을 생성합니다.&#34;&#34;&#34;
+    ...</code></pre>
+</details>
+<div class="desc"><p>아이템의 복제본을 생성합니다.</p></div>
+</dd>
+<dt id="model.tree_item.IMTTreeItem.get_id"><code class="name flex">
+<span>def <span class="ident">get_id</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_id(self) -&gt; str:
+    &#34;&#34;&#34;아이템 ID 반환&#34;&#34;&#34;
+    ...</code></pre>
+</details>
+<div class="desc"><p>아이템 ID 반환</p></div>
+</dd>
+<dt id="model.tree_item.IMTTreeItem.get_property"><code class="name flex">
+<span>def <span class="ident">get_property</span></span>(<span>self, key: str, default: ~T | None = None) ‑> ~T | None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_property(self, key: str, default: Optional[T] = None) -&gt; Optional[T]:
+    &#34;&#34;&#34;아이템 속성을 가져옵니다.
+    
+    사용 예:
+        item.get_property(TreeItemKeys.NAME)
+        item.get_property(TreeItemKeys.PARENT_ID)
+    &#34;&#34;&#34;
+    ...</code></pre>
+</details>
+<div class="desc"><p>아이템 속성을 가져옵니다.</p>
+<p>사용 예:
+item.get_property(TreeItemKeys.NAME)
+item.get_property(TreeItemKeys.PARENT_ID)</p></div>
+</dd>
+<dt id="model.tree_item.IMTTreeItem.set_property"><code class="name flex">
+<span>def <span class="ident">set_property</span></span>(<span>self, key: str, value: ~T) ‑> None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_property(self, key: str, value: T) -&gt; None:
+    &#34;&#34;&#34;아이템 속성을 설정합니다.
+    
+    사용 예:
+        item.set_property(TreeItemKeys.NAME, &#34;새 이름&#34;)
+        item.set_property(TreeItemKeys.PARENT_ID, parent_id)
+    &#34;&#34;&#34;
+    ...</code></pre>
+</details>
+<div class="desc"><p>아이템 속성을 설정합니다.</p>
+<p>사용 예:
+item.set_property(TreeItemKeys.NAME, "새 이름")
+item.set_property(TreeItemKeys.PARENT_ID, parent_id)</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="model.tree_item.MTInputDevice"><code class="flex name class">
+<span>class <span class="ident">MTInputDevice</span></span>
+<span>(</span><span>*args, **kwds)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MTInputDevice(Enum):
+    &#34;&#34;&#34;매크로 트리에서 사용하는 입력 장치 유형&#34;&#34;&#34;
+    MOUSE = &#34;mouse&#34;
+    KEYBOARD = &#34;keyboard&#34;
+    JOYSTICK = &#34;joystick&#34;</code></pre>
+</details>
+<div class="desc"><p>매크로 트리에서 사용하는 입력 장치 유형</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="model.tree_item.MTInputDevice.JOYSTICK"><code class="name">var <span class="ident">JOYSTICK</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.MTInputDevice.KEYBOARD"><code class="name">var <span class="ident">KEYBOARD</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.MTInputDevice.MOUSE"><code class="name">var <span class="ident">MOUSE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="model.tree_item.MTKeyState"><code class="flex name class">
+<span>class <span class="ident">MTKeyState</span></span>
+<span>(</span><span>*args, **kwds)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MTKeyState(Enum):
+    &#34;&#34;&#34;키 상태&#34;&#34;&#34;
+    PRESSED = &#34;pressed&#34;
+    RELEASED = &#34;released&#34;</code></pre>
+</details>
+<div class="desc"><p>키 상태</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="model.tree_item.MTKeyState.PRESSED"><code class="name">var <span class="ident">PRESSED</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.MTKeyState.RELEASED"><code class="name">var <span class="ident">RELEASED</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="model.tree_item.MTKeyboardAction"><code class="flex name class">
+<span>class <span class="ident">MTKeyboardAction</span></span>
+<span>(</span><span>*args, **kwds)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MTKeyboardAction(Enum):
+    TYPE = &#34;type&#34;
+    SHORTCUT = &#34;shortcut&#34;
+    
+    def get_action_id(self) -&gt; str:
+        return self.value
+    
+    def get_action_params(self) -&gt; Dict[str, Any]:
+        return {}
+    
+    def get_device_type(self) -&gt; MTInputDevice:
+        return MTInputDevice.KEYBOARD</code></pre>
+</details>
+<div class="desc"><p>Create a collection of name/value pairs.</p>
+<p>Example enumeration:</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; class Color(Enum):
+...     RED = 1
+...     BLUE = 2
+...     GREEN = 3
+</code></pre>
+<p>Access them by:</p>
+<ul>
+<li>attribute access:</li>
+</ul>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>Color.RED
+<Color.RED: 1></p>
+</blockquote>
+</blockquote>
+</blockquote>
+<ul>
+<li>value lookup:</li>
+</ul>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>Color(1)
+<Color.RED: 1></p>
+</blockquote>
+</blockquote>
+</blockquote>
+<ul>
+<li>name lookup:</li>
+</ul>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>Color['RED']
+<Color.RED: 1></p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>Enumerations can be iterated over, and know how many members they have:</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; len(Color)
+3
+</code></pre>
+<pre><code class="language-python-repl">&gt;&gt;&gt; list(Color)
+[&lt;Color.RED: 1&gt;, &lt;Color.BLUE: 2&gt;, &lt;Color.GREEN: 3&gt;]
+</code></pre>
+<p>Methods can be added to enumerations, and members can have their own
+attributes &ndash; see the documentation for details.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="model.tree_item.MTKeyboardAction.SHORTCUT"><code class="name">var <span class="ident">SHORTCUT</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.MTKeyboardAction.TYPE"><code class="name">var <span class="ident">TYPE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="model.tree_item.MTKeyboardAction.get_action_id"><code class="name flex">
+<span>def <span class="ident">get_action_id</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_action_id(self) -&gt; str:
+    return self.value</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.MTKeyboardAction.get_action_params"><code class="name flex">
+<span>def <span class="ident">get_action_params</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_action_params(self) -&gt; Dict[str, Any]:
+    return {}</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.MTKeyboardAction.get_device_type"><code class="name flex">
+<span>def <span class="ident">get_device_type</span></span>(<span>self) ‑> <a title="model.tree_item.MTInputDevice" href="#model.tree_item.MTInputDevice">MTInputDevice</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_device_type(self) -&gt; MTInputDevice:
+    return MTInputDevice.KEYBOARD</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="model.tree_item.MTMouseAction"><code class="flex name class">
+<span>class <span class="ident">MTMouseAction</span></span>
+<span>(</span><span>*args, **kwds)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MTMouseAction(Enum):
+    CLICK = &#34;click&#34;
+    DOUBLE_CLICK = &#34;doubleclick&#34;
+    RIGHT_CLICK = &#34;rightclick&#34;
+    DRAG = &#34;drag&#34;
+    MOVE = &#34;move&#34;
+    
+    def get_action_id(self) -&gt; str:
+        return self.value
+    
+    def get_action_params(self) -&gt; Dict[str, Any]:
+        return {}
+    
+    def get_device_type(self) -&gt; MTInputDevice:
+        return MTInputDevice.MOUSE</code></pre>
+</details>
+<div class="desc"><p>Create a collection of name/value pairs.</p>
+<p>Example enumeration:</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; class Color(Enum):
+...     RED = 1
+...     BLUE = 2
+...     GREEN = 3
+</code></pre>
+<p>Access them by:</p>
+<ul>
+<li>attribute access:</li>
+</ul>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>Color.RED
+<Color.RED: 1></p>
+</blockquote>
+</blockquote>
+</blockquote>
+<ul>
+<li>value lookup:</li>
+</ul>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>Color(1)
+<Color.RED: 1></p>
+</blockquote>
+</blockquote>
+</blockquote>
+<ul>
+<li>name lookup:</li>
+</ul>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>Color['RED']
+<Color.RED: 1></p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>Enumerations can be iterated over, and know how many members they have:</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; len(Color)
+3
+</code></pre>
+<pre><code class="language-python-repl">&gt;&gt;&gt; list(Color)
+[&lt;Color.RED: 1&gt;, &lt;Color.BLUE: 2&gt;, &lt;Color.GREEN: 3&gt;]
+</code></pre>
+<p>Methods can be added to enumerations, and members can have their own
+attributes &ndash; see the documentation for details.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="model.tree_item.MTMouseAction.CLICK"><code class="name">var <span class="ident">CLICK</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.MTMouseAction.DOUBLE_CLICK"><code class="name">var <span class="ident">DOUBLE_CLICK</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.MTMouseAction.DRAG"><code class="name">var <span class="ident">DRAG</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.MTMouseAction.MOVE"><code class="name">var <span class="ident">MOVE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.MTMouseAction.RIGHT_CLICK"><code class="name">var <span class="ident">RIGHT_CLICK</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="model.tree_item.MTMouseAction.get_action_id"><code class="name flex">
+<span>def <span class="ident">get_action_id</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_action_id(self) -&gt; str:
+    return self.value</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.MTMouseAction.get_action_params"><code class="name flex">
+<span>def <span class="ident">get_action_params</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_action_params(self) -&gt; Dict[str, Any]:
+    return {}</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.MTMouseAction.get_device_type"><code class="name flex">
+<span>def <span class="ident">get_device_type</span></span>(<span>self) ‑> <a title="model.tree_item.MTInputDevice" href="#model.tree_item.MTInputDevice">MTInputDevice</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_device_type(self) -&gt; MTInputDevice:
+    return MTInputDevice.MOUSE</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="model.tree_item.MTNode"><code class="flex name class">
+<span>class <span class="ident">MTNode</span></span>
+<span>(</span><span>*args, **kwds)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MTNode(Enum):
+    &#34;&#34;&#34;매크로 트리의 노드 유형&#34;&#34;&#34;
+    GROUP = &#34;group&#34;
+    INSTRUCTION = &#34;instruction&#34;</code></pre>
+</details>
+<div class="desc"><p>매크로 트리의 노드 유형</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="model.tree_item.MTNode.GROUP"><code class="name">var <span class="ident">GROUP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.MTNode.INSTRUCTION"><code class="name">var <span class="ident">INSTRUCTION</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="model.tree_item.TreeItemData"><code class="flex name class">
+<span>class <span class="ident">TreeItemData</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TreeItemData(TypedDict, total=False): # dict 의 value 값 검증을 위해 타입을 규정함
+    &#34;&#34;&#34;트리 아이템 데이터 구조 (total=False: 모든 필드 선택적)&#34;&#34;&#34;
+    node_type: MTNode  # 노드 유형 (그룹/지시 등)
+    name: str  # 아이템 이름
+    parent_id: Optional[str]  # 부모 아이템 ID
+    children_ids: List[str]  # 자식 아이템 ID 목록
+    action_type: Optional[IMTActionType]  # MTActionType에서 IMTActionType으로 수정
+    action_data: Optional[IMTInputActionData]  # Union 대신 공통 인터페이스</code></pre>
+</details>
+<div class="desc"><p>트리 아이템 데이터 구조 (total=False: 모든 필드 선택적)</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.dict</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="model.tree_item.TreeItemData.action_data"><code class="name">var <span class="ident">action_data</span> : <a title="model.tree_item.IMTInputActionData" href="#model.tree_item.IMTInputActionData">IMTInputActionData</a> | None</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.TreeItemData.action_type"><code class="name">var <span class="ident">action_type</span> : <a title="model.tree_item.IMTActionType" href="#model.tree_item.IMTActionType">IMTActionType</a> | None</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.TreeItemData.children_ids"><code class="name">var <span class="ident">children_ids</span> : List[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.TreeItemData.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.TreeItemData.node_type"><code class="name">var <span class="ident">node_type</span> : <a title="model.tree_item.MTNode" href="#model.tree_item.MTNode">MTNode</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.TreeItemData.parent_id"><code class="name">var <span class="ident">parent_id</span> : str | None</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="model.tree_item.TreeItemKeys"><code class="flex name class">
+<span>class <span class="ident">TreeItemKeys</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TreeItemKeys:
+    &#34;&#34;&#34;트리 아이템 속성 키 상수 정의&#34;&#34;&#34;
+    ID = &#34;id&#34;
+    NAME = &#34;name&#34;
+    PARENT_ID = &#34;parent_id&#34;
+    CHILDREN = &#34;children&#34;
+    DATA = &#34;data&#34;
+    TYPE = &#34;type&#34;
+    ACTION = &#34;action&#34;
+    ACTION_DATA = &#34;action_data&#34;
+    EXPANDED = &#34;expanded&#34;
+    SELECTED = &#34;selected&#34;
+    VISIBLE = &#34;visible&#34;
+    ICON = &#34;icon&#34;</code></pre>
+</details>
+<div class="desc"><p>트리 아이템 속성 키 상수 정의</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="model.tree_item.TreeItemKeys.ACTION"><code class="name">var <span class="ident">ACTION</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.TreeItemKeys.ACTION_DATA"><code class="name">var <span class="ident">ACTION_DATA</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.TreeItemKeys.CHILDREN"><code class="name">var <span class="ident">CHILDREN</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.TreeItemKeys.DATA"><code class="name">var <span class="ident">DATA</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.TreeItemKeys.EXPANDED"><code class="name">var <span class="ident">EXPANDED</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.TreeItemKeys.ICON"><code class="name">var <span class="ident">ICON</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.TreeItemKeys.ID"><code class="name">var <span class="ident">ID</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.TreeItemKeys.NAME"><code class="name">var <span class="ident">NAME</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.TreeItemKeys.PARENT_ID"><code class="name">var <span class="ident">PARENT_ID</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.TreeItemKeys.SELECTED"><code class="name">var <span class="ident">SELECTED</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.TreeItemKeys.TYPE"><code class="name">var <span class="ident">TYPE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="model.tree_item.TreeItemKeys.VISIBLE"><code class="name">var <span class="ident">VISIBLE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="model" href="index.html">model</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="model.tree_item.IMTActionType" href="#model.tree_item.IMTActionType">IMTActionType</a></code></h4>
+<ul class="">
+<li><code><a title="model.tree_item.IMTActionType.get_action_id" href="#model.tree_item.IMTActionType.get_action_id">get_action_id</a></code></li>
+<li><code><a title="model.tree_item.IMTActionType.get_action_params" href="#model.tree_item.IMTActionType.get_action_params">get_action_params</a></code></li>
+<li><code><a title="model.tree_item.IMTActionType.get_device_type" href="#model.tree_item.IMTActionType.get_device_type">get_device_type</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="model.tree_item.IMTInputActionData" href="#model.tree_item.IMTInputActionData">IMTInputActionData</a></code></h4>
+<ul class="">
+<li><code><a title="model.tree_item.IMTInputActionData.clone" href="#model.tree_item.IMTInputActionData.clone">clone</a></code></li>
+<li><code><a title="model.tree_item.IMTInputActionData.get_device_type" href="#model.tree_item.IMTInputActionData.get_device_type">get_device_type</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="model.tree_item.IMTKeyboardActionData" href="#model.tree_item.IMTKeyboardActionData">IMTKeyboardActionData</a></code></h4>
+<ul class="">
+<li><code><a title="model.tree_item.IMTKeyboardActionData.action_type" href="#model.tree_item.IMTKeyboardActionData.action_type">action_type</a></code></li>
+<li><code><a title="model.tree_item.IMTKeyboardActionData.add_key" href="#model.tree_item.IMTKeyboardActionData.add_key">add_key</a></code></li>
+<li><code><a title="model.tree_item.IMTKeyboardActionData.clear" href="#model.tree_item.IMTKeyboardActionData.clear">clear</a></code></li>
+<li><code><a title="model.tree_item.IMTKeyboardActionData.get_key_sequence" href="#model.tree_item.IMTKeyboardActionData.get_key_sequence">get_key_sequence</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="model.tree_item.IMTMouseActionData" href="#model.tree_item.IMTMouseActionData">IMTMouseActionData</a></code></h4>
+<ul class="">
+<li><code><a title="model.tree_item.IMTMouseActionData.button" href="#model.tree_item.IMTMouseActionData.button">button</a></code></li>
+<li><code><a title="model.tree_item.IMTMouseActionData.end_position" href="#model.tree_item.IMTMouseActionData.end_position">end_position</a></code></li>
+<li><code><a title="model.tree_item.IMTMouseActionData.position" href="#model.tree_item.IMTMouseActionData.position">position</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="model.tree_item.IMTPoint" href="#model.tree_item.IMTPoint">IMTPoint</a></code></h4>
+<ul class="">
+<li><code><a title="model.tree_item.IMTPoint.clone" href="#model.tree_item.IMTPoint.clone">clone</a></code></li>
+<li><code><a title="model.tree_item.IMTPoint.x" href="#model.tree_item.IMTPoint.x">x</a></code></li>
+<li><code><a title="model.tree_item.IMTPoint.y" href="#model.tree_item.IMTPoint.y">y</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="model.tree_item.IMTTreeItem" href="#model.tree_item.IMTTreeItem">IMTTreeItem</a></code></h4>
+<ul class="">
+<li><code><a title="model.tree_item.IMTTreeItem.clone" href="#model.tree_item.IMTTreeItem.clone">clone</a></code></li>
+<li><code><a title="model.tree_item.IMTTreeItem.get_id" href="#model.tree_item.IMTTreeItem.get_id">get_id</a></code></li>
+<li><code><a title="model.tree_item.IMTTreeItem.get_property" href="#model.tree_item.IMTTreeItem.get_property">get_property</a></code></li>
+<li><code><a title="model.tree_item.IMTTreeItem.set_property" href="#model.tree_item.IMTTreeItem.set_property">set_property</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="model.tree_item.MTInputDevice" href="#model.tree_item.MTInputDevice">MTInputDevice</a></code></h4>
+<ul class="">
+<li><code><a title="model.tree_item.MTInputDevice.JOYSTICK" href="#model.tree_item.MTInputDevice.JOYSTICK">JOYSTICK</a></code></li>
+<li><code><a title="model.tree_item.MTInputDevice.KEYBOARD" href="#model.tree_item.MTInputDevice.KEYBOARD">KEYBOARD</a></code></li>
+<li><code><a title="model.tree_item.MTInputDevice.MOUSE" href="#model.tree_item.MTInputDevice.MOUSE">MOUSE</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="model.tree_item.MTKeyState" href="#model.tree_item.MTKeyState">MTKeyState</a></code></h4>
+<ul class="">
+<li><code><a title="model.tree_item.MTKeyState.PRESSED" href="#model.tree_item.MTKeyState.PRESSED">PRESSED</a></code></li>
+<li><code><a title="model.tree_item.MTKeyState.RELEASED" href="#model.tree_item.MTKeyState.RELEASED">RELEASED</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="model.tree_item.MTKeyboardAction" href="#model.tree_item.MTKeyboardAction">MTKeyboardAction</a></code></h4>
+<ul class="">
+<li><code><a title="model.tree_item.MTKeyboardAction.SHORTCUT" href="#model.tree_item.MTKeyboardAction.SHORTCUT">SHORTCUT</a></code></li>
+<li><code><a title="model.tree_item.MTKeyboardAction.TYPE" href="#model.tree_item.MTKeyboardAction.TYPE">TYPE</a></code></li>
+<li><code><a title="model.tree_item.MTKeyboardAction.get_action_id" href="#model.tree_item.MTKeyboardAction.get_action_id">get_action_id</a></code></li>
+<li><code><a title="model.tree_item.MTKeyboardAction.get_action_params" href="#model.tree_item.MTKeyboardAction.get_action_params">get_action_params</a></code></li>
+<li><code><a title="model.tree_item.MTKeyboardAction.get_device_type" href="#model.tree_item.MTKeyboardAction.get_device_type">get_device_type</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="model.tree_item.MTMouseAction" href="#model.tree_item.MTMouseAction">MTMouseAction</a></code></h4>
+<ul class="two-column">
+<li><code><a title="model.tree_item.MTMouseAction.CLICK" href="#model.tree_item.MTMouseAction.CLICK">CLICK</a></code></li>
+<li><code><a title="model.tree_item.MTMouseAction.DOUBLE_CLICK" href="#model.tree_item.MTMouseAction.DOUBLE_CLICK">DOUBLE_CLICK</a></code></li>
+<li><code><a title="model.tree_item.MTMouseAction.DRAG" href="#model.tree_item.MTMouseAction.DRAG">DRAG</a></code></li>
+<li><code><a title="model.tree_item.MTMouseAction.MOVE" href="#model.tree_item.MTMouseAction.MOVE">MOVE</a></code></li>
+<li><code><a title="model.tree_item.MTMouseAction.RIGHT_CLICK" href="#model.tree_item.MTMouseAction.RIGHT_CLICK">RIGHT_CLICK</a></code></li>
+<li><code><a title="model.tree_item.MTMouseAction.get_action_id" href="#model.tree_item.MTMouseAction.get_action_id">get_action_id</a></code></li>
+<li><code><a title="model.tree_item.MTMouseAction.get_action_params" href="#model.tree_item.MTMouseAction.get_action_params">get_action_params</a></code></li>
+<li><code><a title="model.tree_item.MTMouseAction.get_device_type" href="#model.tree_item.MTMouseAction.get_device_type">get_device_type</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="model.tree_item.MTNode" href="#model.tree_item.MTNode">MTNode</a></code></h4>
+<ul class="">
+<li><code><a title="model.tree_item.MTNode.GROUP" href="#model.tree_item.MTNode.GROUP">GROUP</a></code></li>
+<li><code><a title="model.tree_item.MTNode.INSTRUCTION" href="#model.tree_item.MTNode.INSTRUCTION">INSTRUCTION</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="model.tree_item.TreeItemData" href="#model.tree_item.TreeItemData">TreeItemData</a></code></h4>
+<ul class="two-column">
+<li><code><a title="model.tree_item.TreeItemData.action_data" href="#model.tree_item.TreeItemData.action_data">action_data</a></code></li>
+<li><code><a title="model.tree_item.TreeItemData.action_type" href="#model.tree_item.TreeItemData.action_type">action_type</a></code></li>
+<li><code><a title="model.tree_item.TreeItemData.children_ids" href="#model.tree_item.TreeItemData.children_ids">children_ids</a></code></li>
+<li><code><a title="model.tree_item.TreeItemData.name" href="#model.tree_item.TreeItemData.name">name</a></code></li>
+<li><code><a title="model.tree_item.TreeItemData.node_type" href="#model.tree_item.TreeItemData.node_type">node_type</a></code></li>
+<li><code><a title="model.tree_item.TreeItemData.parent_id" href="#model.tree_item.TreeItemData.parent_id">parent_id</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="model.tree_item.TreeItemKeys" href="#model.tree_item.TreeItemKeys">TreeItemKeys</a></code></h4>
+<ul class="two-column">
+<li><code><a title="model.tree_item.TreeItemKeys.ACTION" href="#model.tree_item.TreeItemKeys.ACTION">ACTION</a></code></li>
+<li><code><a title="model.tree_item.TreeItemKeys.ACTION_DATA" href="#model.tree_item.TreeItemKeys.ACTION_DATA">ACTION_DATA</a></code></li>
+<li><code><a title="model.tree_item.TreeItemKeys.CHILDREN" href="#model.tree_item.TreeItemKeys.CHILDREN">CHILDREN</a></code></li>
+<li><code><a title="model.tree_item.TreeItemKeys.DATA" href="#model.tree_item.TreeItemKeys.DATA">DATA</a></code></li>
+<li><code><a title="model.tree_item.TreeItemKeys.EXPANDED" href="#model.tree_item.TreeItemKeys.EXPANDED">EXPANDED</a></code></li>
+<li><code><a title="model.tree_item.TreeItemKeys.ICON" href="#model.tree_item.TreeItemKeys.ICON">ICON</a></code></li>
+<li><code><a title="model.tree_item.TreeItemKeys.ID" href="#model.tree_item.TreeItemKeys.ID">ID</a></code></li>
+<li><code><a title="model.tree_item.TreeItemKeys.NAME" href="#model.tree_item.TreeItemKeys.NAME">NAME</a></code></li>
+<li><code><a title="model.tree_item.TreeItemKeys.PARENT_ID" href="#model.tree_item.TreeItemKeys.PARENT_ID">PARENT_ID</a></code></li>
+<li><code><a title="model.tree_item.TreeItemKeys.SELECTED" href="#model.tree_item.TreeItemKeys.SELECTED">SELECTED</a></code></li>
+<li><code><a title="model.tree_item.TreeItemKeys.TYPE" href="#model.tree_item.TreeItemKeys.TYPE">TYPE</a></code></li>
+<li><code><a title="model.tree_item.TreeItemKeys.VISIBLE" href="#model.tree_item.TreeItemKeys.VISIBLE">VISIBLE</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

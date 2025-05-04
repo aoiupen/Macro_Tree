@@ -8,10 +8,10 @@ import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import Json
 
-from temp.core.tree import IMTTree
-from temp.model.implementations.simple_tree import SimpleTree
-from temp.model.tree_item import IMTTreeItem
-from temp.model.tree_repo import IMTTreeRepository
+from core.tree import IMTTree
+from model.implementations.simple_tree import SimpleTree
+from model.tree_item import IMTTreeItem
+from model.tree_repo import IMTTreeRepository
 
 
 logger = logging.getLogger(__name__)

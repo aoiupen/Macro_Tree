@@ -1,14 +1,14 @@
- import sys
+import sys
 import os
 import unittest
 import tempfile
 import json
 
-# temp 패키지를 Python 경로에 추가
+# Python 경로 설정
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-from temp.model.implementations.simple_tree import SimpleTree
-from temp.model.implementations.simple_tree_item import SimpleTreeItem
+from model.implementations.simple_tree import SimpleTree
+from model.implementations.simple_tree_item import SimpleTreeItem
 
 class TestSimpleTree(unittest.TestCase):
     def setUp(self):

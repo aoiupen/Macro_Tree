@@ -1,5 +1,5 @@
 from typing import Dict, Optional, Any
-from temp.model.tree_item import TreeItemData
+from model.tree_item import TreeItemData
 
 class SimpleTreeItem:
     def __init__(self, item_id: str, name: str) -> None:
