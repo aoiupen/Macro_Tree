@@ -1,18 +1,12 @@
 from enum import Enum
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Generic,
-    Iterator,
-    List,
-    Optional,
-    Protocol,
-    TypeVar,
-    runtime_checkable,
-)
+from typing import Any, Callable, Dict, Generic, Iterator, List, Optional, Protocol, TypeVar
 
-from temp.model.tree_item import IMTTreeItem
+from core.interfaces.base_item import IMTTreeItem
+
+# 타입 변수 선언
+T = TypeVar('T')
+T_co = TypeVar('T_co', covariant=True)  # 공변성 타입 변수
+
 class MTTreeEvent(Enum):
     """트리 이벤트 유형"""
     ITEM_ADDED = "item_added"
@@ -25,41 +19,23 @@ class MTTreeEvent(Enum):
 TreeEventCallback = Callable[[MTTreeEvent, Dict[str, Any]], None]
 
 # 트리 메타데이터 인터페이스
-class IMTTreeMetadata(Protocol):
-    """트리 메타데이터 인터페이스"""
+class IMTTreeData(Protocol[T]):
+    """트리 데이터 액세스 인터페이스"""
     
     @property
-    def id(self) -> str:
-        """트리의 고유 식별자"""
-        ...
+    def id(self) -> str: ...
     
     @property
-    def name(self) -> str:
-        """트리 이름"""
-        ...
+    def name(self) -> str: ...
     
     @property
-    def root_id(self) -> Optional[str]:
-        """루트 아이템의 ID"""
-        ...
-
-# 트리 읽기 작업 인터페이스
-T = TypeVar('T')
-@runtime_checkable
-class IMTTreeReadable(Protocol[T]):
-    """트리 읽기 작업 인터페이스"""
+    def root_id(self) -> Optional[str]: ...
     
-    def get_all_items(self) -> Dict[str, T]:
-        """모든 트리 아이템"""
-        ...
+    def get_all_items(self) -> Dict[str, T]: ...
     
-    def get_item(self, item_id: str) -> Optional[T]:
-        """지정된 ID의 아이템을 가져옵니다."""
-        ...
+    def get_item(self, item_id: str) -> Optional[T]: ...
     
-    def get_children(self, parent_id: Optional[str]) -> List[T]:
-        """지정된 부모의 모든 자식 아이템을 가져옵니다."""
-        ...
+    def get_children(self, parent_id: Optional[str]) -> List[T]: ...
 
 # 트리 수정 작업 인터페이스
 class IMTTreeModifiable(Protocol):
@@ -124,7 +100,6 @@ class IMTTreeObservable(Protocol):
         ...
 
 # 필터링 기능이 있는 고급 순회 인터페이스
-T_co = TypeVar('T_co', covariant=True)
 class IMTTreeAdvancedTraversable(Protocol, Generic[T_co]):
     """확장된 매크로 트리 순회 인터페이스 - 필터링 기능 포함"""
     
@@ -133,6 +108,6 @@ class IMTTreeAdvancedTraversable(Protocol, Generic[T_co]):
         ...
 
 # 통합 트리 인터페이스
-class IMTTree(IMTTreeMetadata, IMTTreeReadable, IMTTreeModifiable, IMTTreeTraversable, IMTTreeSerializable, IMTTreeObservable, Protocol):
+class IMTTree(IMTTreeData, IMTTreeModifiable, IMTTreeTraversable, IMTTreeSerializable, IMTTreeObservable, Protocol):
     """매크로 트리 통합 인터페이스"""
-    pass
+    pass 

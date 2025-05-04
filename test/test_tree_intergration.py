@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional
 
-from temp.core.tree import IMTTreeReadable
-from temp.test.mocks.mock_tree import MockTree
+from core.tree import IMTTreeReadable
+from test.mocks.mock_tree import MockTree
 
 
 def test_tree_read_operations()-> None:

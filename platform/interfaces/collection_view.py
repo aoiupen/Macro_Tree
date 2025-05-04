@@ -1,5 +1,5 @@
 from typing import Protocol, List, Any
-from temp.platform.interfaces.ui_element import IMTUIElement
+from platform.interfaces.ui_element import IMTUIElement
 
 class IMTCollectionView(IMTUIElement, Protocol):
     def set_items(self, items: List[Any]) -> None: ...

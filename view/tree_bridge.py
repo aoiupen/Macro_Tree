@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Protocol
 
-from temp.viewmodel.tree_viewmodel import IMTTreeViewModel
+from viewmodel.tree_viewmodel import IMTTreeViewModel
 
 
 class IMTTreeBridge(Protocol):

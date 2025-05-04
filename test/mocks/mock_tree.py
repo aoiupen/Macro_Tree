@@ -1,6 +1,6 @@
 from typing import Optional
 
-from temp.core.tree import IMTTreeReadable
+from core.tree import IMTTreeReadable
 
 
 class MockTree(IMTTreeReadable):

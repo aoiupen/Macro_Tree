@@ -1,9 +1,9 @@
 from typing import Any, Callable, Dict, List, Optional, Protocol
 
-from temp.core.tree import IMTTree, IMTTreeModifiable, IMTTreeReadable, IMTTreeTraversable
-from temp.model.tree_item import IMTTreeItem
-from temp.model.tree_repo import IMTTreeRepository
-from temp.model.tree_state_mgr import IMTTreeStateManager
+from core.tree import IMTTree, IMTTreeModifiable, IMTTreeData, IMTTreeTraversable
+from model.tree_item import IMTTreeItem
+from model.tree_repo import IMTTreeRepository
+from model.tree_state_mgr import IMTTreeStateManager
 
 
 class IMTTreeViewModel(Protocol):

@@ -8,10 +8,10 @@ import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import Json
 
-from temp.core.tree import IMTTree
-from temp.model.implementations.simple_tree import SimpleTree
-from temp.model.tree_item import IMTTreeItem
-from temp.model.tree_repo import IMTTreeRepository
+from core.interfaces.base_tree import IMTTree
+from core.impl.tree import MTTree
+from core.interfaces.base_item import IMTTreeItem
+from model.tree_repo import IMTTreeRepository
 
 
 logger = logging.getLogger(__name__)
@@ -437,7 +437,7 @@ class PostgreSQLTreeRepository(IMTTreeRepository):
         """
         try:
             tree_data = json.loads(json_str)
-            return SimpleTree.from_dict(tree_data)
+            return MTTree.from_dict(tree_data)
         except json.JSONDecodeError as e:
             logger.error(f"JSON 파싱 실패: {e}")
             raise ValueError(f"잘못된 JSON 형식: {e}") 
