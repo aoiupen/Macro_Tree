@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Callable, Dict, Generic, Iterator, List, Optional, Protocol, TypeVar
+from typing import Any, Callable, Dict, Generic, Iterator, List, Protocol, TypeVar
 
 from core.interfaces.base_item import IMTTreeItem
 
@@ -29,19 +29,19 @@ class IMTTreeData(Protocol[T]):
     def name(self) -> str: ...
     
     @property
-    def root_id(self) -> Optional[str]: ...
+    def root_id(self) -> str | None: ...
     
     def get_all_items(self) -> Dict[str, T]: ...
     
-    def get_item(self, item_id: str) -> Optional[T]: ...
+    def get_item(self, item_id: str) -> T | None: ...
     
-    def get_children(self, parent_id: Optional[str]) -> List[T]: ...
+    def get_children(self, parent_id: str | None) -> List[T]: ...
 
 # 트리 수정 작업 인터페이스
 class IMTTreeModifiable(Protocol):
     """트리 수정 작업 인터페이스"""
     
-    def add_item(self, item: IMTTreeItem, parent_id: Optional[str] = None) -> bool:
+    def add_item(self, item: IMTTreeItem, parent_id: str | None = None) -> bool:
         """아이템을 트리에 추가합니다. Raises: ValueError-아이템 ID 중복 시"""
         ...
     
@@ -49,7 +49,7 @@ class IMTTreeModifiable(Protocol):
         """아이템을 트리에서 제거합니다. Raises: ValueError-존재하지 않는 아이템 ID"""
         ...
     
-    def move_item(self, item_id: str, new_parent_id: Optional[str]) -> bool:
+    def move_item(self, item_id: str, new_parent_id: str | None) -> bool:
         """아이템을 새 부모로 이동합니다. Raises: ValueError-유효하지 않은 아이템/부모 ID"""
         ...
     
@@ -66,7 +66,7 @@ class IMTTreeTraversable(Protocol):
     """트리 순회 인터페이스"""
     
     def traverse(self, visitor: Callable[[IMTTreeItem], None], 
-                node_id: Optional[str] = None) -> None:
+                node_id: str | None = None) -> None:
         """트리를 BFS로 순회하면서 각 아이템에 방문자 함수를 적용합니다."""
         ...
 

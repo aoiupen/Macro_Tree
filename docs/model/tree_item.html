@@ -56,7 +56,7 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class IMTActionType(Protocol):
-    def get_action_id(self) -&gt; str:
+    def get_action_name(self) -&gt; str:
         ...
     
     def get_action_params(self) -&gt; Dict[str, Any]:
@@ -98,15 +98,15 @@ Protocol classes can be generic, they are defined as::</p>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="model.tree_item.IMTActionType.get_action_id"><code class="name flex">
-<span>def <span class="ident">get_action_id</span></span>(<span>self) ‑> str</span>
+<dt id="model.tree_item.IMTActionType.get_action_name"><code class="name flex">
+<span>def <span class="ident">get_action_name</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_action_id(self) -&gt; str:
+<pre><code class="python">def get_action_name(self) -&gt; str:
     ...</code></pre>
 </details>
 <div class="desc"></div>
@@ -612,7 +612,7 @@ item.set_property(TreeItemKeys.PARENT_ID, parent_id)</p></div>
     TYPE = &#34;type&#34;
     SHORTCUT = &#34;shortcut&#34;
     
-    def get_action_id(self) -&gt; str:
+    def get_action_name(self) -&gt; str:
         return self.value
     
     def get_action_params(self) -&gt; Dict[str, Any]:
@@ -688,15 +688,15 @@ attributes &ndash; see the documentation for details.</p></div>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="model.tree_item.MTKeyboardAction.get_action_id"><code class="name flex">
-<span>def <span class="ident">get_action_id</span></span>(<span>self) ‑> str</span>
+<dt id="model.tree_item.MTKeyboardAction.get_action_name"><code class="name flex">
+<span>def <span class="ident">get_action_name</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_action_id(self) -&gt; str:
+<pre><code class="python">def get_action_name(self) -&gt; str:
     return self.value</code></pre>
 </details>
 <div class="desc"></div>
@@ -745,7 +745,7 @@ attributes &ndash; see the documentation for details.</p></div>
     DRAG = &#34;drag&#34;
     MOVE = &#34;move&#34;
     
-    def get_action_id(self) -&gt; str:
+    def get_action_name(self) -&gt; str:
         return self.value
     
     def get_action_params(self) -&gt; Dict[str, Any]:
@@ -833,15 +833,15 @@ attributes &ndash; see the documentation for details.</p></div>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="model.tree_item.MTMouseAction.get_action_id"><code class="name flex">
-<span>def <span class="ident">get_action_id</span></span>(<span>self) ‑> str</span>
+<dt id="model.tree_item.MTMouseAction.get_action_name"><code class="name flex">
+<span>def <span class="ident">get_action_name</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_action_id(self) -&gt; str:
+<pre><code class="python">def get_action_name(self) -&gt; str:
     return self.value</code></pre>
 </details>
 <div class="desc"></div>
@@ -1050,7 +1050,7 @@ attributes &ndash; see the documentation for details.</p></div>
 <li>
 <h4><code><a title="model.tree_item.IMTActionType" href="#model.tree_item.IMTActionType">IMTActionType</a></code></h4>
 <ul class="">
-<li><code><a title="model.tree_item.IMTActionType.get_action_id" href="#model.tree_item.IMTActionType.get_action_id">get_action_id</a></code></li>
+<li><code><a title="model.tree_item.IMTActionType.get_action_name" href="#model.tree_item.IMTActionType.get_action_name">get_action_name</a></code></li>
 <li><code><a title="model.tree_item.IMTActionType.get_action_params" href="#model.tree_item.IMTActionType.get_action_params">get_action_params</a></code></li>
 <li><code><a title="model.tree_item.IMTActionType.get_device_type" href="#model.tree_item.IMTActionType.get_device_type">get_device_type</a></code></li>
 </ul>
@@ -1116,7 +1116,7 @@ attributes &ndash; see the documentation for details.</p></div>
 <ul class="">
 <li><code><a title="model.tree_item.MTKeyboardAction.SHORTCUT" href="#model.tree_item.MTKeyboardAction.SHORTCUT">SHORTCUT</a></code></li>
 <li><code><a title="model.tree_item.MTKeyboardAction.TYPE" href="#model.tree_item.MTKeyboardAction.TYPE">TYPE</a></code></li>
-<li><code><a title="model.tree_item.MTKeyboardAction.get_action_id" href="#model.tree_item.MTKeyboardAction.get_action_id">get_action_id</a></code></li>
+<li><code><a title="model.tree_item.MTKeyboardAction.get_action_name" href="#model.tree_item.MTKeyboardAction.get_action_name">get_action_name</a></code></li>
 <li><code><a title="model.tree_item.MTKeyboardAction.get_action_params" href="#model.tree_item.MTKeyboardAction.get_action_params">get_action_params</a></code></li>
 <li><code><a title="model.tree_item.MTKeyboardAction.get_device_type" href="#model.tree_item.MTKeyboardAction.get_device_type">get_device_type</a></code></li>
 </ul>
@@ -1129,7 +1129,7 @@ attributes &ndash; see the documentation for details.</p></div>
 <li><code><a title="model.tree_item.MTMouseAction.DRAG" href="#model.tree_item.MTMouseAction.DRAG">DRAG</a></code></li>
 <li><code><a title="model.tree_item.MTMouseAction.MOVE" href="#model.tree_item.MTMouseAction.MOVE">MOVE</a></code></li>
 <li><code><a title="model.tree_item.MTMouseAction.RIGHT_CLICK" href="#model.tree_item.MTMouseAction.RIGHT_CLICK">RIGHT_CLICK</a></code></li>
-<li><code><a title="model.tree_item.MTMouseAction.get_action_id" href="#model.tree_item.MTMouseAction.get_action_id">get_action_id</a></code></li>
+<li><code><a title="model.tree_item.MTMouseAction.get_action_name" href="#model.tree_item.MTMouseAction.get_action_name">get_action_name</a></code></li>
 <li><code><a title="model.tree_item.MTMouseAction.get_action_params" href="#model.tree_item.MTMouseAction.get_action_params">get_action_params</a></code></li>
 <li><code><a title="model.tree_item.MTMouseAction.get_device_type" href="#model.tree_item.MTMouseAction.get_device_type">get_device_type</a></code></li>
 </ul>
