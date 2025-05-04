@@ -1,6 +1,6 @@
-from typing import Any, Dict, List, Protocol, Tuple, TypeVar, runtime_checkable
+from typing import Any, Dict, Protocol, TypeVar, runtime_checkable
 
-from core.interfaces.base_item_action import IMTActionData, MTDevice, MTKeyState
+from model.action.interfaces import IMTActionData, MTDevice, MTKeyState
 
 # 타입 변수 정의
 T = TypeVar('T')  # 제네릭 타입 변수 정의

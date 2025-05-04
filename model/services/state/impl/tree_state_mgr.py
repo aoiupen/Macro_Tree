@@ -1,8 +1,8 @@
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Callable, Dict, List, Set
 from copy import deepcopy
 
 from core.interfaces.base_tree import IMTTree
-from model.tree_state_mgr import IMTTreeStateManager
+from model.state.tree_state_mgr import IMTTreeStateManager
 
 class SimpleTreeStateManager(IMTTreeStateManager):
     """매크로 트리 상태 관리자 간단 구현"""
@@ -13,6 +13,15 @@ class SimpleTreeStateManager(IMTTreeStateManager):
         self._history: List[IMTTree] = []
         self._current_index: int = -1
         self._subscribers: Set[Callable] = set()
+    
+    def set_initial_state(self, tree: IMTTree) -> None:
+        """초기 상태를 설정합니다."""
+        # 기존 이력 초기화
+        self._history = []
+        self._current_index = -1
+        
+        # 새 상태 저장
+        self.save_state(tree)
     
     def save_state(self, tree: IMTTree) -> None:
         """현재 트리 상태를 이력에 저장"""
@@ -34,7 +43,8 @@ class SimpleTreeStateManager(IMTTreeStateManager):
         # 구독자에게 알림
         self._notify_subscribers()
     
-    def current_state(self) -> Optional[IMTTree]:
+    @property
+    def current_state(self) -> IMTTree | None:
         """현재 트리 상태를 반환"""
         if self._current_index >= 0 and self._current_index < len(self._history):
             return self._history[self._current_index]
@@ -48,23 +58,23 @@ class SimpleTreeStateManager(IMTTreeStateManager):
         """다시 실행 가능 여부 확인"""
         return self._current_index < len(self._history) - 1
     
-    def undo(self) -> Optional[IMTTree]:
+    def undo(self) -> IMTTree | None:
         """이전 상태로 되돌리기"""
         if not self.can_undo():
             return None
         
         self._current_index -= 1
         self._notify_subscribers()
-        return self.current_state()
+        return self.current_state
     
-    def redo(self) -> Optional[IMTTree]:
+    def redo(self) -> IMTTree | None:
         """다음 상태로 복원"""
         if not self.can_redo():
             return None
         
         self._current_index += 1
         self._notify_subscribers()
-        return self.current_state()
+        return self.current_state
     
     def clear(self) -> None:
         """모든 상태 이력 초기화"""
@@ -83,6 +93,6 @@ class SimpleTreeStateManager(IMTTreeStateManager):
     
     def _notify_subscribers(self) -> None:
         """모든 구독자에게 상태 변경을 알립니다."""
-        current = self.current_state()
+        current = self.current_state
         for callback in self._subscribers:
             callback(current)

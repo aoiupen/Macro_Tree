@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict
 
-from core.interfaces.base_item_action import IMTAction, MTDevice
+from model.action.interfaces.base_action import IMTAction, MTDevice
 
 
 class MTMouseAction(Enum, IMTAction):

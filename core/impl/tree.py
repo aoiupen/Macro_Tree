@@ -2,7 +2,9 @@ from typing import Any, Callable, Dict, Iterator, List, Optional, Set, TypeVar
 import json
 
 from core.interfaces.base_item import IMTTreeItem
-from core.interfaces.base_tree import IMTTree, MTTreeEvent, TreeEventCallback
+from core.interfaces.base_tree import IMTTree
+from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
+from model.events.impl.tree_event_mgr import MTTreeEventManager
 from core.impl.item import MTTreeItem, SimpleTreeItem
 
 T = TypeVar('T', bound=IMTTreeItem)
@@ -256,70 +258,20 @@ class MTTree:
                 for child in self.get_children(current_id):
                     queue.append(child.id)
     
-    def traverse_filtered(self, predicate: Callable[[IMTTreeItem], bool]) -> Iterator[IMTTreeItem]:
-        """트리를 순회하며 조건에 맞는 아이템을 선택합니다.
-        
-        Args:
-            predicate: 필터링 조건 함수
-            
-        Returns:
-            조건에 맞는 아이템 이터레이터
-        """
-        for item in self._items.values():
-            if predicate(item):
-                yield item
-    
-    def to_dict(self) -> Dict[str, Any]:
-        """트리를 딕셔너리로 변환합니다."""
-        return {
-            "id": self._id,
-            "name": self._name,
-            "root_id": self._root_id,
-            "items": {item_id: self._item_to_dict(item) for item_id, item in self._items.items()}
-        }
-    
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'MTTree':
-        """딕셔너리에서 트리를 생성합니다."""
-        # 트리 생성
-        tree_id = data.get("id", "")
-        tree_name = data.get("name", "")
-        tree = cls(tree_id, tree_name)
-        
-        # 아이템 복원
-        items_data = data.get("items", {})
-        for item_id, item_data in items_data.items():
-            # 아이템 생성
-            item = MTTreeItem(item_id, item_data.get("data", {}))
-            # 아이템 추가 (부모 설정 없이)
-            tree._items[item_id] = item
-        
-        # 루트 아이템 설정
-        tree._root_id = data.get("root_id")
-        
-        return tree
-    
     def clone(self) -> 'MTTree':
         """트리의 복제본을 생성합니다."""
-        return self.from_dict(self.to_dict())
-    
-    def subscribe(self, event_type: MTTreeEvent, callback: TreeEventCallback) -> None:
-        """이벤트를 구독합니다."""
-        if event_type not in self._subscribers:
-            self._subscribers[event_type] = []
+        new_tree = MTTree(self._id, self._name)
         
-        self._subscribers[event_type].append(callback)
-    
-    def unsubscribe(self, event_type: MTTreeEvent, callback: TreeEventCallback) -> None:
-        """이벤트 구독을 해제합니다."""
-        if event_type in self._subscribers:
-            self._subscribers[event_type] = [cb for cb in self._subscribers[event_type] if cb != callback]
-    
-    def _notify(self, event_type: MTTreeEvent, data: Dict[str, Any]) -> None:
-        """이벤트를 구독자들에게 알립니다."""
-        if event_type in self._subscribers:
-            for callback in self._subscribers[event_type]:
-                callback(event_type, data)
+        # 아이템 복제
+        for item_id, item in self._items.items():
+            new_tree._items[item_id] = item.clone()
+        
+        # 루트 아이템 ID 복제
+        new_tree._root_id = self._root_id
+        
+        # 이벤트 구독 정보는 복제하지 않음 (새 인스턴스에서 필요시 다시 구독)
+        
+        return new_tree
     
     def _is_descendant(self, ancestor_id: str, descendant_id: str) -> bool:
         """descendant_id가 ancestor_id의 자손인지 확인합니다."""
@@ -343,7 +295,35 @@ class MTTree:
             "data": item.data
         }
 
-
+    def to_dict(self) -> Dict[str, Any]:
+            """트리를 딕셔너리로 변환합니다."""
+            return {
+                "id": self._id,
+                "name": self._name,
+                "root_id": self._root_id,
+                "items": {item_id: self._item_to_dict(item) for item_id, item in self._items.items()}
+            }
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'MTTree':
+        """딕셔너리에서 트리를 생성합니다."""
+        # 트리 생성
+        tree_id = data.get("id", "")
+        tree_name = data.get("name", "")
+        tree = cls(tree_id, tree_name)
+        
+        # 아이템 복원
+        items_data = data.get("items", {})
+        for item_id, item_data in items_data.items():
+            # 아이템 생성
+            item = MTTreeItem(item_id, item_data.get("data", {}))
+            # 아이템 추가 (부모 설정 없이)
+            tree._items[item_id] = item
+        
+        # 루트 아이템 설정
+        tree._root_id = data.get("root_id")
+        
+        return tree
 class SimpleTree(MTTree):
     """간단한 트리 구현 클래스"""
     
