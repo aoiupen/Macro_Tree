@@ -7,9 +7,9 @@
 # 인터페이스 - 주요 공개 API
 from core.interfaces.base_tree import IMTTree, IMTTreeData, IMTTreeModifiable, IMTTreeTraversable
 from core.interfaces.base_item import IMTTreeItem, IMTBaseItem
-from core.interfaces.base_item_action import IMTAction, MTDevice, MTTreeEvent
+# from core.interfaces.base_item_action import IMTAction, MTDevice, MTTreeEvent
+from core.interfaces.base_item_data import IMTAction, MTDevice  # MTTreeEvent는 실제 정의된 곳에서 import
 
 # 기본 구현체 - 편의성을 위해 제한적으로 노출
 from core.impl.tree import MTTree
 from core.impl.item import MTTreeItem
-from core.impl.item_action import MTMouseAction, MTKeyboardAction

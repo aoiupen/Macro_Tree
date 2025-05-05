@@ -3,7 +3,7 @@ import os
 from uuid import uuid4
 from model.impl.simple_tree import SimpleTree
 from model.impl.simple_tree_item import SimpleTreeItem
-from model.persistence.interfaces.tree_repo import IMTTreeRepository
+from model.store.interfaces.tree_repo import IMTTreeRepository
 from model.state.tree_state_mgr import IMTTreeStateManager
 from viewmodel.tree_viewmodel import IMTTreeViewModel
 

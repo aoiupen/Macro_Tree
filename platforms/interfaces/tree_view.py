@@ -1,7 +1,7 @@
 from typing import List, Protocol
 
 from model.tree_item import IMTTreeItem
-from platform.interfaces.collection_view import IMTCollectionView
+from platforms.interfaces.collection_view import IMTCollectionView
 
 
 class IMTTreeView(IMTCollectionView, Protocol):

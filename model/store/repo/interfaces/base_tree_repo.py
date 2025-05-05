@@ -3,38 +3,6 @@ from typing import Any, Dict, Protocol, TypeVar
 # IMTTree 타입 참조
 IMTTree = TypeVar('IMTTree')
 
-class IMTTreeSerializable(Protocol):
-    """트리 기본 직렬화 인터페이스"""
-    
-    def to_dict(self) -> Dict[str, Any]:
-        """트리를 딕셔너리로 변환합니다."""
-        ...
-    
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> IMTTree:
-        """딕셔너리에서 트리를 생성합니다."""
-        ...
-    
-    def clone(self) -> IMTTree:
-        """트리의 복제본을 생성합니다."""
-        ...
-
-class IMTTreeJSONSerializable(Protocol):
-    """트리 JSON 직렬화 인터페이스"""
-    
-    def to_json(self) -> str:
-        """트리를 JSON 문자열로 변환합니다."""
-        ...
-    
-    @classmethod
-    def from_json(cls, json_str: str) -> IMTTree:
-        """JSON 문자열에서 트리를 생성합니다. 
-        
-        Raises:
-            ValueError: 잘못된 JSON 형식
-        """
-        ...
-
 class IMTTreeRepository(Protocol):
     """트리 저장소 인터페이스"""
     
