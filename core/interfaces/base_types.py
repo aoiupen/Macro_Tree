@@ -1,0 +1,20 @@
+# 공통 기본 데이터 타입 인터페이스
+from typing import Protocol
+
+# 좌표 인터페이스
+class IMTPoint(Protocol):
+    """2D 좌표 인터페이스"""
+    @property
+    def x(self) -> int: ...
+    
+    @property
+    def y(self) -> int: ...
+    
+    def clone(self) -> 'IMTPoint': ...
+
+# 공통 동작(메서드) 프로토콜
+class IClearable(Protocol):
+    def clear(self) -> None: ...
+
+class ICloneable(Protocol):
+    def clone(self): ...

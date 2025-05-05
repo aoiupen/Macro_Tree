@@ -1,7 +1,7 @@
 from typing import Any, Dict, TypeVar
+import copy
 
 from core.interfaces.base_item import IMTTreeItem
-from core.interfaces.base_item_types import TreeItemData
 
 T = TypeVar('T')  # 제네릭 타입 변수 정의
 
@@ -23,10 +23,13 @@ class MTTreeItem(IMTTreeItem):
         """아이템 ID를 반환합니다."""
         return self._id
     
+    # RF : 가변 객체의 불변성 보장에는 deepcopy 사용
+    # RF : 대신 deepcopy는 속도 저하 가능성
+    # RF : 그러므로 불변 객체는 딕셔너리에 저장하고, 가변 객체는 캡슐화,불변 래퍼로 처리하면 얕은 복사로도 불변 보장
     @property
     def data(self) -> Dict[str, Any]:
-        """아이템 데이터를 반환합니다."""
-        return self._data.copy()
+        """아이템 데이터를 깊은 복사로 반환 (불변성 보장)"""
+        return copy.deepcopy(self._data)
     
     def get_property(self, key: str, default: T | None = None) -> T | None:
         """아이템 속성을 가져옵니다."""
@@ -39,21 +42,3 @@ class MTTreeItem(IMTTreeItem):
     def clone(self) -> 'MTTreeItem':
         """아이템의 복제본을 생성합니다."""
         return MTTreeItem(self._id, self._data.copy())
-
-
-class SimpleTreeItem(MTTreeItem):
-    """간단한 트리 아이템 구현 클래스"""
-    
-    def __init__(self, item_id: str, name: str) -> None:
-        """아이템 초기화
-        
-        Args:
-            item_id: 아이템 ID
-            name: 아이템 이름
-        """
-        initial_data: TreeItemData = {
-            "name": name,
-            "expanded": False,  # 기본적으로 축소됨
-            "selected": False   # 기본적으로 선택되지 않음
-        }
-        super().__init__(item_id, initial_data) 

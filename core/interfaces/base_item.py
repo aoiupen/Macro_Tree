@@ -1,8 +1,21 @@
-from typing import Any, Dict, Protocol, TypeVar, runtime_checkable
+from typing import Any, Dict, List, Protocol, TypeVar, TypedDict, runtime_checkable
 
-from model.action.interfaces import IMTActionData, MTDevice, MTKeyState
+# -------------------
+# TreeItemKeys 분리: 도메인 키와 UI/확장/부가 키를 별도 관리
+# - 도메인 키: core/interfaces/base_item_data.py
+# - UI/확장/부가 키: core/interfaces/base_item.py
+# -------------------
+class TreeItemKeys:
+    """트리 아이템의 UI/확장/부가 속성 키 상수"""
+    ID = "id"
+    DATA = "data"
+    EXPANDED = "expanded"
+    SELECTED = "selected"
+    VISIBLE = "visible"
+    ICON = "icon"
 
 # 타입 변수 정의
+# RF : 호출 시점에 타입이 결정
 T = TypeVar('T')  # 제네릭 타입 변수 정의
 
 @runtime_checkable
@@ -36,45 +49,4 @@ class IMTTreeItem(IMTBaseItem, Protocol):
         """아이템의 복제본을 생성합니다."""
         ...
 
-# 좌표 인터페이스
-class IMTPoint(Protocol):
-    """2D 좌표 인터페이스"""
-    @property
-    def x(self) -> int: ...
-    
-    @property
-    def y(self) -> int: ...
-    
-    def clone(self) -> 'IMTPoint': ...
-
-# 액션 데이터 인터페이스
-class IMTActionData(Protocol):
-    """액션 데이터 기본 인터페이스"""
-    def get_device_type(self) -> MTDevice: ...
-    
-    def clone(self) -> 'IMTActionData': ...
-
-# 마우스 액션 데이터 인터페이스
-class IMTMouseActionData(IMTActionData, Protocol):
-    """마우스 액션 데이터 인터페이스"""
-    @property
-    def position(self) -> IMTPoint: ...
-    
-    @property
-    def end_position(self) -> IMTPoint | None: ...
-    
-    @property
-    def button(self) -> str: ...
-
-# 키보드 액션 데이터 인터페이스
-class IMTKeyboardActionData(IMTActionData, Protocol):
-    """키보드 액션 데이터 인터페이스"""
-    @property
-    def action_type(self) -> 'MTKeyboardAction': ...
-    
-    def get_key_sequence(self) -> List[Tuple[str, MTKeyState]]: ...
-    
-    def add_key(self, key: str, state: MTKeyState) -> None: ...
-    
-    def clear(self) -> None: ...
 
