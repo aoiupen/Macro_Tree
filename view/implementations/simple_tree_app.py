@@ -1,59 +1,59 @@
 import sys
 import os
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QWidget, 
+from pyqt6.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QWidget, 
                           QFileDialog, QMessageBox, QAction, QMenuBar)
-from PyQt5.QtCore import Qt
+from pyqt6.QtCore import Qt
 
-from ...model.implementations.simple_tree import SimpleTree
-from ...model.implementations.simple_tree_item import SimpleTreeItem
-from ...viewmodel.implementations.simple_tree_viewmodel import SimpleTreeViewModel
-from .simple_tree_view import SimpleTreeView
+from ...model.impl.demo_tree import DemoTree
+from ...model.impl.demo_tree_item import DemoTreeItem
+from ...viewmodel.impl.demo_tree_viewmodel import DemoTreeViewModel
+from .demo_tree_view import DemoTreeView
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Simple Tree Demo")
+        self.setWindowTitle("Demo Tree Demo")
         
         # 모델 생성
-        self.tree = SimpleTree()
+        self.tree = DemoTree()
         
         # 샘플 데이터 추가
-        root_item = SimpleTreeItem("root", "Root Item")
+        root_item = DemoTreeItem("root", "Root Item")
         self.tree.add_item(root_item)
         
         # 첫 번째 그룹
-        group1 = SimpleTreeItem("group1", "Group 1")
+        group1 = DemoTreeItem("group1", "Group 1")
         self.tree.add_item(group1, "root")
         
         # 두 번째 그룹
-        group2 = SimpleTreeItem("group2", "Group 2")
+        group2 = DemoTreeItem("group2", "Group 2")
         self.tree.add_item(group2, "root")
         
         # 그룹 1의 하위 항목
         for i in range(3):
-            item = SimpleTreeItem(f"item-g1-{i}", f"Item {i} in Group 1")
+            item = DemoTreeItem(f"item-g1-{i}", f"Item {i} in Group 1")
             self.tree.add_item(item, "group1")
         
         # 그룹 2의 하위 항목
         for i in range(2):
-            item = SimpleTreeItem(f"item-g2-{i}", f"Item {i} in Group 2")
+            item = DemoTreeItem(f"item-g2-{i}", f"Item {i} in Group 2")
             self.tree.add_item(item, "group2")
             
             # 서브 아이템 추가
-            sub_item = SimpleTreeItem(f"item-g2-{i}-sub", f"Sub-item of {i}")
+            sub_item = DemoTreeItem(f"item-g2-{i}-sub", f"Sub-item of {i}")
             self.tree.add_item(sub_item, f"item-g2-{i}")
         
         # 루트 항목 확장 상태로 설정
         root_item.set_property("expanded", True)
         
         # ViewModel 생성
-        self.viewmodel = SimpleTreeViewModel(self.tree)
+        self.viewmodel = DemoTreeViewModel(self.tree)
         
         # 메뉴바 생성
         self._create_menus()
         
         # 트리 뷰 생성 및 설정
-        self.tree_view = SimpleTreeView(self.viewmodel)
+        self.tree_view = DemoTreeView(self.viewmodel)
         
         # 레이아웃 구성
         central_widget = QWidget()
@@ -106,11 +106,11 @@ class MainWindow(QMainWindow):
     
     def _new_tree(self):
         """새 트리 생성"""
-        self.tree = SimpleTree()
-        self.viewmodel = SimpleTreeViewModel(self.tree)
+        self.tree = DemoTree()
+        self.viewmodel = DemoTreeViewModel(self.tree)
         self.tree_view.set_viewmodel(self.viewmodel)
         self.current_file_path = ""
-        self.setWindowTitle("Simple Tree Demo")
+        self.setWindowTitle("Demo Tree Demo")
     
     def _open_file(self):
         """파일 열기"""
@@ -121,7 +121,7 @@ class MainWindow(QMainWindow):
         if file_path:
             if self.viewmodel.load_tree(file_path):
                 self.current_file_path = file_path
-                self.setWindowTitle(f"Simple Tree Demo - {os.path.basename(file_path)}")
+                self.setWindowTitle(f"Demo Tree Demo - {os.path.basename(file_path)}")
                 self.tree_view.update_tree_items()
             else:
                 QMessageBox.critical(self, "오류", "파일을 불러올 수 없습니다.")
@@ -146,7 +146,7 @@ class MainWindow(QMainWindow):
         """지정된 경로에 저장"""
         if self.viewmodel.save_tree(file_path):
             self.current_file_path = file_path
-            self.setWindowTitle(f"Simple Tree Demo - {os.path.basename(file_path)}")
+            self.setWindowTitle(f"Demo Tree Demo - {os.path.basename(file_path)}")
         else:
             QMessageBox.critical(self, "오류", "파일을 저장할 수 없습니다.")
 
