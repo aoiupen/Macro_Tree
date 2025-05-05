@@ -23,7 +23,7 @@ jobs:
           pip install pytest flake8 mypy
           
           # Windows 패키지 제거 및 설치
-          cat requirements.txt | grep -v pywin32 | grep -v pypiwin32 | grep -v pywinpty > requirements_filtered.txt
+          cat requirements.txt | grep -a -v pywin32 | grep -a -v pypiwin32 | grep -a -v pywinpty > requirements_filtered.txt
           pip install -r requirements_filtered.txt
       
       - name: Lint with flake8

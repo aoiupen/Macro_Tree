@@ -90,9 +90,10 @@ jobs:
         exit 1
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
       with:
-        ref: ${{ github.event.pull_request.base.sha }}
+        ref: ${{ github.sha }}
+        sha: ${{ github.sha }}
         category: "/language:python"
         queries: security-and-quality
         ignore-paths: '**/*.test.py,**/*.spec.py,**/tests/**'

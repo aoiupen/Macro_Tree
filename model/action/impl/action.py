@@ -1,94 +1,60 @@
 from enum import Enum
 from typing import Any, Dict, ClassVar
+from core.interfaces.base_item_data import (
+    MTMouseAction, MTKeyboardAction,
+    IMTMouseActionData, IMTKeyboardActionData, MTKeyState, IMTPoint
+)
+from core.impl.types import MTPoint
+# RF : action과 actiondata 구현
 
-from model.action.interfaces.base_action import IMTAction, MTDevice
+# 마우스 액션 데이터 구현
+class MTMouseActionData(IMTMouseActionData):
+    def __init__(self, action_type: MTMouseAction, position: IMTPoint, button: str = "left", end_position: IMTPoint | None = None):
+        self._action_type = action_type
+        self._position = position
+        self._button = button
+        self._end_position = end_position
 
-class MTBaseAction(Enum, IMTAction):
-    """기본 액션 클래스"""
-    
-    # 각 하위 클래스에서 설정할 디바이스 타입
-    DEVICE_TYPE: ClassVar[MTDevice] = None
-    
-    def get_action_id(self) -> str:
-        """액션 ID(값)을 반환합니다."""
-        return self.value
-    
-    def get_action_params(self) -> Dict[str, Any]:
-        """액션 매개변수를 반환합니다."""
-        return {}
-    
-    def get_device_type(self) -> MTDevice:
-        """액션의 장치 유형을 반환합니다."""
-        return self.__class__.DEVICE_TYPE
+    @property
+    def action_type(self) -> MTMouseAction:
+        return self._action_type
 
+    @property
+    def position(self) -> IMTPoint:
+        return self._position
 
-class MTMouseAction(MTBaseAction):
-    """마우스 액션 유형"""
-    DEVICE_TYPE = MTDevice.MOUSE
-    
-    CLICK = "click"
-    DOUBLE_CLICK = "doubleclick"
-    RIGHT_CLICK = "rightclick"
-    DRAG = "drag"
-    MOVE = "move"
+    @property
+    def end_position(self) -> IMTPoint | None:
+        return self._end_position
 
+    @property
+    def button(self) -> str:
+        return self._button
 
-class MTKeyboardAction(MTBaseAction):
-    """키보드 액션 유형"""
-    DEVICE_TYPE = MTDevice.KEYBOARD
-    
-    TYPE = "type"
-    SHORTCUT = "shortcut" 
+    def clear(self) -> None:
+        # 필요시 내부 상태 초기화
+        pass
 
+# 키보드 액션 데이터 구현
+class MTKeyboardActionData(IMTKeyboardActionData):
+    def __init__(self, action_type: MTKeyboardAction, key: str):
+        self._action_type = action_type
+        self._key = key
+        self._key_sequence: list[tuple[str, MTKeyState]] = []
 
-class MTPoint:
-    """간단한 2D 좌표 구현"""
-    
-    def __init__(self, x: int, y: int):
-        self.x = x
-        self.y = y
-    
-    def clone(self):
-        return MTPoint(self.x, self.y)
+    @property
+    def action_type(self) -> MTKeyboardAction:
+        return self._action_type
 
+    @property
+    def key(self) -> str:
+        return self._key
 
-class MTMouseActionData:
-    """간단한 마우스 액션 데이터 구현"""
-    
-    def __init__(self, position, button="left", end_position=None):
-        self.position = position
-        self.button = button
-        self.end_position = end_position
-    
-    def get_device_type(self):
-        return MTDevice.MOUSE
-    
-    def clone(self):
-        end_pos = self.end_position.clone() if self.end_position else None
-        return MTMouseActionData(self.position.clone(), self.button, end_pos)
+    def add_key(self, key: str, state: MTKeyState):
+        self._key_sequence.append((key, state))
 
-
-class MTKeyboardActionData:
-    """간단한 키보드 액션 데이터 구현"""
-    
-    def __init__(self, action_type):
-        self.action_type = action_type
-        self._key_sequence = []
-    
     def get_key_sequence(self):
         return self._key_sequence.copy()
-    
-    def add_key(self, key, state):
-        self._key_sequence.append((key, state))
-    
-    def clear(self):
+
+    def clear(self) -> None:
         self._key_sequence.clear()
-    
-    def get_device_type(self):
-        return MTDevice.KEYBOARD
-    
-    def clone(self):
-        new_data = MTKeyboardActionData(self.action_type)
-        for key, state in self._key_sequence:
-            new_data.add_key(key, state)
-        return new_data 
