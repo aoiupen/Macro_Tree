@@ -5,7 +5,7 @@ import uuid
 
 # 타입 참조만 가져옵니다
 IMTTree = TypeVar('IMTTree')
-from model.persistence.interfaces.base_tree_repository import IMTTreeRepository, IMTTreeJSONSerializable
+from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository, IMTTreeJSONSerializable
 
 class MTFileTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
     """파일 기반 트리 저장소 구현체"""
@@ -90,36 +90,3 @@ class MTFileTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
                     result[tree_id] = f"Tree {tree_id}"
         
         return result
-        
-    def to_json(self) -> str:
-        """트리를 JSON 문자열로 변환합니다.
-        
-        참고: 이 메서드는 전체 저장소가 아닌 개별 트리에 적용됩니다.
-        트리 객체에서 호출되어야 합니다.
-        """
-        raise NotImplementedError("저장소 자체는 JSON으로 변환할 수 없습니다. 트리 객체에서 사용하세요.")
-    
-    @classmethod
-    def from_json(cls, json_str: str) -> Any:
-        """JSON 문자열에서 트리를 생성합니다.
-        
-        Args:
-            json_str: JSON 문자열
-            
-        Returns:
-            생성된 트리 객체
-            
-        Raises:
-            ValueError: 잘못된 JSON 형식
-        """
-        try:
-            # JSON을 딕셔너리로 변환
-            tree_dict = json.loads(json_str)
-            
-            # 딕셔너리로부터 트리 생성
-            from core.impl.tree import MTTree
-            return MTTree.from_dict(tree_dict)
-        except json.JSONDecodeError as e:
-            raise ValueError(f"잘못된 JSON 형식: {e}")
-        except Exception as e:
-            raise ValueError(f"트리 생성 실패: {e}")

@@ -1,7 +1,7 @@
 from typing import Protocol, Dict, Any, List, Type, Optional
-from platform.interfaces.ui_element import IMTUIElement
+from platforms.interfaces.ui_element import IMTUIElement
 from model.tree_item import IMTTreeItem
-from platform.interfaces.tree_view import IMTTreeView
+from platforms.interfaces.tree_view import IMTTreeView
 
 class IMTPlatformAdapter(Protocol):
     """플랫폼 특화 UI 생성 어댑터"""

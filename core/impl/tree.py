@@ -5,7 +5,7 @@ from core.interfaces.base_item import IMTTreeItem
 from core.interfaces.base_tree import IMTTree
 from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 from model.events.impl.tree_event_mgr import MTTreeEventManager
-from core.impl.item import MTTreeItem, SimpleTreeItem
+from core.impl.item import MTTreeItem
 
 T = TypeVar('T', bound=IMTTreeItem)
 
@@ -324,12 +324,6 @@ class MTTree:
         tree._root_id = data.get("root_id")
         
         return tree
-class SimpleTree(MTTree):
-    """간단한 트리 구현 클래스"""
-    
-    def __init__(self):
-        """기본 트리 초기화"""
-        super().__init__("simple_tree", "Simple Tree")
     
     def to_json(self) -> str:
         """트리 구조를 JSON 문자열로 직렬화합니다.
@@ -339,32 +333,16 @@ class SimpleTree(MTTree):
         """
         return json.dumps(self.to_dict(), ensure_ascii=False, indent=2)
     
-    def save_to_file(self, file_path: str) -> bool:
-        """트리 구조를 JSON 파일로 저장합니다.
-        
-        Args:
-            file_path: 저장할 파일 경로
-            
-        Returns:
-            성공 여부
-        """
-        try:
-            with open(file_path, 'w', encoding='utf-8') as file:
-                file.write(self.to_json())
-            return True
-        except Exception as e:
-            print(f"파일 저장 실패: {e}")
-            return False
-    
+ 
     @classmethod
-    def from_json(cls, json_str: str) -> 'SimpleTree':
+    def from_json(cls, json_str: str) -> IMTTree:
         """JSON 문자열에서 트리 구조를 로드합니다.
         
         Args:
             json_str: JSON 문자열
             
         Returns:
-            SimpleTree 인스턴스
+            Tree 인스턴스
         """
         try:
             data = json.loads(json_str)
@@ -377,7 +355,7 @@ class SimpleTree(MTTree):
             for item_id, item_dict in items_data.items():
                 item_data = item_dict.get("data", {})
                 name = item_data.get("name", "")
-                item = SimpleTreeItem(item_id, name)
+                item = IMTTreeItem(item_id, name)
                 
                 # 다른 속성 설정
                 for key, value in item_data.items():
@@ -401,21 +379,3 @@ class SimpleTree(MTTree):
         except Exception as e:
             print(f"JSON 파싱 실패: {e}")
             return cls()
-    
-    @classmethod
-    def load_from_file(cls, file_path: str) -> Optional['SimpleTree']:
-        """JSON 파일에서 트리 구조를 로드합니다.
-        
-        Args:
-            file_path: 파일 경로
-            
-        Returns:
-            SimpleTree 인스턴스 또는 None (실패 시)
-        """
-        try:
-            with open(file_path, 'r', encoding='utf-8') as file:
-                json_str = file.read()
-            return cls.from_json(json_str)
-        except Exception as e:
-            print(f"파일 불러오기 실패: {e}")
-            return None 

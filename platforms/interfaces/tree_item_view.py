@@ -1,5 +1,5 @@
 from typing import Protocol
-from platform.interfaces.ui_element import IMTUIElement
+from platforms.interfaces.ui_element import IMTUIElement
 from model.tree_item import IMTTreeItem
 
 class IMTTreeItemView(IMTUIElement, Protocol):

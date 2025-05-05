@@ -3,7 +3,6 @@ from typing import Any, Callable, Dict, Generic, Iterator, List, Protocol, TypeV
 
 from core.interfaces.base_item import IMTTreeItem
 from model.events.interfaces.base_tree_event_mgr import MTTreeEvent, TreeEventCallback, IMTTreeObservable
-from model.persistence.interfaces.base_tree_repository import IMTTreeSerializable
 from model.services.traversal.interfaces.base_advanced_traversal import IMTTreeAdvancedTraversable
 
 # 타입 변수 선언
@@ -63,6 +62,38 @@ class IMTTreeTraversable(Protocol):
         ...
 
 # 통합 트리 인터페이스
-class IMTTree(IMTTreeData, IMTTreeModifiable, IMTTreeTraversable, IMTTreeSerializable, IMTTreeObservable, IMTTreeAdvancedTraversable, Protocol):
+class IMTTree(IMTTreeData, IMTTreeModifiable, IMTTreeTraversable, IMTTreeObservable, IMTTreeAdvancedTraversable, Protocol):
     """매크로 트리 통합 인터페이스"""
-    pass 
+    pass
+
+class IMTTreeSerializable(Protocol):
+    """트리 기본 직렬화 인터페이스"""
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """트리를 딕셔너리로 변환합니다."""
+        ...
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> IMTTree:
+        """딕셔너리에서 트리를 생성합니다."""
+        ...
+    
+    def clone(self) -> IMTTree:
+        """트리의 복제본을 생성합니다."""
+        ...
+
+class IMTTreeJSONSerializable(Protocol):
+    """트리 JSON 직렬화 인터페이스"""
+    
+    def to_json(self) -> str:
+        """트리를 JSON 문자열로 변환합니다."""
+        ...
+    
+    @classmethod
+    def from_json(cls, json_str: str) -> IMTTree:
+        """JSON 문자열에서 트리를 생성합니다. 
+        
+        Raises:
+            ValueError: 잘못된 JSON 형식
+        """
+        ...

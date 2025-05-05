@@ -12,9 +12,9 @@
 현재 이 프로젝트는 아키텍처 리팩토링 진행 중입니다:
 
 - ✅ Core 모듈: 완료 (인터페이스 설계 및 기본 구현)
-- 🔄 Model 계층: 진행 중 (extension/infra/service 분리 작업)
-- 📅 ViewModel/View: 리팩토링 예정
-- 📅 Platform (Adapter): 리팩토링 예정
+- ✅ Model 계층: 완료 (store/repo, file, db 구조로 리팩토링, 책임 분리)
+- 🔄 ViewModel/View/Platform: 진행 중 (import 경로/네이밍/책임 분리/패턴 일관화 예정)
+- 🧪 테스트/문서/자동화: 커버리지 및 자동화 예정
 
 이 저장소는 클린 아키텍처와 SOLID 원칙을 적용한 설계 사례를 보여주는 포트폴리오 목적으로 공개되었습니다.
 
@@ -43,7 +43,7 @@
 - **비즈니스 규칙**: 도메인 로직 및 검증 규칙
 
 ### Model 계층
-- **Repository**: 데이터 접근 및 저장 관련 클래스
+- **Repository**: 데이터 접근 및 저장 관련 클래스 (store/repo, file, db 구조로 분리)
 - **Service**: 비즈니스 로직 구현 클래스
 - **State Management**: 상태 관리 및 히스토리 추적
 - **Event Handling**: 이벤트 기반 아키텍처 지원
@@ -69,13 +69,16 @@
 │   ├── interfaces/           # 코어 인터페이스
 │   └── impl/                 # 코어 구현체
 ├── model/                    # 비즈니스 로직 확장 계층
-│   ├── persistence/          # 데이터 영속성 관리
+│   ├── store/                # 데이터 영속성 관리 (repo, file, db)
+│   │   ├── repo/             # 저장소 인터페이스
+│   │   ├── file/             # 파일 기반 저장소 구현체
+│   │   └── db/               # DB 기반 저장소 구현체
 │   ├── services/             # 비즈니스 서비스
 │   ├── action/               # 액션 처리
 │   └── events/               # 이벤트 처리
 ├── viewmodel/                # 뷰모델 계층
 ├── view/                     # 뷰 계층
-├── platform/                 # 플랫폼 특화 코드
+├── platforms/                # 플랫폼 특화 코드
 └── test/                     # 테스트 코드
 ```
 </details>
