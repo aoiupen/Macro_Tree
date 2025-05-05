@@ -1,11 +1,11 @@
-from PyQt5.QtWidgets import (QTreeWidget, QTreeWidgetItem, QApplication, QStyle, 
+from pyqt6.QtWidgets import (QTreeWidget, QTreeWidgetItem, QApplication, QStyle, 
                          QMenu, QAction, QInputDialog, QMessageBox)
-from PyQt5.QtCore import Qt, QPoint
-from PyQt5.QtGui import QCursor
+from pyqt6.QtCore import Qt, QPoint
+from pyqt6.QtGui import QCursor
 
-from ...viewmodel.implementations.simple_tree_viewmodel import SimpleTreeViewModel
+from ...viewmodel.impl.demo_tree_viewmodel import DemoTreeViewModel
 
-class SimpleTreeView(QTreeWidget):
+class DemoTreeView(QTreeWidget):
     def __init__(self, viewmodel, parent=None):
         super().__init__(parent)
         self._viewmodel = viewmodel

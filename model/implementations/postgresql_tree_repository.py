@@ -8,21 +8,26 @@ import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import Json
 
-from core.interfaces.base_tree import IMTTree
-from core.impl.tree import MTTree
-from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository, IMTTreeJSONSerializable
+from core.tree import IMTTree
+from model.implementations.demo_tree import SimpleTree
+from model.tree_item import IMTTreeItem
+from model.persistence.interfaces.tree_repo import IMTTreeRepository
+
 
 logger = logging.getLogger(__name__)
+
 
 class PostgreSQLConnectionError(Exception):
     """PostgreSQL 연결 오류"""
     pass
 
+
 class TreeNotFoundError(Exception):
     """트리를 찾을 수 없음"""
     pass
 
-class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
+
+class PostgreSQLTreeRepository(IMTTreeRepository):
     """PostgreSQL 기반 매크로 트리 저장소 구현
     
     PostgreSQL 데이터베이스를 사용해 트리 데이터를 저장하고 불러옵니다.
@@ -112,12 +117,12 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             if conn:
                 conn.close()
 
-    def save(self, tree: IMTTree, tree_id: Optional[str] = None) -> str:
+    def save(self, tree: IMTTree, name: Optional[str] = None) -> str:
         """트리를 데이터베이스에 저장합니다.
         
         Args:
             tree: 저장할 트리 객체
-            tree_id: 트리 ID (None이면 새 ID 생성)
+            name: 트리 이름 (없으면 타임스탬프 사용)
             
         Returns:
             저장된 트리의 식별자 (ID)
@@ -125,11 +130,12 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
         Raises:
             PostgreSQLConnectionError: 데이터베이스 연결 실패 시
         """
-        # 트리 이름 사용
-        name = tree.name
+        # 트리 이름 생성 (없는 경우)
+        if name is None:
+            name = f"tree_{int(time.time())}"
             
         # 트리를 JSON으로 직렬화
-        tree_data = tree.to_dict()
+        tree_json = self.to_json(tree)
         
         conn = None
         try:
@@ -137,14 +143,11 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             cursor = conn.cursor()
             
             # 기존 트리가 있는지 확인
-            if tree_id and tree_id.isdigit():
-                cursor.execute(
-                    "SELECT id FROM tree_states WHERE id = %s",
-                    (int(tree_id),)
-                )
-                result = cursor.fetchone()
-            else:
-                result = None
+            cursor.execute(
+                "SELECT id FROM tree_states WHERE name = %s",
+                (name,)
+            )
+            result = cursor.fetchone()
             
             if result:
                 # 기존 트리 업데이트
@@ -152,10 +155,10 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
                 cursor.execute(
                     """
                     UPDATE tree_states 
-                    SET state = %s, name = %s, updated_at = CURRENT_TIMESTAMP 
+                    SET state = %s, updated_at = CURRENT_TIMESTAMP 
                     WHERE id = %s
                     """,
-                    (Json(tree_data), name, tree_id)
+                    (tree_json, tree_id)
                 )
             else:
                 # 새 트리 삽입
@@ -165,7 +168,7 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
                     VALUES (%s, %s) 
                     RETURNING id
                     """,
-                    (name, Json(tree_data))
+                    (name, tree_json)
                 )
                 tree_id = cursor.fetchone()[0]
                 
@@ -181,53 +184,61 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             if conn:
                 conn.close()
 
-    def load(self, tree_id: str) -> Optional[IMTTree]:
+    def load(self, identifier: Optional[str] = None) -> IMTTree:
         """트리를 데이터베이스에서 불러옵니다.
         
         Args:
-            tree_id: 트리 ID
+            identifier: 트리 식별자 (ID 또는 이름, 없으면 최신 트리)
             
         Returns:
-            IMTTree 객체 또는 None (실패 시)
+            IMTTree 객체
+            
+        Raises:
+            PostgreSQLConnectionError: 데이터베이스 연결 실패 시
+            TreeNotFoundError: 트리를 찾을 수 없을 때
         """
         conn = None
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
             
-            if tree_id.isdigit():
+            if identifier is None:
+                # 최신 트리 불러오기
+                cursor.execute(
+                    "SELECT state FROM tree_states ORDER BY updated_at DESC LIMIT 1"
+                )
+            elif identifier.isdigit():
                 # ID로 불러오기
                 cursor.execute(
                     "SELECT state FROM tree_states WHERE id = %s",
-                    (int(tree_id),)
+                    (int(identifier),)
                 )
             else:
                 # 이름으로 불러오기
                 cursor.execute(
                     "SELECT state FROM tree_states WHERE name = %s",
-                    (tree_id,)
+                    (identifier,)
                 )
                 
             result = cursor.fetchone()
             if not result:
-                logger.warning(f"트리를 찾을 수 없음: {tree_id}")
-                return None
+                raise TreeNotFoundError(f"트리를 찾을 수 없음: {identifier}")
                 
-            tree_data = result[0]
-            return MTTree.from_dict(tree_data)
+            tree_json = result[0]
+            return self.from_json(json.dumps(tree_json))
             
         except psycopg2.Error as e:
             logger.error(f"트리 불러오기 실패: {e}")
-            return None
+            raise
         finally:
             if conn:
                 conn.close()
 
-    def delete(self, tree_id: str) -> bool:
+    def delete(self, identifier: str) -> bool:
         """저장된 트리를 삭제합니다.
         
         Args:
-            tree_id: 트리 ID
+            identifier: 트리 식별자 (ID 또는 이름)
             
         Returns:
             성공 여부
@@ -237,17 +248,17 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             conn = self._get_connection()
             cursor = conn.cursor()
             
-            if tree_id.isdigit():
+            if identifier.isdigit():
                 # ID로 삭제
                 cursor.execute(
                     "DELETE FROM tree_states WHERE id = %s",
-                    (int(tree_id),)
+                    (int(identifier),)
                 )
             else:
                 # 이름으로 삭제
                 cursor.execute(
                     "DELETE FROM tree_states WHERE name = %s",
-                    (tree_id,)
+                    (identifier,)
                 )
                 
             deleted = cursor.rowcount > 0
@@ -262,12 +273,12 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
         finally:
             if conn:
                 conn.close()
-                
-    def list_trees(self) -> Dict[str, str]:
-        """사용 가능한 모든 트리 목록을 반환합니다.
+
+    def get_all_trees(self) -> List[Tuple[str, str, str]]:
+        """저장된 모든 트리의 목록을 가져옵니다.
         
         Returns:
-            트리 ID를 키, 트리 이름을 값으로 하는 딕셔너리
+            트리 목록 (ID, 이름, 업데이트 시간)의 튜플
         """
         conn = None
         try:
@@ -275,51 +286,22 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             cursor = conn.cursor()
             
             cursor.execute(
-                "SELECT id, name FROM tree_states ORDER BY updated_at DESC"
+                "SELECT id, name, updated_at FROM tree_states ORDER BY updated_at DESC"
             )
             
-            return {str(row[0]): row[1] for row in cursor.fetchall()}
+            trees = [
+                (str(row[0]), row[1], str(row[2])) 
+                for row in cursor.fetchall()
+            ]
+            return trees
             
         except psycopg2.Error as e:
             logger.error(f"트리 목록 불러오기 실패: {e}")
-            return {}
+            return []
         finally:
             if conn:
                 conn.close()
 
-    def to_json(self) -> str:
-        """트리를 JSON 문자열로 변환합니다.
-        
-        참고: 이 메서드는 전체 저장소가 아닌 개별 트리에 적용됩니다.
-        트리 객체에서 호출되어야 합니다.
-        """
-        raise NotImplementedError("저장소 자체는 JSON으로 변환할 수 없습니다. 트리 객체에서 사용하세요.")
-    
-    @classmethod
-    def from_json(cls, json_str: str) -> Any:
-        """JSON 문자열에서 트리를 생성합니다.
-        
-        Args:
-            json_str: JSON 문자열
-            
-        Returns:
-            생성된 트리 객체
-            
-        Raises:
-            ValueError: 잘못된 JSON 형식
-        """
-        try:
-            # JSON을 딕셔너리로 변환
-            tree_dict = json.loads(json_str)
-            
-            # 딕셔너리로부터 트리 생성
-            return MTTree.from_dict(tree_dict)
-        except json.JSONDecodeError as e:
-            raise ValueError(f"잘못된 JSON 형식: {e}")
-        except Exception as e:
-            raise ValueError(f"트리 생성 실패: {e}")
-            
-    # 추가 기능 - 스냅샷 관리
     def create_snapshot(self, tree_id: str, name: Optional[str] = None) -> str:
         """트리의 스냅샷을 생성합니다.
         
@@ -428,4 +410,34 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             raise
         finally:
             if conn:
-                conn.close() 
+                conn.close()
+
+    def to_json(self, tree: IMTTree) -> Dict[str, Any]:
+        """트리를 JSON으로 변환합니다.
+        
+        Args:
+            tree: IMTTree 객체
+            
+        Returns:
+            JSON으로 변환된 트리 데이터
+        """
+        return tree.to_dict()
+
+    def from_json(self, json_str: str) -> IMTTree:
+        """JSON에서 트리를 생성합니다.
+        
+        Args:
+            json_str: JSON 문자열
+            
+        Returns:
+            IMTTree 객체
+            
+        Raises:
+            ValueError: 잘못된 JSON 형식
+        """
+        try:
+            tree_data = json.loads(json_str)
+            return SimpleTree.from_dict(tree_data)
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON 파싱 실패: {e}")
+            raise ValueError(f"잘못된 JSON 형식: {e}") 
