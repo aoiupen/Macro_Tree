@@ -1,11 +1,9 @@
-from pyqt6.QtWidgets import (QTreeWidget, QTreeWidgetItem, QApplication, QStyle, 
-                         QMenu, QAction, QInputDialog, QMessageBox)
-from pyqt6.QtCore import Qt, QPoint
-from pyqt6.QtGui import QCursor
+from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QAbstractItemView
+from PyQt6.QtCore import Qt
+from viewmodel.impl.tree_viewmodel import TreeViewModel
 
-from ...viewmodel.impl.demo_tree_viewmodel import DemoTreeViewModel
-
-class DemoTreeView(QTreeWidget):
+# RF : 트리뷰는 트리뷰모델을 상속받지 않고, 참조
+class TreeView(QTreeWidget):
     def __init__(self, viewmodel, parent=None):
         super().__init__(parent)
         self._viewmodel = viewmodel
@@ -14,14 +12,12 @@ class DemoTreeView(QTreeWidget):
         self.itemClicked.connect(self.item_clicked)
         self.itemExpanded.connect(self._on_item_expanded)
         self.itemCollapsed.connect(self._on_item_collapsed)
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self._show_context_menu)
         
         # 드래그 앤 드롭 설정
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setDropIndicatorShown(True)
-        self.setDragDropMode(QTreeWidget.InternalMove)
+        self.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
         
         self.setHeaderLabel("트리 아이템")
         self.update_tree_items()
@@ -66,17 +62,6 @@ class DemoTreeView(QTreeWidget):
                 parent_widget = self._id_to_widget_map[parent_id]
                 self._add_tree_item(item, parent_widget)
     
-    def _add_tree_item(self, item, parent):
-        widget_item = QTreeWidgetItem(parent)
-        widget_item.setText(0, item.get_property("name", ""))
-        widget_item.setData(0, Qt.UserRole, item.get_id())
-        
-        # 내장 확장/축소 아이콘 자동 사용
-        
-        # ID -> 위젯 매핑 저장
-        self._id_to_widget_map[item.get_id()] = widget_item
-        return widget_item
-    
     def _apply_tree_state(self):
         # 2단계: 확장/선택 상태 적용
         for item_id, widget_item in self._id_to_widget_map.items():
@@ -94,84 +79,15 @@ class DemoTreeView(QTreeWidget):
         item_id = item.data(0, Qt.UserRole)
         self._viewmodel.select_item(item_id)
         self.update_tree_items()
-    
+
     def _on_item_expanded(self, item):
         item_id = item.data(0, Qt.UserRole)
         self._viewmodel.toggle_expanded(item_id, True)
-    
+
     def _on_item_collapsed(self, item):
         item_id = item.data(0, Qt.UserRole)
-        self._viewmodel.toggle_expanded(item_id, False)
-        
-    def _show_context_menu(self, position):
-        """컨텍스트 메뉴 표시"""
-        item = self.itemAt(position)
-        
-        menu = QMenu()
-        
-        # 항상 사용 가능한 액션
-        action_add_root = menu.addAction("루트 항목 추가")
-        
-        # 아이템 선택 시에만 사용 가능한 액션들
-        if item:
-            item_id = item.data(0, Qt.UserRole)
-            
-            menu.addSeparator()
-            action_add_child = menu.addAction("하위 항목 추가")
-            action_rename = menu.addAction("이름 변경")
-            action_delete = menu.addAction("삭제")
-            
-        # 메뉴 표시 및 선택 처리
-        action = menu.exec_(self.mapToGlobal(position))
-        
-        # 선택된 액션 처리
-        if action == action_add_root:
-            self._add_new_item()
-        elif item and action == action_add_child:
-            self._add_new_item(item_id)
-        elif item and action == action_rename:
-            self._rename_item(item_id)
-        elif item and action == action_delete:
-            self._delete_item(item_id)
+        self._viewmodel.toggle_expanded(item_id, False) 
     
-    def _add_new_item(self, parent_id=None):
-        """새 아이템 추가"""
-        name, ok = QInputDialog.getText(self, "새 항목", "항목 이름:")
-        if ok and name:
-            new_id = self._viewmodel.add_item(name, parent_id)
-            if new_id:
-                self.update_tree_items()
-                # 새 아이템 선택
-                self._viewmodel.select_item(new_id)
-                self.update_tree_items()
-    
-    def _rename_item(self, item_id):
-        """아이템 이름 변경"""
-        item = self._viewmodel.get_item(item_id)
-        if not item:
-            return
-            
-        current_name = item.get_property("name", "")
-        name, ok = QInputDialog.getText(self, "이름 변경", "새 이름:", text=current_name)
-        if ok and name:
-            self._viewmodel.update_item(item_id, name=name)
-            self.update_tree_items()
-    
-    def _delete_item(self, item_id):
-        """아이템 삭제"""
-        item = self._viewmodel.get_item(item_id)
-        if not item:
-            return
-            
-        name = item.get_property("name", "")
-        reply = QMessageBox.question(self, "항목 삭제", 
-                                    f"'{name}' 항목을 삭제하시겠습니까?\n모든 하위 항목도 함께 삭제됩니다.",
-                                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-        
-        if reply == QMessageBox.Yes:
-            self._viewmodel.delete_item(item_id)
-            self.update_tree_items()
-            
     def dropEvent(self, event):
         """
         드래그 앤 드롭으로 아이템 이동 시 호출됨

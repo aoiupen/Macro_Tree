@@ -2,15 +2,13 @@ from enum import Enum
 from typing import Any, Callable, Dict, Generic, Iterator, List, Protocol, TypeVar
 
 from core.interfaces.base_item import IMTTreeItem
-from model.events.interfaces.base_tree_event_mgr import MTTreeEvent, TreeEventCallback, IMTTreeObservable
-from model.services.traversal.interfaces.base_advanced_traversal import IMTTreeAdvancedTraversable
 
 # 타입 변수 선언
 T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)  # 공변성 타입 변수
 
 # 트리 메타데이터 인터페이스
-class IMTTreeData(Protocol[T]):
+class IMTTreeReadable (Protocol[T]):
     """트리 데이터 액세스 인터페이스"""
     
     @property
@@ -62,10 +60,11 @@ class IMTTreeTraversable(Protocol):
         ...
 
 # 통합 트리 인터페이스
-class IMTTree(IMTTreeData, IMTTreeModifiable, IMTTreeTraversable, IMTTreeObservable, IMTTreeAdvancedTraversable, Protocol):
+class IMTTree(IMTTreeReadable, IMTTreeModifiable, IMTTreeTraversable, Protocol):
     """매크로 트리 통합 인터페이스"""
     pass
 
+# RF : 직렬/역직렬은 Tree의 핵심 기능은 아닌데, Tree 내부 기능이므로 core에 놓음
 class IMTTreeSerializable(Protocol):
     """트리 기본 직렬화 인터페이스"""
     

@@ -1,0 +1,979 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>model.store.db.impl.postgres_repo API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>model.store.db.impl.postgres_repo</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="model.store.db.impl.postgres_repo.PostgreSQLConnectionError"><code class="flex name class">
+<span>class <span class="ident">PostgreSQLConnectionError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PostgreSQLConnectionError(Exception):
+    &#34;&#34;&#34;PostgreSQL 연결 오류&#34;&#34;&#34;
+    pass</code></pre>
+</details>
+<div class="desc"><p>PostgreSQL 연결 오류</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="model.store.db.impl.postgres_repo.PostgreSQLTreeRepository"><code class="flex name class">
+<span>class <span class="ident">PostgreSQLTreeRepository</span></span>
+<span>(</span><span>host: str = 'localhost',<br>port: str = '5432',<br>dbname: str = 'macro_tree',<br>user: str = 'postgres',<br>password: str | None = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
+    &#34;&#34;&#34;PostgreSQL 기반 매크로 트리 저장소 구현
+    
+    PostgreSQL 데이터베이스를 사용해 트리 데이터를 저장하고 불러옵니다.
+    &#34;&#34;&#34;
+
+    def __init__(self, 
+                 host: str = &#34;localhost&#34;, 
+                 port: str = &#34;5432&#34;, 
+                 dbname: str = &#34;macro_tree&#34;, 
+                 user: str = &#34;postgres&#34;, 
+                 password: Optional[str] = None):
+        &#34;&#34;&#34;PostgreSQLTreeRepository 초기화
+        
+        Args:
+            host: 데이터베이스 호스트 (기본값: localhost)
+            port: 데이터베이스 포트 (기본값: 5432)
+            dbname: 데이터베이스 이름 (기본값: macro_tree)
+            user: 데이터베이스 사용자 (기본값: postgres)
+            password: 비밀번호 (선택적, 환경변수 DB_PASSWORD 사용 가능)
+        &#34;&#34;&#34;
+        self.host = host
+        self.port = port
+        self.dbname = dbname
+        self.user = user
+        
+        # 비밀번호 처리 (환경변수 우선)
+        self.password = password or os.environ.get(&#34;DB_PASSWORD&#34;)
+        
+        # 초기 연결 테스트 및 테이블 생성
+        self._ensure_tables_exist()
+
+    def _get_connection(self) -&gt; psycopg2.extensions.connection:
+        &#34;&#34;&#34;데이터베이스 연결을 반환합니다.
+        
+        Returns:
+            데이터베이스 연결 객체
+        
+        Raises:
+            PostgreSQLConnectionError: 연결에 실패한 경우
+        &#34;&#34;&#34;
+        try:
+            conn = psycopg2.connect(
+                host=self.host,
+                port=self.port,
+                dbname=self.dbname,
+                user=self.user,
+                password=self.password
+            )
+            return conn
+        except psycopg2.OperationalError as e:
+            logger.error(f&#34;데이터베이스 연결 실패: {e}&#34;)
+            raise PostgreSQLConnectionError(f&#34;데이터베이스 연결 실패: {e}&#34;)
+
+    def _ensure_tables_exist(self) -&gt; None:
+        &#34;&#34;&#34;필요한 테이블이 존재하는지 확인하고, 없으면 생성합니다.&#34;&#34;&#34;
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+
+            # 트리 상태 테이블
+            cursor.execute(&#34;&#34;&#34;
+                CREATE TABLE IF NOT EXISTS tree_states (
+                    id SERIAL PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    state JSONB NOT NULL,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                )
+            &#34;&#34;&#34;)
+
+            # 트리 스냅샷 테이블
+            cursor.execute(&#34;&#34;&#34;
+                CREATE TABLE IF NOT EXISTS tree_snapshots (
+                    id SERIAL PRIMARY KEY,
+                    tree_state_id INT REFERENCES tree_states(id) ON DELETE CASCADE,
+                    name TEXT NOT NULL,
+                    snapshot JSONB NOT NULL,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                )
+            &#34;&#34;&#34;)
+
+            conn.commit()
+        except PostgreSQLConnectionError as e:
+            logger.error(f&#34;테이블 생성 실패: {e}&#34;)
+        finally:
+            if conn:
+                conn.close()
+
+    def save(self, tree: IMTTree, tree_id: Optional[str] = None) -&gt; str:
+        &#34;&#34;&#34;트리를 데이터베이스에 저장합니다.
+        
+        Args:
+            tree: 저장할 트리 객체
+            tree_id: 트리 ID (None이면 새 ID 생성)
+            
+        Returns:
+            저장된 트리의 식별자 (ID)
+            
+        Raises:
+            PostgreSQLConnectionError: 데이터베이스 연결 실패 시
+        &#34;&#34;&#34;
+        # 트리 이름 사용
+        name = tree.name
+            
+        # 트리를 JSON으로 직렬화
+        tree_data = tree.to_dict()
+        
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            
+            # 기존 트리가 있는지 확인
+            if tree_id and tree_id.isdigit():
+                cursor.execute(
+                    &#34;SELECT id FROM tree_states WHERE id = %s&#34;,
+                    (int(tree_id),)
+                )
+                result = cursor.fetchone()
+            else:
+                result = None
+            
+            if result:
+                # 기존 트리 업데이트
+                tree_id = result[0]
+                cursor.execute(
+                    &#34;&#34;&#34;
+                    UPDATE tree_states 
+                    SET state = %s, name = %s, updated_at = CURRENT_TIMESTAMP 
+                    WHERE id = %s
+                    &#34;&#34;&#34;,
+                    (Json(tree_data), name, tree_id)
+                )
+            else:
+                # 새 트리 삽입
+                cursor.execute(
+                    &#34;&#34;&#34;
+                    INSERT INTO tree_states (name, state) 
+                    VALUES (%s, %s) 
+                    RETURNING id
+                    &#34;&#34;&#34;,
+                    (name, Json(tree_data))
+                )
+                tree_id = cursor.fetchone()[0]
+                
+            conn.commit()
+            return str(tree_id)
+            
+        except psycopg2.Error as e:
+            if conn:
+                conn.rollback()
+            logger.error(f&#34;트리 저장 실패: {e}&#34;)
+            raise
+        finally:
+            if conn:
+                conn.close()
+
+    def load(self, tree_id: str) -&gt; Optional[IMTTree]:
+        &#34;&#34;&#34;트리를 데이터베이스에서 불러옵니다.
+        
+        Args:
+            tree_id: 트리 ID
+            
+        Returns:
+            IMTTree 객체 또는 None (실패 시)
+        &#34;&#34;&#34;
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            
+            if tree_id.isdigit():
+                # ID로 불러오기
+                cursor.execute(
+                    &#34;SELECT state FROM tree_states WHERE id = %s&#34;,
+                    (int(tree_id),)
+                )
+            else:
+                # 이름으로 불러오기
+                cursor.execute(
+                    &#34;SELECT state FROM tree_states WHERE name = %s&#34;,
+                    (tree_id,)
+                )
+                
+            result = cursor.fetchone()
+            if not result:
+                logger.warning(f&#34;트리를 찾을 수 없음: {tree_id}&#34;)
+                return None
+                
+            tree_data = result[0]
+            return MTTree.from_dict(tree_data)
+            
+        except psycopg2.Error as e:
+            logger.error(f&#34;트리 불러오기 실패: {e}&#34;)
+            return None
+        finally:
+            if conn:
+                conn.close()
+
+    def delete(self, tree_id: str) -&gt; bool:
+        &#34;&#34;&#34;저장된 트리를 삭제합니다.
+        
+        Args:
+            tree_id: 트리 ID
+            
+        Returns:
+            성공 여부
+        &#34;&#34;&#34;
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            
+            if tree_id.isdigit():
+                # ID로 삭제
+                cursor.execute(
+                    &#34;DELETE FROM tree_states WHERE id = %s&#34;,
+                    (int(tree_id),)
+                )
+            else:
+                # 이름으로 삭제
+                cursor.execute(
+                    &#34;DELETE FROM tree_states WHERE name = %s&#34;,
+                    (tree_id,)
+                )
+                
+            deleted = cursor.rowcount &gt; 0
+            conn.commit()
+            return deleted
+            
+        except psycopg2.Error as e:
+            if conn:
+                conn.rollback()
+            logger.error(f&#34;트리 삭제 실패: {e}&#34;)
+            return False
+        finally:
+            if conn:
+                conn.close()
+                
+    def list_trees(self) -&gt; Dict[str, str]:
+        &#34;&#34;&#34;사용 가능한 모든 트리 목록을 반환합니다.
+        
+        Returns:
+            트리 ID를 키, 트리 이름을 값으로 하는 딕셔너리
+        &#34;&#34;&#34;
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            
+            cursor.execute(
+                &#34;SELECT id, name FROM tree_states ORDER BY updated_at DESC&#34;
+            )
+            
+            return {str(row[0]): row[1] for row in cursor.fetchall()}
+            
+        except psycopg2.Error as e:
+            logger.error(f&#34;트리 목록 불러오기 실패: {e}&#34;)
+            return {}
+        finally:
+            if conn:
+                conn.close()
+
+    def to_json(self) -&gt; str:
+        &#34;&#34;&#34;트리를 JSON 문자열로 변환합니다.
+        
+        참고: 이 메서드는 전체 저장소가 아닌 개별 트리에 적용됩니다.
+        트리 객체에서 호출되어야 합니다.
+        &#34;&#34;&#34;
+        raise NotImplementedError(&#34;저장소 자체는 JSON으로 변환할 수 없습니다. 트리 객체에서 사용하세요.&#34;)
+    
+    @classmethod
+    def from_json(cls, json_str: str) -&gt; Any:
+        &#34;&#34;&#34;JSON 문자열에서 트리를 생성합니다.
+        
+        Args:
+            json_str: JSON 문자열
+            
+        Returns:
+            생성된 트리 객체
+            
+        Raises:
+            ValueError: 잘못된 JSON 형식
+        &#34;&#34;&#34;
+        try:
+            # JSON을 딕셔너리로 변환
+            tree_dict = json.loads(json_str)
+            
+            # 딕셔너리로부터 트리 생성
+            return MTTree.from_dict(tree_dict)
+        except json.JSONDecodeError as e:
+            raise ValueError(f&#34;잘못된 JSON 형식: {e}&#34;)
+        except Exception as e:
+            raise ValueError(f&#34;트리 생성 실패: {e}&#34;)
+            
+    # 추가 기능 - 스냅샷 관리
+    def create_snapshot(self, tree_id: str, name: Optional[str] = None) -&gt; str:
+        &#34;&#34;&#34;트리의 스냅샷을 생성합니다.
+        
+        Args:
+            tree_id: 트리 ID
+            name: 스냅샷 이름 (없으면 타임스탬프 사용)
+            
+        Returns:
+            생성된 스냅샷의 ID
+        &#34;&#34;&#34;
+        if name is None:
+            name = f&#34;snapshot_{int(time.time())}&#34;
+            
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            
+            # 트리 데이터 가져오기
+            cursor.execute(
+                &#34;SELECT state FROM tree_states WHERE id = %s&#34;,
+                (int(tree_id),)
+            )
+            
+            result = cursor.fetchone()
+            if not result:
+                raise TreeNotFoundError(f&#34;트리를 찾을 수 없음: {tree_id}&#34;)
+                
+            tree_state = result[0]
+            
+            # 스냅샷 저장
+            cursor.execute(
+                &#34;&#34;&#34;
+                INSERT INTO tree_snapshots (tree_state_id, name, snapshot) 
+                VALUES (%s, %s, %s)
+                RETURNING id
+                &#34;&#34;&#34;,
+                (int(tree_id), name, Json(tree_state))
+            )
+            
+            snapshot_id = cursor.fetchone()[0]
+            conn.commit()
+            return str(snapshot_id)
+            
+        except psycopg2.Error as e:
+            if conn:
+                conn.rollback()
+            logger.error(f&#34;스냅샷 생성 실패: {e}&#34;)
+            raise
+        finally:
+            if conn:
+                conn.close()
+
+    def restore_snapshot(self, snapshot_id: str) -&gt; str:
+        &#34;&#34;&#34;스냅샷을 복원합니다.
+        
+        Args:
+            snapshot_id: 스냅샷 ID
+            
+        Returns:
+            복원된 트리의 ID
+        &#34;&#34;&#34;
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            
+            # 스냅샷 데이터 가져오기
+            cursor.execute(
+                &#34;&#34;&#34;
+                SELECT s.tree_state_id, s.snapshot, t.name
+                FROM tree_snapshots s
+                JOIN tree_states t ON s.tree_state_id = t.id
+                WHERE s.id = %s
+                &#34;&#34;&#34;,
+                (int(snapshot_id),)
+            )
+            
+            result = cursor.fetchone()
+            if not result:
+                raise TreeNotFoundError(f&#34;스냅샷을 찾을 수 없음: {snapshot_id}&#34;)
+                
+            tree_id, snapshot_data, tree_name = result
+            
+            # 복원된 트리 이름 생성
+            restored_name = f&#34;{tree_name}_restored_{int(time.time())}&#34;
+            
+            # 복원된 트리 저장
+            cursor.execute(
+                &#34;&#34;&#34;
+                INSERT INTO tree_states (name, state) 
+                VALUES (%s, %s) 
+                RETURNING id
+                &#34;&#34;&#34;,
+                (restored_name, Json(snapshot_data))
+            )
+            
+            new_tree_id = cursor.fetchone()[0]
+            conn.commit()
+            return str(new_tree_id)
+            
+        except psycopg2.Error as e:
+            if conn:
+                conn.rollback()
+            logger.error(f&#34;스냅샷 복원 실패: {e}&#34;)
+            raise
+        finally:
+            if conn:
+                conn.close() </code></pre>
+</details>
+<div class="desc"><p>PostgreSQL 기반 매크로 트리 저장소 구현</p>
+<p>PostgreSQL 데이터베이스를 사용해 트리 데이터를 저장하고 불러옵니다.</p>
+<p>PostgreSQLTreeRepository 초기화</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>host</code></strong></dt>
+<dd>데이터베이스 호스트 (기본값: localhost)</dd>
+<dt><strong><code>port</code></strong></dt>
+<dd>데이터베이스 포트 (기본값: 5432)</dd>
+<dt><strong><code>dbname</code></strong></dt>
+<dd>데이터베이스 이름 (기본값: macro_tree)</dd>
+<dt><strong><code>user</code></strong></dt>
+<dd>데이터베이스 사용자 (기본값: postgres)</dd>
+<dt><strong><code>password</code></strong></dt>
+<dd>비밀번호 (선택적, 환경변수 DB_PASSWORD 사용 가능)</dd>
+</dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="model.store.repo.interfaces.base_tree_repo.IMTTreeRepository" href="../../repo/interfaces/base_tree_repo.html#model.store.repo.interfaces.base_tree_repo.IMTTreeRepository">IMTTreeRepository</a></li>
+<li><a title="core.interfaces.base_tree.IMTTreeJSONSerializable" href="../../../../core/interfaces/base_tree.html#core.interfaces.base_tree.IMTTreeJSONSerializable">IMTTreeJSONSerializable</a></li>
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.from_json"><code class="name flex">
+<span>def <span class="ident">from_json</span></span>(<span>json_str: str) ‑> Any</span>
+</code></dt>
+<dd>
+<div class="desc"><p>JSON 문자열에서 트리를 생성합니다.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>json_str</code></strong></dt>
+<dd>JSON 문자열</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>생성된 트리 객체</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>잘못된 JSON 형식</dd>
+</dl></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.create_snapshot"><code class="name flex">
+<span>def <span class="ident">create_snapshot</span></span>(<span>self, tree_id: str, name: str | None = None) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_snapshot(self, tree_id: str, name: Optional[str] = None) -&gt; str:
+    &#34;&#34;&#34;트리의 스냅샷을 생성합니다.
+    
+    Args:
+        tree_id: 트리 ID
+        name: 스냅샷 이름 (없으면 타임스탬프 사용)
+        
+    Returns:
+        생성된 스냅샷의 ID
+    &#34;&#34;&#34;
+    if name is None:
+        name = f&#34;snapshot_{int(time.time())}&#34;
+        
+    conn = None
+    try:
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        
+        # 트리 데이터 가져오기
+        cursor.execute(
+            &#34;SELECT state FROM tree_states WHERE id = %s&#34;,
+            (int(tree_id),)
+        )
+        
+        result = cursor.fetchone()
+        if not result:
+            raise TreeNotFoundError(f&#34;트리를 찾을 수 없음: {tree_id}&#34;)
+            
+        tree_state = result[0]
+        
+        # 스냅샷 저장
+        cursor.execute(
+            &#34;&#34;&#34;
+            INSERT INTO tree_snapshots (tree_state_id, name, snapshot) 
+            VALUES (%s, %s, %s)
+            RETURNING id
+            &#34;&#34;&#34;,
+            (int(tree_id), name, Json(tree_state))
+        )
+        
+        snapshot_id = cursor.fetchone()[0]
+        conn.commit()
+        return str(snapshot_id)
+        
+    except psycopg2.Error as e:
+        if conn:
+            conn.rollback()
+        logger.error(f&#34;스냅샷 생성 실패: {e}&#34;)
+        raise
+    finally:
+        if conn:
+            conn.close()</code></pre>
+</details>
+<div class="desc"><p>트리의 스냅샷을 생성합니다.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>tree_id</code></strong></dt>
+<dd>트리 ID</dd>
+<dt><strong><code>name</code></strong></dt>
+<dd>스냅샷 이름 (없으면 타임스탬프 사용)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>생성된 스냅샷의 ID</p></div>
+</dd>
+<dt id="model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.delete"><code class="name flex">
+<span>def <span class="ident">delete</span></span>(<span>self, tree_id: str) ‑> bool</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def delete(self, tree_id: str) -&gt; bool:
+    &#34;&#34;&#34;저장된 트리를 삭제합니다.
+    
+    Args:
+        tree_id: 트리 ID
+        
+    Returns:
+        성공 여부
+    &#34;&#34;&#34;
+    conn = None
+    try:
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        
+        if tree_id.isdigit():
+            # ID로 삭제
+            cursor.execute(
+                &#34;DELETE FROM tree_states WHERE id = %s&#34;,
+                (int(tree_id),)
+            )
+        else:
+            # 이름으로 삭제
+            cursor.execute(
+                &#34;DELETE FROM tree_states WHERE name = %s&#34;,
+                (tree_id,)
+            )
+            
+        deleted = cursor.rowcount &gt; 0
+        conn.commit()
+        return deleted
+        
+    except psycopg2.Error as e:
+        if conn:
+            conn.rollback()
+        logger.error(f&#34;트리 삭제 실패: {e}&#34;)
+        return False
+    finally:
+        if conn:
+            conn.close()</code></pre>
+</details>
+<div class="desc"><p>저장된 트리를 삭제합니다.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>tree_id</code></strong></dt>
+<dd>트리 ID</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>성공 여부</p></div>
+</dd>
+<dt id="model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.load"><code class="name flex">
+<span>def <span class="ident">load</span></span>(<span>self, tree_id: str) ‑> <a title="core.interfaces.base_tree.IMTTree" href="../../../../core/interfaces/base_tree.html#core.interfaces.base_tree.IMTTree">IMTTree</a> | None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load(self, tree_id: str) -&gt; Optional[IMTTree]:
+    &#34;&#34;&#34;트리를 데이터베이스에서 불러옵니다.
+    
+    Args:
+        tree_id: 트리 ID
+        
+    Returns:
+        IMTTree 객체 또는 None (실패 시)
+    &#34;&#34;&#34;
+    conn = None
+    try:
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        
+        if tree_id.isdigit():
+            # ID로 불러오기
+            cursor.execute(
+                &#34;SELECT state FROM tree_states WHERE id = %s&#34;,
+                (int(tree_id),)
+            )
+        else:
+            # 이름으로 불러오기
+            cursor.execute(
+                &#34;SELECT state FROM tree_states WHERE name = %s&#34;,
+                (tree_id,)
+            )
+            
+        result = cursor.fetchone()
+        if not result:
+            logger.warning(f&#34;트리를 찾을 수 없음: {tree_id}&#34;)
+            return None
+            
+        tree_data = result[0]
+        return MTTree.from_dict(tree_data)
+        
+    except psycopg2.Error as e:
+        logger.error(f&#34;트리 불러오기 실패: {e}&#34;)
+        return None
+    finally:
+        if conn:
+            conn.close()</code></pre>
+</details>
+<div class="desc"><p>트리를 데이터베이스에서 불러옵니다.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>tree_id</code></strong></dt>
+<dd>트리 ID</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>IMTTree 객체 또는 None (실패 시)</p></div>
+</dd>
+<dt id="model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.restore_snapshot"><code class="name flex">
+<span>def <span class="ident">restore_snapshot</span></span>(<span>self, snapshot_id: str) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def restore_snapshot(self, snapshot_id: str) -&gt; str:
+    &#34;&#34;&#34;스냅샷을 복원합니다.
+    
+    Args:
+        snapshot_id: 스냅샷 ID
+        
+    Returns:
+        복원된 트리의 ID
+    &#34;&#34;&#34;
+    conn = None
+    try:
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        
+        # 스냅샷 데이터 가져오기
+        cursor.execute(
+            &#34;&#34;&#34;
+            SELECT s.tree_state_id, s.snapshot, t.name
+            FROM tree_snapshots s
+            JOIN tree_states t ON s.tree_state_id = t.id
+            WHERE s.id = %s
+            &#34;&#34;&#34;,
+            (int(snapshot_id),)
+        )
+        
+        result = cursor.fetchone()
+        if not result:
+            raise TreeNotFoundError(f&#34;스냅샷을 찾을 수 없음: {snapshot_id}&#34;)
+            
+        tree_id, snapshot_data, tree_name = result
+        
+        # 복원된 트리 이름 생성
+        restored_name = f&#34;{tree_name}_restored_{int(time.time())}&#34;
+        
+        # 복원된 트리 저장
+        cursor.execute(
+            &#34;&#34;&#34;
+            INSERT INTO tree_states (name, state) 
+            VALUES (%s, %s) 
+            RETURNING id
+            &#34;&#34;&#34;,
+            (restored_name, Json(snapshot_data))
+        )
+        
+        new_tree_id = cursor.fetchone()[0]
+        conn.commit()
+        return str(new_tree_id)
+        
+    except psycopg2.Error as e:
+        if conn:
+            conn.rollback()
+        logger.error(f&#34;스냅샷 복원 실패: {e}&#34;)
+        raise
+    finally:
+        if conn:
+            conn.close() </code></pre>
+</details>
+<div class="desc"><p>스냅샷을 복원합니다.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>snapshot_id</code></strong></dt>
+<dd>스냅샷 ID</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>복원된 트리의 ID</p></div>
+</dd>
+<dt id="model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.save"><code class="name flex">
+<span>def <span class="ident">save</span></span>(<span>self,<br>tree: <a title="core.interfaces.base_tree.IMTTree" href="../../../../core/interfaces/base_tree.html#core.interfaces.base_tree.IMTTree">IMTTree</a>,<br>tree_id: str | None = None) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save(self, tree: IMTTree, tree_id: Optional[str] = None) -&gt; str:
+    &#34;&#34;&#34;트리를 데이터베이스에 저장합니다.
+    
+    Args:
+        tree: 저장할 트리 객체
+        tree_id: 트리 ID (None이면 새 ID 생성)
+        
+    Returns:
+        저장된 트리의 식별자 (ID)
+        
+    Raises:
+        PostgreSQLConnectionError: 데이터베이스 연결 실패 시
+    &#34;&#34;&#34;
+    # 트리 이름 사용
+    name = tree.name
+        
+    # 트리를 JSON으로 직렬화
+    tree_data = tree.to_dict()
+    
+    conn = None
+    try:
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        
+        # 기존 트리가 있는지 확인
+        if tree_id and tree_id.isdigit():
+            cursor.execute(
+                &#34;SELECT id FROM tree_states WHERE id = %s&#34;,
+                (int(tree_id),)
+            )
+            result = cursor.fetchone()
+        else:
+            result = None
+        
+        if result:
+            # 기존 트리 업데이트
+            tree_id = result[0]
+            cursor.execute(
+                &#34;&#34;&#34;
+                UPDATE tree_states 
+                SET state = %s, name = %s, updated_at = CURRENT_TIMESTAMP 
+                WHERE id = %s
+                &#34;&#34;&#34;,
+                (Json(tree_data), name, tree_id)
+            )
+        else:
+            # 새 트리 삽입
+            cursor.execute(
+                &#34;&#34;&#34;
+                INSERT INTO tree_states (name, state) 
+                VALUES (%s, %s) 
+                RETURNING id
+                &#34;&#34;&#34;,
+                (name, Json(tree_data))
+            )
+            tree_id = cursor.fetchone()[0]
+            
+        conn.commit()
+        return str(tree_id)
+        
+    except psycopg2.Error as e:
+        if conn:
+            conn.rollback()
+        logger.error(f&#34;트리 저장 실패: {e}&#34;)
+        raise
+    finally:
+        if conn:
+            conn.close()</code></pre>
+</details>
+<div class="desc"><p>트리를 데이터베이스에 저장합니다.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>tree</code></strong></dt>
+<dd>저장할 트리 객체</dd>
+<dt><strong><code>tree_id</code></strong></dt>
+<dd>트리 ID (None이면 새 ID 생성)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>저장된 트리의 식별자 (ID)</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code><a title="model.store.db.impl.postgres_repo.PostgreSQLConnectionError" href="#model.store.db.impl.postgres_repo.PostgreSQLConnectionError">PostgreSQLConnectionError</a></code></dt>
+<dd>데이터베이스 연결 실패 시</dd>
+</dl></div>
+</dd>
+<dt id="model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; str:
+    &#34;&#34;&#34;트리를 JSON 문자열로 변환합니다.
+    
+    참고: 이 메서드는 전체 저장소가 아닌 개별 트리에 적용됩니다.
+    트리 객체에서 호출되어야 합니다.
+    &#34;&#34;&#34;
+    raise NotImplementedError(&#34;저장소 자체는 JSON으로 변환할 수 없습니다. 트리 객체에서 사용하세요.&#34;)</code></pre>
+</details>
+<div class="desc"><p>트리를 JSON 문자열로 변환합니다.</p>
+<p>참고: 이 메서드는 전체 저장소가 아닌 개별 트리에 적용됩니다.
+트리 객체에서 호출되어야 합니다.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="model.store.repo.interfaces.base_tree_repo.IMTTreeRepository" href="../../repo/interfaces/base_tree_repo.html#model.store.repo.interfaces.base_tree_repo.IMTTreeRepository">IMTTreeRepository</a></b></code>:
+<ul class="hlist">
+<li><code><a title="model.store.repo.interfaces.base_tree_repo.IMTTreeRepository.list_trees" href="../../repo/interfaces/base_tree_repo.html#model.store.repo.interfaces.base_tree_repo.IMTTreeRepository.list_trees">list_trees</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="model.store.db.impl.postgres_repo.TreeNotFoundError"><code class="flex name class">
+<span>class <span class="ident">TreeNotFoundError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TreeNotFoundError(Exception):
+    &#34;&#34;&#34;트리를 찾을 수 없음&#34;&#34;&#34;
+    pass</code></pre>
+</details>
+<div class="desc"><p>트리를 찾을 수 없음</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="model.store.db.impl" href="index.html">model.store.db.impl</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="model.store.db.impl.postgres_repo.PostgreSQLConnectionError" href="#model.store.db.impl.postgres_repo.PostgreSQLConnectionError">PostgreSQLConnectionError</a></code></h4>
+</li>
+<li>
+<h4><code><a title="model.store.db.impl.postgres_repo.PostgreSQLTreeRepository" href="#model.store.db.impl.postgres_repo.PostgreSQLTreeRepository">PostgreSQLTreeRepository</a></code></h4>
+<ul class="two-column">
+<li><code><a title="model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.create_snapshot" href="#model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.create_snapshot">create_snapshot</a></code></li>
+<li><code><a title="model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.delete" href="#model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.delete">delete</a></code></li>
+<li><code><a title="model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.from_json" href="#model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.from_json">from_json</a></code></li>
+<li><code><a title="model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.load" href="#model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.load">load</a></code></li>
+<li><code><a title="model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.restore_snapshot" href="#model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.restore_snapshot">restore_snapshot</a></code></li>
+<li><code><a title="model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.save" href="#model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.save">save</a></code></li>
+<li><code><a title="model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.to_json" href="#model.store.db.impl.postgres_repo.PostgreSQLTreeRepository.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="model.store.db.impl.postgres_repo.TreeNotFoundError" href="#model.store.db.impl.postgres_repo.TreeNotFoundError">TreeNotFoundError</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

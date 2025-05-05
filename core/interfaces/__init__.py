@@ -2,7 +2,7 @@
 
 # * import 대신 명시적 import로 수정
 from core.interfaces.base_item import IMTTreeItem, IMTBaseItem
-from core.interfaces.base_tree import IMTTree, IMTTreeData, IMTTreeModifiable, IMTTreeTraversable
+from core.interfaces.base_tree import IMTTree, IMTTreeReadable , IMTTreeModifiable, IMTTreeTraversable
 
 # 이동된 모듈 참조
 from core.interfaces.base_item_data import MTNodeType, MTDevice, MTKeyState, IMTAction, IMTActionData, IMTMouseActionData, IMTKeyboardActionData

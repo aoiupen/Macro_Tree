@@ -3,8 +3,6 @@ import json
 
 from core.interfaces.base_item import IMTTreeItem
 from core.interfaces.base_tree import IMTTree
-from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
-from model.events.impl.tree_event_mgr import MTTreeEventManager
 from core.impl.item import MTTreeItem
 
 T = TypeVar('T', bound=IMTTreeItem)
@@ -26,9 +24,6 @@ class MTTree:
         self._name = name
         self._items: Dict[str, IMTTreeItem] = {}
         self._root_id: Optional[str] = None
-        self._subscribers: Dict[MTTreeEvent, List[TreeEventCallback]] = {
-            event: [] for event in MTTreeEvent
-        }
     
     @property
     def id(self) -> str:
@@ -101,9 +96,6 @@ class MTTree:
         # 아이템 추가
         self._items[item_id] = item
         
-        # 이벤트 발생
-        self._notify(MTTreeEvent.ITEM_ADDED, {"item_id": item_id, "parent_id": parent_id})
-        
         return True
     
     def remove_item(self, item_id: str) -> bool:
@@ -136,9 +128,6 @@ class MTTree:
         # 자식 아이템 제거
         for child_id in children_to_remove:
             self.remove_item(child_id)
-        
-        # 이벤트 발생
-        self._notify(MTTreeEvent.ITEM_REMOVED, {"item_id": item_id})
         
         return True
     

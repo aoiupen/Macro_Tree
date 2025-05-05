@@ -5,7 +5,8 @@ import uuid
 
 # 타입 참조만 가져옵니다
 IMTTree = TypeVar('IMTTree')
-from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository, IMTTreeJSONSerializable
+from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
+from core.interfaces.base_tree import IMTTreeJSONSerializable
 
 class MTFileTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
     """파일 기반 트리 저장소 구현체"""

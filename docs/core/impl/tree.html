@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>core.impl.tree API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>core.impl.tree</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="core.impl.tree.MTTree"><code class="flex name class">
+<span>class <span class="ident">MTTree</span></span>
+<span>(</span><span>tree_id: str, name: str)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MTTree:
+    &#34;&#34;&#34;매크로 트리 구현 클래스
+    
+    매크로 트리를 관리하고 조작하는 기능을 제공합니다.
+    &#34;&#34;&#34;
+    
+    def __init__(self, tree_id: str, name: str):
+        &#34;&#34;&#34;트리 초기화
+        
+        Args:
+            tree_id: 트리 ID
+            name: 트리 이름
+        &#34;&#34;&#34;
+        self._id = tree_id
+        self._name = name
+        self._items: Dict[str, IMTTreeItem] = {}
+        self._root_id: Optional[str] = None
+    
+    @property
+    def id(self) -&gt; str:
+        &#34;&#34;&#34;트리 ID를 반환합니다.&#34;&#34;&#34;
+        return self._id
+    
+    @property
+    def name(self) -&gt; str:
+        &#34;&#34;&#34;트리 이름을 반환합니다.&#34;&#34;&#34;
+        return self._name
+    
+    @property
+    def root_id(self) -&gt; Optional[str]:
+        &#34;&#34;&#34;루트 아이템 ID를 반환합니다.&#34;&#34;&#34;
+        return self._root_id
+    
+    def get_all_items(self) -&gt; Dict[str, IMTTreeItem]:
+        &#34;&#34;&#34;모든 아이템을 반환합니다.&#34;&#34;&#34;
+        return self._items.copy()
+    
+    def get_item(self, item_id: str) -&gt; Optional[IMTTreeItem]:
+        &#34;&#34;&#34;ID로 아이템을 찾습니다.&#34;&#34;&#34;
+        return self._items.get(item_id)
+    
+    def get_children(self, parent_id: Optional[str] = None) -&gt; List[IMTTreeItem]:
+        &#34;&#34;&#34;지정된 부모의 모든 자식 아이템을 반환합니다.
+        
+        Args:
+            parent_id: 부모 아이템 ID (None이면 루트 아이템 반환)
+            
+        Returns:
+            자식 아이템 목록
+        &#34;&#34;&#34;
+        result = []
+        for item in self._items.values():
+            item_parent_id = item.get_property(&#34;parent_id&#34;)
+            if (parent_id is None and item_parent_id is None) or \
+               (parent_id is not None and item_parent_id == parent_id):
+                result.append(item)
+        return result
+    
+    def add_item(self, item: IMTTreeItem, parent_id: Optional[str] = None) -&gt; bool:
+        &#34;&#34;&#34;아이템을 트리에 추가합니다.
+        
+        Args:
+            item: 추가할 아이템
+            parent_id: 부모 아이템 ID (None이면 루트 아이템으로 추가)
+            
+        Returns:
+            성공 여부
+            
+        Raises:
+            ValueError: 아이템 ID가 이미 존재할 경우
+        &#34;&#34;&#34;
+        item_id = item.id
+        if item_id in self._items:
+            raise ValueError(f&#34;중복된 아이템 ID: {item_id}&#34;)
+        
+        # 부모 아이템 존재 여부 확인
+        if parent_id is not None and parent_id not in self._items:
+            raise ValueError(f&#34;존재하지 않는 부모 아이템 ID: {parent_id}&#34;)
+        
+        # 루트 아이템이 없으면 루트로 설정
+        if self._root_id is None and parent_id is None:
+            self._root_id = item_id
+        
+        # 부모 ID 설정
+        item.set_property(&#34;parent_id&#34;, parent_id)
+        
+        # 아이템 추가
+        self._items[item_id] = item
+        
+        return True
+    
+    def remove_item(self, item_id: str) -&gt; bool:
+        &#34;&#34;&#34;아이템을 트리에서 제거합니다.
+        
+        Args:
+            item_id: 제거할 아이템 ID
+            
+        Returns:
+            성공 여부
+            
+        Raises:
+            ValueError: 존재하지 않는 아이템 ID일 경우
+        &#34;&#34;&#34;
+        if item_id not in self._items:
+            raise ValueError(f&#34;존재하지 않는 아이템 ID: {item_id}&#34;)
+        
+        # 루트 아이템인 경우 루트 재설정
+        if item_id == self._root_id:
+            self._root_id = None
+        
+        # 자식 아이템들도 모두 제거
+        children_to_remove = []
+        for child in self.get_children(item_id):
+            children_to_remove.append(child.id)
+        
+        # 아이템 제거
+        removed_item = self._items.pop(item_id)
+        
+        # 자식 아이템 제거
+        for child_id in children_to_remove:
+            self.remove_item(child_id)
+        
+        return True
+    
+    def move_item(self, item_id: str, new_parent_id: Optional[str]) -&gt; bool:
+        &#34;&#34;&#34;아이템을 새 부모로 이동합니다.
+        
+        Args:
+            item_id: 이동할 아이템 ID
+            new_parent_id: 새 부모 아이템 ID (None이면 루트 아이템으로 이동)
+            
+        Returns:
+            성공 여부
+            
+        Raises:
+            ValueError: 존재하지 않는 아이템 ID이거나 부모 ID일 경우
+        &#34;&#34;&#34;
+        if item_id not in self._items:
+            raise ValueError(f&#34;존재하지 않는 아이템 ID: {item_id}&#34;)
+        
+        if new_parent_id is not None and new_parent_id not in self._items:
+            raise ValueError(f&#34;존재하지 않는 부모 아이템 ID: {new_parent_id}&#34;)
+        
+        # 순환 참조 확인
+        if new_parent_id is not None and self._is_descendant(item_id, new_parent_id):
+            raise ValueError(f&#34;순환 참조 발생: {item_id}는 {new_parent_id}의 조상입니다.&#34;)
+        
+        # 이전 부모
+        item = self._items[item_id]
+        old_parent_id = item.get_property(&#34;parent_id&#34;)
+        
+        # 동일한 부모로의 이동 무시
+        if old_parent_id == new_parent_id:
+            return False
+        
+        # 부모 변경
+        item.set_property(&#34;parent_id&#34;, new_parent_id)
+        
+        # 이벤트 발생
+        self._notify(MTTreeEvent.ITEM_MOVED, {
+            &#34;item_id&#34;: item_id,
+            &#34;old_parent_id&#34;: old_parent_id,
+            &#34;new_parent_id&#34;: new_parent_id
+        })
+        
+        return True
+    
+    def modify_item(self, item_id: str, changes: Dict[str, Any]) -&gt; bool:
+        &#34;&#34;&#34;아이템 속성을 변경합니다.
+        
+        Args:
+            item_id: 변경할 아이템 ID
+            changes: 변경할 속성 (키-값 쌍)
+            
+        Returns:
+            성공 여부
+            
+        Raises:
+            ValueError: 존재하지 않는 아이템 ID일 경우
+        &#34;&#34;&#34;
+        if item_id not in self._items:
+            raise ValueError(f&#34;존재하지 않는 아이템 ID: {item_id}&#34;)
+        
+        item = self._items[item_id]
+        
+        # 속성 변경
+        for key, value in changes.items():
+            item.set_property(key, value)
+        
+        # 이벤트 발생
+        self._notify(MTTreeEvent.ITEM_MODIFIED, {&#34;item_id&#34;: item_id, &#34;changes&#34;: changes})
+        
+        return True
+    
+    def reset_tree(self) -&gt; None:
+        &#34;&#34;&#34;트리를 초기 상태로 리셋합니다.&#34;&#34;&#34;
+        self._items = {}
+        self._root_id = None
+        
+        # 이벤트 발생
+        self._notify(MTTreeEvent.TREE_RESET, {})
+    
+    def traverse(self, visitor: Callable[[IMTTreeItem], None], 
+                node_id: Optional[str] = None) -&gt; None:
+        &#34;&#34;&#34;트리를 BFS로 순회하면서 각 아이템에 방문자 함수를 적용합니다.
+        
+        Args:
+            visitor: 각 아이템에 적용할 함수
+            node_id: 시작 노드 ID (None이면 루트부터 시작)
+        &#34;&#34;&#34;
+        if not self._items:
+            return
+        
+        # 시작 노드 ID가 없으면 루트부터 시작
+        start_id = node_id if node_id is not None else self._root_id
+        if start_id is None:
+            return
+        
+        # BFS 순회
+        visited: Set[str] = set()
+        queue: List[str] = [start_id]
+        
+        while queue:
+            current_id = queue.pop(0)
+            
+            if current_id in visited:
+                continue
+            
+            # 방문 처리
+            visited.add(current_id)
+            current_item = self._items.get(current_id)
+            
+            if current_item is not None:
+                # 방문자 함수 적용
+                visitor(current_item)
+                
+                # 자식 노드 큐에 추가
+                for child in self.get_children(current_id):
+                    queue.append(child.id)
+    
+    def clone(self) -&gt; &#39;MTTree&#39;:
+        &#34;&#34;&#34;트리의 복제본을 생성합니다.&#34;&#34;&#34;
+        new_tree = MTTree(self._id, self._name)
+        
+        # 아이템 복제
+        for item_id, item in self._items.items():
+            new_tree._items[item_id] = item.clone()
+        
+        # 루트 아이템 ID 복제
+        new_tree._root_id = self._root_id
+        
+        # 이벤트 구독 정보는 복제하지 않음 (새 인스턴스에서 필요시 다시 구독)
+        
+        return new_tree
+    
+    def _is_descendant(self, ancestor_id: str, descendant_id: str) -&gt; bool:
+        &#34;&#34;&#34;descendant_id가 ancestor_id의 자손인지 확인합니다.&#34;&#34;&#34;
+        if ancestor_id == descendant_id:
+            return True
+        
+        item = self._items.get(descendant_id)
+        if item is None:
+            return False
+        
+        parent_id = item.get_property(&#34;parent_id&#34;)
+        if parent_id is None:
+            return False
+        
+        return self._is_descendant(ancestor_id, parent_id)
+    
+    def _item_to_dict(self, item: IMTTreeItem) -&gt; Dict[str, Any]:
+        &#34;&#34;&#34;아이템을 딕셔너리로 변환합니다.&#34;&#34;&#34;
+        return {
+            &#34;id&#34;: item.id,
+            &#34;data&#34;: item.data
+        }
+
+    def to_dict(self) -&gt; Dict[str, Any]:
+            &#34;&#34;&#34;트리를 딕셔너리로 변환합니다.&#34;&#34;&#34;
+            return {
+                &#34;id&#34;: self._id,
+                &#34;name&#34;: self._name,
+                &#34;root_id&#34;: self._root_id,
+                &#34;items&#34;: {item_id: self._item_to_dict(item) for item_id, item in self._items.items()}
+            }
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -&gt; &#39;MTTree&#39;:
+        &#34;&#34;&#34;딕셔너리에서 트리를 생성합니다.&#34;&#34;&#34;
+        # 트리 생성
+        tree_id = data.get(&#34;id&#34;, &#34;&#34;)
+        tree_name = data.get(&#34;name&#34;, &#34;&#34;)
+        tree = cls(tree_id, tree_name)
+        
+        # 아이템 복원
+        items_data = data.get(&#34;items&#34;, {})
+        for item_id, item_data in items_data.items():
+            # 아이템 생성
+            item = MTTreeItem(item_id, item_data.get(&#34;data&#34;, {}))
+            # 아이템 추가 (부모 설정 없이)
+            tree._items[item_id] = item
+        
+        # 루트 아이템 설정
+        tree._root_id = data.get(&#34;root_id&#34;)
+        
+        return tree
+    
+    def to_json(self) -&gt; str:
+        &#34;&#34;&#34;트리 구조를 JSON 문자열로 직렬화합니다.
+        
+        Returns:
+            JSON 문자열
+        &#34;&#34;&#34;
+        return json.dumps(self.to_dict(), ensure_ascii=False, indent=2)
+    
+ 
+    @classmethod
+    def from_json(cls, json_str: str) -&gt; IMTTree:
+        &#34;&#34;&#34;JSON 문자열에서 트리 구조를 로드합니다.
+        
+        Args:
+            json_str: JSON 문자열
+            
+        Returns:
+            Tree 인스턴스
+        &#34;&#34;&#34;
+        try:
+            data = json.loads(json_str)
+            tree = cls()
+            
+            # 아이템 생성 및 추가
+            items_data = data.get(&#34;items&#34;, {})
+            
+            # 먼저 모든 아이템 생성
+            for item_id, item_dict in items_data.items():
+                item_data = item_dict.get(&#34;data&#34;, {})
+                name = item_data.get(&#34;name&#34;, &#34;&#34;)
+                item = IMTTreeItem(item_id, name)
+                
+                # 다른 속성 설정
+                for key, value in item_data.items():
+                    if key != &#34;name&#34;:  # 이름은 이미 설정됨
+                        item.set_property(key, value)
+                
+                # 아이템 추가 (부모 ID 없이)
+                tree._items[item_id] = item
+            
+            # 부모-자식 관계 설정
+            for item_id, item_dict in items_data.items():
+                item_data = item_dict.get(&#34;data&#34;, {})
+                parent_id = item_data.get(&#34;parent_id&#34;)
+                if parent_id:
+                    tree._items[item_id].set_property(&#34;parent_id&#34;, parent_id)
+            
+            # 루트 아이템 설정
+            tree._root_id = data.get(&#34;root_id&#34;)
+            
+            return tree
+        except Exception as e:
+            print(f&#34;JSON 파싱 실패: {e}&#34;)
+            return cls()</code></pre>
+</details>
+<div class="desc"><p>매크로 트리 구현 클래스</p>
+<p>매크로 트리를 관리하고 조작하는 기능을 제공합니다.</p>
+<p>트리 초기화</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>tree_id</code></strong></dt>
+<dd>트리 ID</dd>
+<dt><strong><code>name</code></strong></dt>
+<dd>트리 이름</dd>
+</dl></div>
+<h3>Static methods</h3>
+<dl>
+<dt id="core.impl.tree.MTTree.from_dict"><code class="name flex">
+<span>def <span class="ident">from_dict</span></span>(<span>data: Dict[str, Any]) ‑> <a title="core.impl.tree.MTTree" href="#core.impl.tree.MTTree">MTTree</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>딕셔너리에서 트리를 생성합니다.</p></div>
+</dd>
+<dt id="core.impl.tree.MTTree.from_json"><code class="name flex">
+<span>def <span class="ident">from_json</span></span>(<span>json_str: str) ‑> <a title="core.interfaces.base_tree.IMTTree" href="../interfaces/base_tree.html#core.interfaces.base_tree.IMTTree">IMTTree</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>JSON 문자열에서 트리 구조를 로드합니다.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>json_str</code></strong></dt>
+<dd>JSON 문자열</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Tree 인스턴스</p></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="core.impl.tree.MTTree.id"><code class="name">prop <span class="ident">id</span> : str</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def id(self) -&gt; str:
+    &#34;&#34;&#34;트리 ID를 반환합니다.&#34;&#34;&#34;
+    return self._id</code></pre>
+</details>
+<div class="desc"><p>트리 ID를 반환합니다.</p></div>
+</dd>
+<dt id="core.impl.tree.MTTree.name"><code class="name">prop <span class="ident">name</span> : str</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def name(self) -&gt; str:
+    &#34;&#34;&#34;트리 이름을 반환합니다.&#34;&#34;&#34;
+    return self._name</code></pre>
+</details>
+<div class="desc"><p>트리 이름을 반환합니다.</p></div>
+</dd>
+<dt id="core.impl.tree.MTTree.root_id"><code class="name">prop <span class="ident">root_id</span> : str | None</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def root_id(self) -&gt; Optional[str]:
+    &#34;&#34;&#34;루트 아이템 ID를 반환합니다.&#34;&#34;&#34;
+    return self._root_id</code></pre>
+</details>
+<div class="desc"><p>루트 아이템 ID를 반환합니다.</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="core.impl.tree.MTTree.add_item"><code class="name flex">
+<span>def <span class="ident">add_item</span></span>(<span>self,<br>item: <a title="core.interfaces.base_item.IMTTreeItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a>,<br>parent_id: str | None = None) ‑> bool</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_item(self, item: IMTTreeItem, parent_id: Optional[str] = None) -&gt; bool:
+    &#34;&#34;&#34;아이템을 트리에 추가합니다.
+    
+    Args:
+        item: 추가할 아이템
+        parent_id: 부모 아이템 ID (None이면 루트 아이템으로 추가)
+        
+    Returns:
+        성공 여부
+        
+    Raises:
+        ValueError: 아이템 ID가 이미 존재할 경우
+    &#34;&#34;&#34;
+    item_id = item.id
+    if item_id in self._items:
+        raise ValueError(f&#34;중복된 아이템 ID: {item_id}&#34;)
+    
+    # 부모 아이템 존재 여부 확인
+    if parent_id is not None and parent_id not in self._items:
+        raise ValueError(f&#34;존재하지 않는 부모 아이템 ID: {parent_id}&#34;)
+    
+    # 루트 아이템이 없으면 루트로 설정
+    if self._root_id is None and parent_id is None:
+        self._root_id = item_id
+    
+    # 부모 ID 설정
+    item.set_property(&#34;parent_id&#34;, parent_id)
+    
+    # 아이템 추가
+    self._items[item_id] = item
+    
+    return True</code></pre>
+</details>
+<div class="desc"><p>아이템을 트리에 추가합니다.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>item</code></strong></dt>
+<dd>추가할 아이템</dd>
+<dt><strong><code>parent_id</code></strong></dt>
+<dd>부모 아이템 ID (None이면 루트 아이템으로 추가)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>성공 여부</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>아이템 ID가 이미 존재할 경우</dd>
+</dl></div>
+</dd>
+<dt id="core.impl.tree.MTTree.clone"><code class="name flex">
+<span>def <span class="ident">clone</span></span>(<span>self) ‑> <a title="core.impl.tree.MTTree" href="#core.impl.tree.MTTree">MTTree</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clone(self) -&gt; &#39;MTTree&#39;:
+    &#34;&#34;&#34;트리의 복제본을 생성합니다.&#34;&#34;&#34;
+    new_tree = MTTree(self._id, self._name)
+    
+    # 아이템 복제
+    for item_id, item in self._items.items():
+        new_tree._items[item_id] = item.clone()
+    
+    # 루트 아이템 ID 복제
+    new_tree._root_id = self._root_id
+    
+    # 이벤트 구독 정보는 복제하지 않음 (새 인스턴스에서 필요시 다시 구독)
+    
+    return new_tree</code></pre>
+</details>
+<div class="desc"><p>트리의 복제본을 생성합니다.</p></div>
+</dd>
+<dt id="core.impl.tree.MTTree.get_all_items"><code class="name flex">
+<span>def <span class="ident">get_all_items</span></span>(<span>self) ‑> Dict[str, <a title="core.interfaces.base_item.IMTTreeItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a>]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_all_items(self) -&gt; Dict[str, IMTTreeItem]:
+    &#34;&#34;&#34;모든 아이템을 반환합니다.&#34;&#34;&#34;
+    return self._items.copy()</code></pre>
+</details>
+<div class="desc"><p>모든 아이템을 반환합니다.</p></div>
+</dd>
+<dt id="core.impl.tree.MTTree.get_children"><code class="name flex">
+<span>def <span class="ident">get_children</span></span>(<span>self, parent_id: str | None = None) ‑> List[<a title="core.interfaces.base_item.IMTTreeItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a>]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_children(self, parent_id: Optional[str] = None) -&gt; List[IMTTreeItem]:
+    &#34;&#34;&#34;지정된 부모의 모든 자식 아이템을 반환합니다.
+    
+    Args:
+        parent_id: 부모 아이템 ID (None이면 루트 아이템 반환)
+        
+    Returns:
+        자식 아이템 목록
+    &#34;&#34;&#34;
+    result = []
+    for item in self._items.values():
+        item_parent_id = item.get_property(&#34;parent_id&#34;)
+        if (parent_id is None and item_parent_id is None) or \
+           (parent_id is not None and item_parent_id == parent_id):
+            result.append(item)
+    return result</code></pre>
+</details>
+<div class="desc"><p>지정된 부모의 모든 자식 아이템을 반환합니다.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>parent_id</code></strong></dt>
+<dd>부모 아이템 ID (None이면 루트 아이템 반환)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>자식 아이템 목록</p></div>
+</dd>
+<dt id="core.impl.tree.MTTree.get_item"><code class="name flex">
+<span>def <span class="ident">get_item</span></span>(<span>self, item_id: str) ‑> <a title="core.interfaces.base_item.IMTTreeItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a> | None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_item(self, item_id: str) -&gt; Optional[IMTTreeItem]:
+    &#34;&#34;&#34;ID로 아이템을 찾습니다.&#34;&#34;&#34;
+    return self._items.get(item_id)</code></pre>
+</details>
+<div class="desc"><p>ID로 아이템을 찾습니다.</p></div>
+</dd>
+<dt id="core.impl.tree.MTTree.modify_item"><code class="name flex">
+<span>def <span class="ident">modify_item</span></span>(<span>self, item_id: str, changes: Dict[str, Any]) ‑> bool</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def modify_item(self, item_id: str, changes: Dict[str, Any]) -&gt; bool:
+    &#34;&#34;&#34;아이템 속성을 변경합니다.
+    
+    Args:
+        item_id: 변경할 아이템 ID
+        changes: 변경할 속성 (키-값 쌍)
+        
+    Returns:
+        성공 여부
+        
+    Raises:
+        ValueError: 존재하지 않는 아이템 ID일 경우
+    &#34;&#34;&#34;
+    if item_id not in self._items:
+        raise ValueError(f&#34;존재하지 않는 아이템 ID: {item_id}&#34;)
+    
+    item = self._items[item_id]
+    
+    # 속성 변경
+    for key, value in changes.items():
+        item.set_property(key, value)
+    
+    # 이벤트 발생
+    self._notify(MTTreeEvent.ITEM_MODIFIED, {&#34;item_id&#34;: item_id, &#34;changes&#34;: changes})
+    
+    return True</code></pre>
+</details>
+<div class="desc"><p>아이템 속성을 변경합니다.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>item_id</code></strong></dt>
+<dd>변경할 아이템 ID</dd>
+<dt><strong><code>changes</code></strong></dt>
+<dd>변경할 속성 (키-값 쌍)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>성공 여부</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>존재하지 않는 아이템 ID일 경우</dd>
+</dl></div>
+</dd>
+<dt id="core.impl.tree.MTTree.move_item"><code class="name flex">
+<span>def <span class="ident">move_item</span></span>(<span>self, item_id: str, new_parent_id: str | None) ‑> bool</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def move_item(self, item_id: str, new_parent_id: Optional[str]) -&gt; bool:
+    &#34;&#34;&#34;아이템을 새 부모로 이동합니다.
+    
+    Args:
+        item_id: 이동할 아이템 ID
+        new_parent_id: 새 부모 아이템 ID (None이면 루트 아이템으로 이동)
+        
+    Returns:
+        성공 여부
+        
+    Raises:
+        ValueError: 존재하지 않는 아이템 ID이거나 부모 ID일 경우
+    &#34;&#34;&#34;
+    if item_id not in self._items:
+        raise ValueError(f&#34;존재하지 않는 아이템 ID: {item_id}&#34;)
+    
+    if new_parent_id is not None and new_parent_id not in self._items:
+        raise ValueError(f&#34;존재하지 않는 부모 아이템 ID: {new_parent_id}&#34;)
+    
+    # 순환 참조 확인
+    if new_parent_id is not None and self._is_descendant(item_id, new_parent_id):
+        raise ValueError(f&#34;순환 참조 발생: {item_id}는 {new_parent_id}의 조상입니다.&#34;)
+    
+    # 이전 부모
+    item = self._items[item_id]
+    old_parent_id = item.get_property(&#34;parent_id&#34;)
+    
+    # 동일한 부모로의 이동 무시
+    if old_parent_id == new_parent_id:
+        return False
+    
+    # 부모 변경
+    item.set_property(&#34;parent_id&#34;, new_parent_id)
+    
+    # 이벤트 발생
+    self._notify(MTTreeEvent.ITEM_MOVED, {
+        &#34;item_id&#34;: item_id,
+        &#34;old_parent_id&#34;: old_parent_id,
+        &#34;new_parent_id&#34;: new_parent_id
+    })
+    
+    return True</code></pre>
+</details>
+<div class="desc"><p>아이템을 새 부모로 이동합니다.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>item_id</code></strong></dt>
+<dd>이동할 아이템 ID</dd>
+<dt><strong><code>new_parent_id</code></strong></dt>
+<dd>새 부모 아이템 ID (None이면 루트 아이템으로 이동)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>성공 여부</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>존재하지 않는 아이템 ID이거나 부모 ID일 경우</dd>
+</dl></div>
+</dd>
+<dt id="core.impl.tree.MTTree.remove_item"><code class="name flex">
+<span>def <span class="ident">remove_item</span></span>(<span>self, item_id: str) ‑> bool</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def remove_item(self, item_id: str) -&gt; bool:
+    &#34;&#34;&#34;아이템을 트리에서 제거합니다.
+    
+    Args:
+        item_id: 제거할 아이템 ID
+        
+    Returns:
+        성공 여부
+        
+    Raises:
+        ValueError: 존재하지 않는 아이템 ID일 경우
+    &#34;&#34;&#34;
+    if item_id not in self._items:
+        raise ValueError(f&#34;존재하지 않는 아이템 ID: {item_id}&#34;)
+    
+    # 루트 아이템인 경우 루트 재설정
+    if item_id == self._root_id:
+        self._root_id = None
+    
+    # 자식 아이템들도 모두 제거
+    children_to_remove = []
+    for child in self.get_children(item_id):
+        children_to_remove.append(child.id)
+    
+    # 아이템 제거
+    removed_item = self._items.pop(item_id)
+    
+    # 자식 아이템 제거
+    for child_id in children_to_remove:
+        self.remove_item(child_id)
+    
+    return True</code></pre>
+</details>
+<div class="desc"><p>아이템을 트리에서 제거합니다.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>item_id</code></strong></dt>
+<dd>제거할 아이템 ID</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>성공 여부</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>존재하지 않는 아이템 ID일 경우</dd>
+</dl></div>
+</dd>
+<dt id="core.impl.tree.MTTree.reset_tree"><code class="name flex">
+<span>def <span class="ident">reset_tree</span></span>(<span>self) ‑> None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reset_tree(self) -&gt; None:
+    &#34;&#34;&#34;트리를 초기 상태로 리셋합니다.&#34;&#34;&#34;
+    self._items = {}
+    self._root_id = None
+    
+    # 이벤트 발생
+    self._notify(MTTreeEvent.TREE_RESET, {})</code></pre>
+</details>
+<div class="desc"><p>트리를 초기 상태로 리셋합니다.</p></div>
+</dd>
+<dt id="core.impl.tree.MTTree.to_dict"><code class="name flex">
+<span>def <span class="ident">to_dict</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_dict(self) -&gt; Dict[str, Any]:
+        &#34;&#34;&#34;트리를 딕셔너리로 변환합니다.&#34;&#34;&#34;
+        return {
+            &#34;id&#34;: self._id,
+            &#34;name&#34;: self._name,
+            &#34;root_id&#34;: self._root_id,
+            &#34;items&#34;: {item_id: self._item_to_dict(item) for item_id, item in self._items.items()}
+        }</code></pre>
+</details>
+<div class="desc"><p>트리를 딕셔너리로 변환합니다.</p></div>
+</dd>
+<dt id="core.impl.tree.MTTree.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; str:
+    &#34;&#34;&#34;트리 구조를 JSON 문자열로 직렬화합니다.
+    
+    Returns:
+        JSON 문자열
+    &#34;&#34;&#34;
+    return json.dumps(self.to_dict(), ensure_ascii=False, indent=2)</code></pre>
+</details>
+<div class="desc"><p>트리 구조를 JSON 문자열로 직렬화합니다.</p>
+<h2 id="returns">Returns</h2>
+<p>JSON 문자열</p></div>
+</dd>
+<dt id="core.impl.tree.MTTree.traverse"><code class="name flex">
+<span>def <span class="ident">traverse</span></span>(<span>self,<br>visitor: Callable[[<a title="core.interfaces.base_item.IMTTreeItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a>], None],<br>node_id: str | None = None) ‑> None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def traverse(self, visitor: Callable[[IMTTreeItem], None], 
+            node_id: Optional[str] = None) -&gt; None:
+    &#34;&#34;&#34;트리를 BFS로 순회하면서 각 아이템에 방문자 함수를 적용합니다.
+    
+    Args:
+        visitor: 각 아이템에 적용할 함수
+        node_id: 시작 노드 ID (None이면 루트부터 시작)
+    &#34;&#34;&#34;
+    if not self._items:
+        return
+    
+    # 시작 노드 ID가 없으면 루트부터 시작
+    start_id = node_id if node_id is not None else self._root_id
+    if start_id is None:
+        return
+    
+    # BFS 순회
+    visited: Set[str] = set()
+    queue: List[str] = [start_id]
+    
+    while queue:
+        current_id = queue.pop(0)
+        
+        if current_id in visited:
+            continue
+        
+        # 방문 처리
+        visited.add(current_id)
+        current_item = self._items.get(current_id)
+        
+        if current_item is not None:
+            # 방문자 함수 적용
+            visitor(current_item)
+            
+            # 자식 노드 큐에 추가
+            for child in self.get_children(current_id):
+                queue.append(child.id)</code></pre>
+</details>
+<div class="desc"><p>트리를 BFS로 순회하면서 각 아이템에 방문자 함수를 적용합니다.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>visitor</code></strong></dt>
+<dd>각 아이템에 적용할 함수</dd>
+<dt><strong><code>node_id</code></strong></dt>
+<dd>시작 노드 ID (None이면 루트부터 시작)</dd>
+</dl></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="core.impl" href="index.html">core.impl</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="core.impl.tree.MTTree" href="#core.impl.tree.MTTree">MTTree</a></code></h4>
+<ul class="two-column">
+<li><code><a title="core.impl.tree.MTTree.add_item" href="#core.impl.tree.MTTree.add_item">add_item</a></code></li>
+<li><code><a title="core.impl.tree.MTTree.clone" href="#core.impl.tree.MTTree.clone">clone</a></code></li>
+<li><code><a title="core.impl.tree.MTTree.from_dict" href="#core.impl.tree.MTTree.from_dict">from_dict</a></code></li>
+<li><code><a title="core.impl.tree.MTTree.from_json" href="#core.impl.tree.MTTree.from_json">from_json</a></code></li>
+<li><code><a title="core.impl.tree.MTTree.get_all_items" href="#core.impl.tree.MTTree.get_all_items">get_all_items</a></code></li>
+<li><code><a title="core.impl.tree.MTTree.get_children" href="#core.impl.tree.MTTree.get_children">get_children</a></code></li>
+<li><code><a title="core.impl.tree.MTTree.get_item" href="#core.impl.tree.MTTree.get_item">get_item</a></code></li>
+<li><code><a title="core.impl.tree.MTTree.id" href="#core.impl.tree.MTTree.id">id</a></code></li>
+<li><code><a title="core.impl.tree.MTTree.modify_item" href="#core.impl.tree.MTTree.modify_item">modify_item</a></code></li>
+<li><code><a title="core.impl.tree.MTTree.move_item" href="#core.impl.tree.MTTree.move_item">move_item</a></code></li>
+<li><code><a title="core.impl.tree.MTTree.name" href="#core.impl.tree.MTTree.name">name</a></code></li>
+<li><code><a title="core.impl.tree.MTTree.remove_item" href="#core.impl.tree.MTTree.remove_item">remove_item</a></code></li>
+<li><code><a title="core.impl.tree.MTTree.reset_tree" href="#core.impl.tree.MTTree.reset_tree">reset_tree</a></code></li>
+<li><code><a title="core.impl.tree.MTTree.root_id" href="#core.impl.tree.MTTree.root_id">root_id</a></code></li>
+<li><code><a title="core.impl.tree.MTTree.to_dict" href="#core.impl.tree.MTTree.to_dict">to_dict</a></code></li>
+<li><code><a title="core.impl.tree.MTTree.to_json" href="#core.impl.tree.MTTree.to_json">to_json</a></code></li>
+<li><code><a title="core.impl.tree.MTTree.traverse" href="#core.impl.tree.MTTree.traverse">traverse</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>
