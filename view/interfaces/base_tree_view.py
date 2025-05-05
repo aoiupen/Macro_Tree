@@ -1,7 +1,6 @@
-from typing import Any, Callable, Dict, List, Protocol, TypeVar, runtime_checkable
-
-from core.tree import IMTTreeReadable
-from viewmodel.tree_viewmodel import IMTTreeViewModel
+from typing import List, Dict, Any, Protocol, TypeVar, runtime_checkable
+from core.interfaces.base_tree import IMTTreeReadable
+from viewmodel.interfaces.base_tree_viewmodel import IMTTreeViewModel
 
 # 타입 변수 정의
 T = TypeVar('T')

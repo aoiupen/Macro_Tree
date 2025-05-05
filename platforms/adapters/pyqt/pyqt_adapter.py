@@ -1,6 +1,6 @@
 from platforms.adapters.adapter import IMTPlatformAdapter
-from viewmodel.tree_viewmodel import IMTTreeViewModel
-from PyQt5.QtWidgets import QTreeView, QWidget
+from viewmodel.interfaces.base_tree_viewmodel import IMTTreeViewModel
+from PyQt6.QtWidgets import QTreeView, QWidget
 
 class PyQtAdapter(IMTPlatformAdapter):
     """PyQt용 플랫폼 어댑터 구현"""

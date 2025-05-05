@@ -16,6 +16,7 @@ class MTTreeItem(IMTTreeItem):
             initial_data: 초기 데이터 (Optional)
         """
         self._id = item_id
+        # RF : False면 or 뒤의 값으로 초기화
         self._data = initial_data or {}
     
     @property

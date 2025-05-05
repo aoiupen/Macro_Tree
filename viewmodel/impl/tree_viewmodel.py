@@ -1,13 +1,12 @@
 from typing import Dict, List, Any, Optional, Callable, Set
-import os
 from uuid import uuid4
-from model.impl.demo_tree import DemoTree
-from model.impl.demo_tree_item import DemoTreeItem
-from model.store.interfaces.tree_repo import IMTTreeRepository
-from model.state.tree_state_mgr import IMTTreeStateManager
-from viewmodel.impl.demo_tree_viewmodel import IMTTreeViewModel
+from core.interfaces.base_tree import IMTTree
+from core.interfaces.base_tree import IMTTreeItem
+from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
+from model.services.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
+from viewmodel.interfaces.base_tree_viewmodel import IMTTreeViewModel
 
-class DemoTreeViewModel(IMTTreeViewModel):
+class TreeViewModel(IMTTreeViewModel):
     """데모 트리 뷰모델 구현"""
     
     def __init__(self, repository: IMTTreeRepository, state_manager: IMTTreeStateManager):
@@ -22,7 +21,7 @@ class DemoTreeViewModel(IMTTreeViewModel):
         self._selected_items: Set[str] = set()  # 선택된 아이템 ID 집합
         self._subscribers: Set[Callable[[], None]] = set()  # 변경 알림을 받을 콜백
     
-    def get_item(self, item_id: str) -> DemoTreeItem | None:
+    def get_item(self, item_id: str) -> IMTTreeItem | None:
         """ID로 아이템을 찾습니다."""
         tree = self.get_current_tree()
         if tree:
@@ -48,7 +47,7 @@ class DemoTreeViewModel(IMTTreeViewModel):
         
         # 새 아이템 생성
         item_id = str(uuid4())
-        new_item = DemoTreeItem(item_id, name)
+        new_item = IMTTreeItem(item_id, name)
         
         # 트리에 추가
         try:
@@ -58,7 +57,7 @@ class DemoTreeViewModel(IMTTreeViewModel):
         except ValueError:
             return None
     
-    def get_current_tree(self) -> DemoTree | None:
+    def get_current_tree(self) -> IMTTree | None:
         """현재 트리를 반환합니다."""
         return self._state_mgr.current_state
     
@@ -71,7 +70,7 @@ class DemoTreeViewModel(IMTTreeViewModel):
         result = []
         
         # 트리 순회하면서 아이템 정보 수집
-        def visitor(item: DemoTreeItem) -> None:
+        def visitor(item: IMTTreeItem) -> None:
             parent_id = None
             for pid, children in tree._children_map.items():
                 if item.id in children:
@@ -307,3 +306,10 @@ class DemoTreeViewModel(IMTTreeViewModel):
         """모든 구독자에게 변경을 알립니다."""
         for callback in self._subscribers:
             callback()
+
+    # RF : core 메서드를 직접 호출하지 않고, 계층 분리 원칙에 따라 wrapper로 감싸서 호출
+    def get_tree_items(self) -> Dict[str, IMTTreeItem]:
+        tree = self.get_current_tree()
+        if not tree:
+            return {}
+        return tree.get_all_items()

@@ -8,9 +8,9 @@ import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import Json
 
-from core.interfaces.base_tree import IMTTree
+from core.interfaces.base_tree import IMTTree, IMTTreeJSONSerializable
 from core.impl.tree import MTTree
-from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository, IMTTreeJSONSerializable
+from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
 
 logger = logging.getLogger(__name__)
 

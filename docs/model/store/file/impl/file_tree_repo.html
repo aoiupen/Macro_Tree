@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>model.store.file.impl.file_tree_repo API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>model.store.file.impl.file_tree_repo</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="model.store.file.impl.file_tree_repo.MTFileTreeRepository"><code class="flex name class">
+<span>class <span class="ident">MTFileTreeRepository</span></span>
+<span>(</span><span>storage_dir: str = './trees')</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MTFileTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
+    &#34;&#34;&#34;파일 기반 트리 저장소 구현체&#34;&#34;&#34;
+    
+    def __init__(self, storage_dir: str = &#34;./trees&#34;):
+        &#34;&#34;&#34;저장소 초기화
+        
+        Args:
+            storage_dir: 트리 파일 저장 경로
+        &#34;&#34;&#34;
+        self.storage_dir = storage_dir
+        os.makedirs(storage_dir, exist_ok=True)
+    
+    def _get_file_path(self, tree_id: str) -&gt; str:
+        &#34;&#34;&#34;트리 ID로부터 파일 경로를 생성합니다.&#34;&#34;&#34;
+        return os.path.join(self.storage_dir, f&#34;{tree_id}.json&#34;)
+    
+    def save(self, tree: Any, tree_id: Optional[str] = None) -&gt; str:
+        &#34;&#34;&#34;트리를 파일로 저장합니다.&#34;&#34;&#34;
+        # ID가 없으면 새로 생성
+        if tree_id is None:
+            tree_id = str(uuid.uuid4())
+        
+        # 트리를 딕셔너리로 변환
+        tree_dict = tree.to_dict()
+        
+        # 딕셔너리를 JSON으로 변환
+        json_str = json.dumps(tree_dict, ensure_ascii=False, indent=2)
+        
+        # 파일에 저장
+        with open(self._get_file_path(tree_id), &#39;w&#39;, encoding=&#39;utf-8&#39;) as file:
+            file.write(json_str)
+        
+        return tree_id
+    
+    def load(self, tree_id: str) -&gt; Optional[Any]:
+        &#34;&#34;&#34;파일로부터 트리를 로드합니다.&#34;&#34;&#34;
+        file_path = self._get_file_path(tree_id)
+        
+        if not os.path.exists(file_path):
+            return None
+        
+        try:
+            # 파일에서 JSON 문자열 읽기
+            with open(file_path, &#39;r&#39;, encoding=&#39;utf-8&#39;) as file:
+                json_str = file.read()
+            
+            return self.from_json(json_str)
+        except Exception as e:
+            print(f&#34;트리 로드 실패: {e}&#34;)
+            return None
+    
+    def delete(self, tree_id: str) -&gt; bool:
+        &#34;&#34;&#34;트리 파일을 삭제합니다.&#34;&#34;&#34;
+        file_path = self._get_file_path(tree_id)
+        
+        if not os.path.exists(file_path):
+            return False
+        
+        try:
+            os.remove(file_path)
+            return True
+        except Exception as e:
+            print(f&#34;트리 삭제 실패: {e}&#34;)
+            return False
+    
+    def list_trees(self) -&gt; Dict[str, str]:
+        &#34;&#34;&#34;저장된 모든 트리 목록을 반환합니다.&#34;&#34;&#34;
+        result = {}
+        
+        for filename in os.listdir(self.storage_dir):
+            if filename.endswith(&#34;.json&#34;):
+                tree_id = filename[:-5]  # .json 확장자 제거
+                
+                try:
+                    # 트리 이름 가져오기
+                    tree = self.load(tree_id)
+                    if tree:
+                        result[tree_id] = tree.name
+                except Exception:
+                    # 로드 실패 시 ID만 사용
+                    result[tree_id] = f&#34;Tree {tree_id}&#34;
+        
+        return result</code></pre>
+</details>
+<div class="desc"><p>파일 기반 트리 저장소 구현체</p>
+<p>저장소 초기화</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>storage_dir</code></strong></dt>
+<dd>트리 파일 저장 경로</dd>
+</dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="model.store.repo.interfaces.base_tree_repo.IMTTreeRepository" href="../../repo/interfaces/base_tree_repo.html#model.store.repo.interfaces.base_tree_repo.IMTTreeRepository">IMTTreeRepository</a></li>
+<li><a title="core.interfaces.base_tree.IMTTreeJSONSerializable" href="../../../../core/interfaces/base_tree.html#core.interfaces.base_tree.IMTTreeJSONSerializable">IMTTreeJSONSerializable</a></li>
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="model.store.file.impl.file_tree_repo.MTFileTreeRepository.delete"><code class="name flex">
+<span>def <span class="ident">delete</span></span>(<span>self, tree_id: str) ‑> bool</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def delete(self, tree_id: str) -&gt; bool:
+    &#34;&#34;&#34;트리 파일을 삭제합니다.&#34;&#34;&#34;
+    file_path = self._get_file_path(tree_id)
+    
+    if not os.path.exists(file_path):
+        return False
+    
+    try:
+        os.remove(file_path)
+        return True
+    except Exception as e:
+        print(f&#34;트리 삭제 실패: {e}&#34;)
+        return False</code></pre>
+</details>
+<div class="desc"><p>트리 파일을 삭제합니다.</p></div>
+</dd>
+<dt id="model.store.file.impl.file_tree_repo.MTFileTreeRepository.list_trees"><code class="name flex">
+<span>def <span class="ident">list_trees</span></span>(<span>self) ‑> Dict[str, str]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def list_trees(self) -&gt; Dict[str, str]:
+    &#34;&#34;&#34;저장된 모든 트리 목록을 반환합니다.&#34;&#34;&#34;
+    result = {}
+    
+    for filename in os.listdir(self.storage_dir):
+        if filename.endswith(&#34;.json&#34;):
+            tree_id = filename[:-5]  # .json 확장자 제거
+            
+            try:
+                # 트리 이름 가져오기
+                tree = self.load(tree_id)
+                if tree:
+                    result[tree_id] = tree.name
+            except Exception:
+                # 로드 실패 시 ID만 사용
+                result[tree_id] = f&#34;Tree {tree_id}&#34;
+    
+    return result</code></pre>
+</details>
+<div class="desc"><p>저장된 모든 트리 목록을 반환합니다.</p></div>
+</dd>
+<dt id="model.store.file.impl.file_tree_repo.MTFileTreeRepository.load"><code class="name flex">
+<span>def <span class="ident">load</span></span>(<span>self, tree_id: str) ‑> Any | None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load(self, tree_id: str) -&gt; Optional[Any]:
+    &#34;&#34;&#34;파일로부터 트리를 로드합니다.&#34;&#34;&#34;
+    file_path = self._get_file_path(tree_id)
+    
+    if not os.path.exists(file_path):
+        return None
+    
+    try:
+        # 파일에서 JSON 문자열 읽기
+        with open(file_path, &#39;r&#39;, encoding=&#39;utf-8&#39;) as file:
+            json_str = file.read()
+        
+        return self.from_json(json_str)
+    except Exception as e:
+        print(f&#34;트리 로드 실패: {e}&#34;)
+        return None</code></pre>
+</details>
+<div class="desc"><p>파일로부터 트리를 로드합니다.</p></div>
+</dd>
+<dt id="model.store.file.impl.file_tree_repo.MTFileTreeRepository.save"><code class="name flex">
+<span>def <span class="ident">save</span></span>(<span>self, tree: Any, tree_id: str | None = None) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save(self, tree: Any, tree_id: Optional[str] = None) -&gt; str:
+    &#34;&#34;&#34;트리를 파일로 저장합니다.&#34;&#34;&#34;
+    # ID가 없으면 새로 생성
+    if tree_id is None:
+        tree_id = str(uuid.uuid4())
+    
+    # 트리를 딕셔너리로 변환
+    tree_dict = tree.to_dict()
+    
+    # 딕셔너리를 JSON으로 변환
+    json_str = json.dumps(tree_dict, ensure_ascii=False, indent=2)
+    
+    # 파일에 저장
+    with open(self._get_file_path(tree_id), &#39;w&#39;, encoding=&#39;utf-8&#39;) as file:
+        file.write(json_str)
+    
+    return tree_id</code></pre>
+</details>
+<div class="desc"><p>트리를 파일로 저장합니다.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="core.interfaces.base_tree.IMTTreeJSONSerializable" href="../../../../core/interfaces/base_tree.html#core.interfaces.base_tree.IMTTreeJSONSerializable">IMTTreeJSONSerializable</a></b></code>:
+<ul class="hlist">
+<li><code><a title="core.interfaces.base_tree.IMTTreeJSONSerializable.from_json" href="../../../../core/interfaces/base_tree.html#core.interfaces.base_tree.IMTTreeJSONSerializable.from_json">from_json</a></code></li>
+<li><code><a title="core.interfaces.base_tree.IMTTreeJSONSerializable.to_json" href="../../../../core/interfaces/base_tree.html#core.interfaces.base_tree.IMTTreeJSONSerializable.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="model.store.file.impl" href="index.html">model.store.file.impl</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="model.store.file.impl.file_tree_repo.MTFileTreeRepository" href="#model.store.file.impl.file_tree_repo.MTFileTreeRepository">MTFileTreeRepository</a></code></h4>
+<ul class="">
+<li><code><a title="model.store.file.impl.file_tree_repo.MTFileTreeRepository.delete" href="#model.store.file.impl.file_tree_repo.MTFileTreeRepository.delete">delete</a></code></li>
+<li><code><a title="model.store.file.impl.file_tree_repo.MTFileTreeRepository.list_trees" href="#model.store.file.impl.file_tree_repo.MTFileTreeRepository.list_trees">list_trees</a></code></li>
+<li><code><a title="model.store.file.impl.file_tree_repo.MTFileTreeRepository.load" href="#model.store.file.impl.file_tree_repo.MTFileTreeRepository.load">load</a></code></li>
+<li><code><a title="model.store.file.impl.file_tree_repo.MTFileTreeRepository.save" href="#model.store.file.impl.file_tree_repo.MTFileTreeRepository.save">save</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

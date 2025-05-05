@@ -5,7 +5,7 @@
 """
 
 # 인터페이스 - 주요 공개 API
-from core.interfaces.base_tree import IMTTree, IMTTreeData, IMTTreeModifiable, IMTTreeTraversable
+from core.interfaces.base_tree import IMTTree, IMTTreeReadable , IMTTreeModifiable, IMTTreeTraversable
 from core.interfaces.base_item import IMTTreeItem, IMTBaseItem
 # from core.interfaces.base_item_action import IMTAction, MTDevice, MTTreeEvent
 from core.interfaces.base_item_data import IMTAction, MTDevice  # MTTreeEvent는 실제 정의된 곳에서 import
