@@ -5,6 +5,8 @@ from core.interfaces.base_tree import IMTTreeItem
 from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
 from model.services.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
 from viewmodel.interfaces.base_tree_viewmodel import IMTTreeViewModel
+from core.impl.types import to_tree_item_data
+from core.interfaces.base_item_data import MTTreeItemData
 
 class TreeViewModel(IMTTreeViewModel):
     """데모 트리 뷰모델 구현"""
@@ -21,6 +23,7 @@ class TreeViewModel(IMTTreeViewModel):
         self._selected_items: Set[str] = set()  # 선택된 아이템 ID 집합
         self._subscribers: Set[Callable[[], None]] = set()  # 변경 알림을 받을 콜백
     
+    # RF : 반환형이 인터페이스 -> DIP (구현이 아닌 인터페이스에 의존하는 원칙. 추상화에 의존하는 원칙. 해당 인터페이스로 구현한 어떤 객체든 반환 -> 유연성, 추상화 보장)
     def get_item(self, item_id: str) -> IMTTreeItem | None:
         """ID로 아이템을 찾습니다."""
         tree = self.get_current_tree()
@@ -61,15 +64,12 @@ class TreeViewModel(IMTTreeViewModel):
         """현재 트리를 반환합니다."""
         return self._state_mgr.current_state
     
-    def get_items(self) -> List[Dict[str, Any]]:
+    def get_items(self) -> list[MTTreeItemData]:
         """UI에 표시할 아이템 목록을 반환합니다."""
         tree = self.get_current_tree()
         if not tree:
             return []
-        
         result = []
-        
-        # 트리 순회하면서 아이템 정보 수집
         def visitor(item: IMTTreeItem) -> None:
             parent_id = None
             for pid, children in tree._children_map.items():
@@ -77,14 +77,13 @@ class TreeViewModel(IMTTreeViewModel):
                     parent_id = pid
                     break
             
-            item_data = {
-                "id": item.id,
-                "parent_id": parent_id,
-                "name": item.get_property("name", "unnamed"),
-                "expanded": item.get_property("expanded", False),
-                "selected": item.id in self._selected_items
-            }
-            result.append(item_data)
+            result.append(
+                to_tree_item_data(
+                    item,
+                    parent_id,
+                    selected=(item.id in self._selected_items)
+                )
+            )
         
         tree.traverse(visitor)
         return result
@@ -273,24 +272,21 @@ class TreeViewModel(IMTTreeViewModel):
         except ValueError:
             return False
     
-    def get_item_children(self, parent_id: str | None = None) -> List[Dict[str, Any]]:
+    def get_item_children(self, parent_id: str | None = None) -> list[MTTreeItemData]:
         """특정 부모의 자식 아이템 정보를 반환합니다."""
         tree = self.get_current_tree()
         if not tree:
             return []
-        
         result = []
         children = tree.get_children(parent_id)
-        
         for child in children:
-            item_data = {
-                "id": child.id,
-                "name": child.get_property("name", "unnamed"),
-                "expanded": child.get_property("expanded", False),
-                "selected": child.id in self._selected_items
-            }
-            result.append(item_data)
-        
+            result.append(
+                to_tree_item_data(
+                    child,
+                    parent_id,
+                    selected=(child.id in self._selected_items)
+                )
+            )
         return result
     
     def subscribe(self, callback: Callable[[], None]) -> None:

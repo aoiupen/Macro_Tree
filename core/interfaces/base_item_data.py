@@ -92,10 +92,10 @@ class IMTActionPerformer(Protocol, Generic[D]):
 # RF: I는 TypedDict, dataclass, enum에 쓰지 않는다
 class MTTreeItemData(TypedDict, total=False):
     """트리 아이템 데이터 구조 (total=False: 모든 필드 선택적)"""
-    node_type: MTNodeType
     name: str
     parent_id: str | None
     children_ids: List[str]
+    node_type: MTNodeType
     device: MTDevice | None
     action: IMTAction | None
     action_data: IMTActionData | None
