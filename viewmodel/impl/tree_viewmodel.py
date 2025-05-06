@@ -5,13 +5,13 @@ from core.interfaces.base_tree import IMTTreeItem
 from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
 from model.services.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
 from viewmodel.interfaces.base_tree_viewmodel import IMTTreeViewModel
-from core.impl.types import to_tree_item_data
+from core.impl.utils import to_tree_item_data
 from core.interfaces.base_item_data import MTTreeItemData
 
 class TreeViewModel(IMTTreeViewModel):
     """데모 트리 뷰모델 구현"""
     
-    def __init__(self, repository: IMTTreeRepository, state_manager: IMTTreeStateManager):
+    def __init__(self, repository: IMTTreeRepository | None, state_manager: IMTTreeStateManager | None):
         """뷰모델 초기화
         
         Args:

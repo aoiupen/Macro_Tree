@@ -2,13 +2,14 @@ from typing import Any, Dict, TypeVar
 import copy
 
 from core.interfaces.base_item import IMTTreeItem
+from core.interfaces.base_item_data import MTTreeItemData
 
 T = TypeVar('T')  # 제네릭 타입 변수 정의
 
 class MTTreeItem(IMTTreeItem):
     """매크로 트리 아이템 구현 클래스"""
     
-    def __init__(self, item_id: str, initial_data: Dict[str, Any] | None = None):
+    def __init__(self, item_id: str, initial_data: MTTreeItemData | None = None):
         """아이템 초기화
         
         Args:

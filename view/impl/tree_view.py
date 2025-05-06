@@ -4,7 +4,7 @@ from viewmodel.impl.tree_viewmodel import TreeViewModel
 
 # RF : 트리뷰는 트리뷰모델을 상속받지 않고, 참조
 class TreeView(QTreeWidget):
-    def __init__(self, viewmodel, parent=None):
+    def __init__(self, viewmodel: TreeViewModel, parent=None):
         super().__init__(parent)
         self._viewmodel = viewmodel
         
@@ -48,7 +48,6 @@ class TreeView(QTreeWidget):
     def _build_tree_items(self):
         # 1단계: 모든 아이템 생성
         all_items = self._viewmodel.get_tree_items()
-        
         # 먼저 루트 아이템 추가
         for item_id, item in all_items.items():
             parent_id = item.get_property("parent_id")

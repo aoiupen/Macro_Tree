@@ -20,7 +20,7 @@ class MainWindow(QMainWindow):
         
         # 샘플 데이터 추가
         root_item = MTTreeItem("root", {"name": "Root Item"})
-        self.tree.add_item(root_item)
+        self.tree.add_item(root_item, None)
         
         # 첫 번째 그룹
         group1 = MTTreeItem("group1", {"name": "Group 1"})
