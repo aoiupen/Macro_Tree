@@ -8,7 +8,7 @@ from viewmodel.interfaces.base_tree_viewmodel import IMTTreeViewModel
 from core.impl.utils import to_tree_item_data
 from core.interfaces.base_item_data import MTTreeItemData
 
-class TreeViewModel(IMTTreeViewModel):
+class MTTreeViewModel(IMTTreeViewModel):
     """데모 트리 뷰모델 구현"""
     
     def __init__(self, repository: IMTTreeRepository | None, state_manager: IMTTreeStateManager | None):

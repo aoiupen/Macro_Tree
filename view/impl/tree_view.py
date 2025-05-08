@@ -1,10 +1,10 @@
 from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QAbstractItemView
 from PyQt6.QtCore import Qt
-from viewmodel.impl.tree_viewmodel import TreeViewModel
+from viewmodel.impl.tree_viewmodel import MTTreeViewModel
 
 # RF : 트리뷰는 트리뷰모델을 상속받지 않고, 참조
 class TreeView(QTreeWidget):
-    def __init__(self, viewmodel: TreeViewModel, parent=None):
+    def __init__(self, viewmodel: MTTreeViewModel, parent=None):
         super().__init__(parent)
         self._viewmodel = viewmodel
         

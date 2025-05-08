@@ -4,7 +4,7 @@ from PyQt6.QtCore import Qt
 
 from core.impl.tree import MTTree
 from core.impl.item import MTTreeItem
-from viewmodel.impl.tree_viewmodel import TreeViewModel
+from viewmodel.impl.tree_viewmodel import MTTreeViewModel
 from view.impl.tree_view import TreeView
 from model.services.state.impl.tree_state_mgr import MTTreeStateManager
 
@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
         
         # ViewModel 생성
         self.state_manager = MTTreeStateManager()
-        self.viewmodel = TreeViewModel(self.tree, self.state_manager)
+        self.viewmodel = MTTreeViewModel(self.tree, self.state_manager)
         
         # 트리 뷰 생성 및 설정
         self.tree_view = TreeView(self.viewmodel)

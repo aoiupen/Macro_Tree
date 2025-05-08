@@ -4,6 +4,7 @@ from core.interfaces.base_item import IMTTreeItem
 from core.interfaces.base_item_data import MTTreeItemData
 from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
 from model.services.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
+from abc import ABC, abstractmethod
 
 
 class IMTTreeViewModel(Protocol):
