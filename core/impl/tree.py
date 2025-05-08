@@ -4,6 +4,7 @@ import json
 from core.interfaces.base_item import IMTTreeItem
 from core.interfaces.base_tree import IMTTree
 from core.impl.item import MTTreeItem
+from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 
 T = TypeVar('T', bound=IMTTreeItem)
 
