@@ -1,15 +1,16 @@
 from typing import List, Dict, Any, Protocol, TypeVar, runtime_checkable
 from core.interfaces.base_tree import IMTTreeReadable
+from core.interfaces.base_item_data import MTTreeItemData
 from viewmodel.interfaces.base_tree_viewmodel import IMTTreeViewModel
 
 # 타입 변수 정의
-T = TypeVar('T')
+TreeNodeDataT = TypeVar('TreeNodeDataT')
 
 @runtime_checkable
-class IMTTreeView(Protocol[T]):
+class IMTTreeView(Protocol[TreeNodeDataT]):
     """트리 뷰 인터페이스"""
     
-    def set_items(self, items: List[Dict[str, Any]]) -> None:
+    def set_items(self, items: List[MTTreeItemData]) -> None:
         """트리 아이템 설정"""
         ...
     
@@ -21,7 +22,7 @@ class IMTTreeView(Protocol[T]):
         """뷰 모델 설정"""
         ...
     
-    def get_tree_readable(self) -> IMTTreeReadable[T]:
+    def get_tree_readable(self) -> IMTTreeReadable[TreeNodeDataT]:
         """트리 읽기 인터페이스 가져오기"""
         ...
     

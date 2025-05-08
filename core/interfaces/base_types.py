@@ -1,5 +1,5 @@
 # 공통 기본 데이터 타입 인터페이스
-from typing import Protocol
+from typing import Protocol, TypeVar, Optional
 
 # 좌표 인터페이스
 class IMTPoint(Protocol):
@@ -11,6 +11,8 @@ class IMTPoint(Protocol):
     def y(self) -> int: ...
     
     def clone(self) -> 'IMTPoint': ...
+
+TreeNodeDataT = TypeVar('TreeNodeDataT')
 
 # 공통 동작(메서드) 프로토콜
 class IClearable(Protocol):

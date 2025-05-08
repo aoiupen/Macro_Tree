@@ -77,7 +77,7 @@
 - **구현 클래스:** 인터페이스의 구체적인 구현체
 - **TreeStateManager:** 트리 상태 추적 및 관리
 - **TreeRepository:** 데이터 영속성 작업
-- **TreeViewModel:** 트리 데이터를 위한 표현 로직
+- **MTTreeViewModel:** 트리 데이터를 위한 표현 로직
 - **TreeView:** 사용자 인터페이스 컴포넌트
 
 ## 요구사항

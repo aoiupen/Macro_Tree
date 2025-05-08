@@ -11,15 +11,13 @@ from core.impl.utils import to_tree_item_data
 class MTTreeViewModel(IMTTreeViewModel):
     """데모 트리 뷰모델 구현"""
     
-    def __init__(self, tree, repository=None, state_manager=None):
+    def __init__(self, repository: IMTTreeRepository | None, state_manager: IMTTreeStateManager | None):
         """뷰모델 초기화
         
         Args:
-            tree: 트리 인스턴스
             repository: 트리 저장소
             state_manager: 트리 상태 관리자
         """
-        self._tree = tree
         self._repository = repository
         self._state_mgr = state_manager
         self._selected_items: Set[str] = set()  # 선택된 아이템 ID 집합
@@ -64,7 +62,7 @@ class MTTreeViewModel(IMTTreeViewModel):
     
     def get_current_tree(self) -> IMTTree | None:
         """현재 트리를 반환합니다."""
-        return self._tree
+        return self._state_mgr.current_state
     
 
     

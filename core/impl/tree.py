@@ -4,6 +4,7 @@ import json
 from core.interfaces.base_item import IMTTreeItem
 from core.interfaces.base_tree import IMTTree
 from core.impl.item import MTTreeItem
+from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 
 T = TypeVar('T', bound=IMTTreeItem)
 
@@ -44,11 +45,11 @@ class MTTree:
         """모든 아이템을 반환합니다."""
         return self._items.copy()
     
-    def get_item(self, item_id: str) -> Optional[IMTTreeItem]:
+    def get_item(self, item_id: str) -> IMTTreeItem | None:
         """ID로 아이템을 찾습니다."""
         return self._items.get(item_id)
     
-    def get_children(self, parent_id: Optional[str] = None) -> List[IMTTreeItem]:
+    def get_children(self, parent_id: str | None) -> List[IMTTreeItem]:
         """지정된 부모의 모든 자식 아이템을 반환합니다.
         
         Args:
@@ -65,7 +66,7 @@ class MTTree:
                 result.append(item)
         return result
     
-    def add_item(self, item: IMTTreeItem, parent_id: Optional[str] = None) -> bool:
+    def add_item(self, item: IMTTreeItem, parent_id: str | None) -> bool:
         """아이템을 트리에 추가합니다.
         
         Args:

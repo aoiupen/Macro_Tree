@@ -113,7 +113,7 @@ el.replaceWith(d);
         root_item.set_property(&#34;expanded&#34;, True)
         
         # ViewModel 생성
-        self.viewmodel = TreeViewModel(self.tree)
+        self.viewmodel = MTTreeViewModel(self.tree)
         
         # 트리 뷰 생성 및 설정
         self.tree_view = TreeView(self.viewmodel)

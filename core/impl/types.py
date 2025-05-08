@@ -1,4 +1,7 @@
 from core.interfaces.base_types import IMTPoint
+from typing import Optional
+from core.interfaces.base_tree import IMTTreeItem
+from core.interfaces.base_item_data import MTTreeItemData
 
 class MTPoint(IMTPoint):
     def __init__(self, x: int, y: int):

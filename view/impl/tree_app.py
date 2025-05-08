@@ -4,7 +4,7 @@ from PyQt6.QtCore import Qt
 
 from core.impl.tree import MTTree
 from core.impl.item import MTTreeItem
-from viewmodel.impl.tree_viewmodel import TreeViewModel
+from viewmodel.impl.tree_viewmodel import MTTreeViewModel
 from view.impl.tree_view import TreeView
 from model.services.state.impl.tree_state_mgr import MTTreeStateManager
 
@@ -20,7 +20,7 @@ class MainWindow(QMainWindow):
         
         # 샘플 데이터 추가
         root_item = MTTreeItem("root", {"name": "Root Item"})
-        self.tree.add_item(root_item)
+        self.tree.add_item(root_item, None)
         
         # 첫 번째 그룹
         group1 = MTTreeItem("group1", {"name": "Group 1"})
@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
         
         # ViewModel 생성
         self.state_manager = MTTreeStateManager()
-        self.viewmodel = TreeViewModel(self.tree, self.state_manager)
+        self.viewmodel = MTTreeViewModel(self.tree, self.state_manager)
         
         # 트리 뷰 생성 및 설정
         self.tree_view = TreeView(self.viewmodel)

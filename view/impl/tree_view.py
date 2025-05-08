@@ -1,13 +1,16 @@
 from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QAbstractItemView
 from PyQt6.QtCore import Qt
-from viewmodel.impl.tree_viewmodel import TreeViewModel
+from viewmodel.impl.tree_viewmodel import MTTreeViewModel
 
 # RF : 트리뷰는 트리뷰모델을 상속받지 않고, 참조
 class TreeView(QTreeWidget):
-    def __init__(self, viewmodel, parent=None):
+    def __init__(self, viewmodel: MTTreeViewModel, parent=None):
         super().__init__(parent)
         self._viewmodel = viewmodel
         
+        self.setHeaderLabel("트리 아이템")
+        self.update_tree_items()
+
         # 이벤트 연결
         self.itemClicked.connect(self.item_clicked)
         self.itemExpanded.connect(self._on_item_expanded)
@@ -19,9 +22,6 @@ class TreeView(QTreeWidget):
         self.setDropIndicatorShown(True)
         self.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
         
-        self.setHeaderLabel("트리 아이템")
-        self.update_tree_items()
-    
     def set_viewmodel(self, viewmodel):
         """
         뷰모델을 설정합니다.
@@ -48,7 +48,6 @@ class TreeView(QTreeWidget):
     def _build_tree_items(self):
         # 1단계: 모든 아이템 생성
         all_items = self._viewmodel.get_tree_items()
-        
         # 먼저 루트 아이템 추가
         for item_id, item in all_items.items():
             parent_id = item.get_property("parent_id")
@@ -75,17 +74,22 @@ class TreeView(QTreeWidget):
                 if item_id in self._viewmodel.get_selected_items():
                     widget_item.setSelected(True)
     
+    def _add_tree_item(self, item, parent_widget):
+        widget_item = QTreeWidgetItem(parent_widget, [item.get_property("name", item.id)])
+        widget_item.setData(0, Qt.ItemDataRole.UserRole, item.id)
+        self._id_to_widget_map[item.id] = widget_item
+    
     def item_clicked(self, item, column):
-        item_id = item.data(0, Qt.UserRole)
+        item_id = item.data(0, Qt.ItemDataRole.UserRole)
         self._viewmodel.select_item(item_id)
         self.update_tree_items()
 
     def _on_item_expanded(self, item):
-        item_id = item.data(0, Qt.UserRole)
+        item_id = item.data(0, Qt.ItemDataRole.UserRole)
         self._viewmodel.toggle_expanded(item_id, True)
 
     def _on_item_collapsed(self, item):
-        item_id = item.data(0, Qt.UserRole)
+        item_id = item.data(0, Qt.ItemDataRole.UserRole)
         self._viewmodel.toggle_expanded(item_id, False) 
     
     def dropEvent(self, event):
@@ -103,18 +107,18 @@ class TreeView(QTreeWidget):
             event.ignore()
             return
             
-        dragged_id = dragged_item.data(0, Qt.UserRole)
-        target_id = target_item.data(0, Qt.UserRole)
+        dragged_id = dragged_item.data(0, Qt.ItemDataRole.UserRole)
+        target_id = target_item.data(0, Qt.ItemDataRole.UserRole)
         
         if dragged_id == target_id:
             event.ignore()
             return
             
         # 드롭 위치에 따라 처리
-        if drop_indicator == QTreeWidget.OnItem:
+        if drop_indicator == QTreeWidget.DropIndicatorPosition.OnItem:
             # 항목 위에 드롭: 하위 항목으로 이동
             self._viewmodel.move_item(dragged_id, target_id)
-        elif drop_indicator == QTreeWidget.AboveItem or drop_indicator == QTreeWidget.BelowItem:
+        elif drop_indicator == QTreeWidget.DropIndicatorPosition.AboveItem or drop_indicator == QTreeWidget.DropIndicatorPosition.BelowItem:
             # 항목 위나 아래에 드롭: 같은 레벨로 이동
             target_parent_id = self._viewmodel.get_item(target_id).get_property("parent_id")
             self._viewmodel.move_item(dragged_id, target_parent_id)
