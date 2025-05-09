@@ -185,8 +185,8 @@ class MTTreeViewModel(IMTTreeViewModel):
         if not tree:
             return []
         result = []
-        for child in children:
-        children = tree.get_children(parent_id)
+        for child in tree.get_children(parent_id):
+            children = tree.get_children(parent_id)
             result.append(
                 to_tree_item_data(
                     child,

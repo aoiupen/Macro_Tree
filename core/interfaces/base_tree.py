@@ -67,7 +67,7 @@ class IMTTreeDictSerializable(Protocol):
         ...
     
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> IMTTree:
+    def from_dict(cls, data: Dict[str, Any]) -> "IMTTree":
         """딕셔너리에서 트리를 생성합니다."""
         ...
 
@@ -78,8 +78,9 @@ class IMTTreeJSONSerializable(Protocol):
         """트리를 JSON 문자열로 변환합니다."""
         ...
     # RF :클래스 메서드는 cls(인스턴스화 되지 않은 클래스 자체를 받음)
+    # RF : Forward Reference(문자열 타입 힌트) 사용 -> 정의되지 않은 타입을 문자열로 감싸서 참조 ("IMTTree")
     @classmethod
-    def from_json(cls, json_str: str) -> IMTTree:
+    def from_json(cls, json_str: str) -> "IMTTree":
         """JSON 문자열에서 트리를 생성합니다. 
         
         Raises:
