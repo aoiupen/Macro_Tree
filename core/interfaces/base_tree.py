@@ -92,3 +92,19 @@ class IMTTreeCommon(Protocol):
     def clone(self) -> "IMTTreeCommon":
         """트리의 복제본을 생성합니다."""
         ...
+
+# 통합 트리 인터페이스
+class IMTTree(
+    IMTTreeReadable,
+    IMTTreeModifiable,
+    IMTTreeTraversable,
+    IMTTreeDictSerializable,
+    IMTTreeJSONSerializable,
+    IMTTreeCommon,
+    Protocol
+):
+    """
+    트리의 모든 핵심 기능(읽기, 수정, 순회, 직렬화, 공통 기능)을 통합한 인터페이스
+    실무/협업/확장성을 고려할 때, 이 통합 인터페이스를 사용하는 것이 가장 표준적이고 유지보수에 유리함
+    """
+    pass
