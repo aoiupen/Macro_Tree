@@ -58,14 +58,9 @@ class IMTTreeTraversable(Protocol):
         """트리를 BFS로 순회하면서 각 아이템에 방문자 함수를 적용합니다."""
         ...
 
-# 통합 트리 인터페이스
-class IMTTree(IMTTreeReadable, IMTTreeModifiable, IMTTreeTraversable, Protocol):
-    """매크로 트리 통합 인터페이스"""
-    pass
-
 # RF : 직렬/역직렬은 Tree의 핵심 기능은 아닌데, Tree 내부 기능이므로 core에 놓음
-class IMTTreeSerializable(Protocol):
-    """트리 기본 직렬화 인터페이스"""
+class IMTTreeDictSerializable(Protocol):
+    """트리 딕셔너리 직렬화 인터페이스"""
     
     def to_dict(self) -> Dict[str, Any]:
         """트리를 딕셔너리로 변환합니다."""
@@ -75,10 +70,6 @@ class IMTTreeSerializable(Protocol):
     def from_dict(cls, data: Dict[str, Any]) -> IMTTree:
         """딕셔너리에서 트리를 생성합니다."""
         ...
-    
-    def clone(self) -> IMTTree:
-        """트리의 복제본을 생성합니다."""
-        ...
 
 class IMTTreeJSONSerializable(Protocol):
     """트리 JSON 직렬화 인터페이스"""
@@ -86,7 +77,7 @@ class IMTTreeJSONSerializable(Protocol):
     def to_json(self) -> str:
         """트리를 JSON 문자열로 변환합니다."""
         ...
-    
+    # RF :클래스 메서드는 cls(인스턴스화 되지 않은 클래스 자체를 받음)
     @classmethod
     def from_json(cls, json_str: str) -> IMTTree:
         """JSON 문자열에서 트리를 생성합니다. 
@@ -94,4 +85,10 @@ class IMTTreeJSONSerializable(Protocol):
         Raises:
             ValueError: 잘못된 JSON 형식
         """
+        ...
+
+class IMTTreeCommon(Protocol):
+    """트리 객체의 공통/필수 기능 인터페이스"""
+    def clone(self) -> "IMTTreeCommon":
+        """트리의 복제본을 생성합니다."""
         ...

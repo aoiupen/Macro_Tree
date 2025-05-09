@@ -8,7 +8,7 @@ class TreeView(QTreeWidget):
         super().__init__(parent)
         self._viewmodel = viewmodel
         
-        self.setHeaderLabel("트리 아이템")
+        self.setHeaderLabel("Macro Tree")
         self.update_tree_items()
 
         # 이벤트 연결
@@ -92,6 +92,7 @@ class TreeView(QTreeWidget):
         item_id = item.data(0, Qt.ItemDataRole.UserRole)
         self._viewmodel.toggle_expanded(item_id, False) 
     
+    # RF : 드래그 앤 드롭 이벤트 처리하는 핸들러. UI 프레임워크가 호출하는 콜백이므로 구현체만 있으면 충분
     def dropEvent(self, event):
         """
         드래그 앤 드롭으로 아이템 이동 시 호출됨
@@ -130,4 +131,5 @@ class TreeView(QTreeWidget):
         self.update_tree_items()
         
         # 기본 처리 무시 (직접 처리했으므로)
+
         event.accept()
