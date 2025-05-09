@@ -2,12 +2,11 @@ from enum import Enum
 from typing import Any, Callable, Dict, Generic, Iterator, List, Protocol, TypeVar
 
 from core.interfaces.base_item import IMTTreeItem
-from core.interfaces.base_types import TreeNodeDataT
 
 T_co = TypeVar('T_co', covariant=True)  # 공변성 타입 변수
 
 # 트리 메타데이터 인터페이스
-class IMTTreeReadable (Protocol[TreeNodeDataT]):
+class IMTTreeReadable (Protocol):
     """트리 데이터 액세스 인터페이스"""
     
     @property
@@ -19,11 +18,11 @@ class IMTTreeReadable (Protocol[TreeNodeDataT]):
     @property
     def root_id(self) -> str | None: ...
     
-    def get_all_items(self) -> Dict[str, TreeNodeDataT]: ...
+    def get_all_items(self) -> Dict[str, IMTTreeItem]: ...
     
-    def get_item(self, item_id: str) -> TreeNodeDataT | None: ...
+    def get_item(self, item_id: str) -> IMTTreeItem | None: ...
     
-    def get_children(self, parent_id: str | None) -> List[TreeNodeDataT]: ...
+    def get_children(self, parent_id: str | None) -> List[IMTTreeItem]: ...
 
 # 트리 수정 작업 인터페이스
 class IMTTreeModifiable(Protocol):

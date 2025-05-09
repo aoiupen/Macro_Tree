@@ -1,5 +1,6 @@
 from typing import Any, Callable, Dict, Iterator, List, Optional, Set, TypeVar
 import json
+import copy
 
 from core.interfaces.base_item import IMTTreeItem
 from core.interfaces.base_tree import IMTTree
@@ -172,11 +173,7 @@ class _MTTreeCommon:
         self._tree = tree
 
     def clone(self) -> "MTTree":
-        new_tree = MTTree(self._tree._id, self._tree._name)
-        for item_id, item in self._tree._items.items():
-            new_tree._items[item_id] = item.clone()
-        new_tree._root_id = self._tree._root_id
-        return new_tree
+        return copy.deepcopy(self)
 
 # MTTree: 역할별 구현체를 컴포지션(위임)으로 합침
 class MTTree:
@@ -196,11 +193,11 @@ class MTTree:
         self._name = name
         self._items: Dict[str, IMTTreeItem] = {}
         self._root_id: Optional[str] = None
+        self._common = _MTTreeCommon(self)
         self._readable = _MTTreeReadable(self)
         self._modifiable = _MTTreeModifiable(self)
         self._traversable = _MTTreeTraversable(self)
         self._serializable = _MTTreeSerializable(self)
-        self._common = _MTTreeCommon(self)
     
     # 읽기 인터페이스 위임
     @property

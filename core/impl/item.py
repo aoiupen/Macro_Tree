@@ -43,4 +43,4 @@ class MTTreeItem(IMTTreeItem):
     
     def clone(self) -> 'MTTreeItem':
         """아이템의 복제본을 생성합니다."""
-        return MTTreeItem(self._id, self._data.copy())
+        return MTTreeItem(self._id, copy.deepcopy(self._data))

@@ -12,8 +12,6 @@ class IMTPoint(Protocol):
     
     def clone(self) -> 'IMTPoint': ...
 
-TreeNodeDataT = TypeVar('TreeNodeDataT')
-
 # 공통 동작(메서드) 프로토콜
 class IClearable(Protocol):
     def clear(self) -> None: ...
