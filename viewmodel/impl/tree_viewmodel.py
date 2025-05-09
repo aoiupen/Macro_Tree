@@ -7,6 +7,8 @@ from model.services.state.interfaces.base_tree_state_mgr import IMTTreeStateMana
 from viewmodel.interfaces.base_tree_viewmodel import IMTTreeViewModel
 from core.interfaces.base_item_data import MTTreeItemData
 from core.impl.utils import to_tree_item_data
+from viewmodel.impl.tree_viewmodel_core import MTTreeViewModelCore
+from viewmodel.impl.tree_viewmodel_model import MTTreeViewModelModel
 
 class MTTreeViewModel(IMTTreeViewModel):
     """데모 트리 뷰모델 구현"""
@@ -24,6 +26,10 @@ class MTTreeViewModel(IMTTreeViewModel):
         self._state_mgr = state_manager
         self._selected_items: Set[str] = set()  # 선택된 아이템 ID 집합
         self._subscribers: Set[Callable[[], None]] = set()  # 변경 알림을 받을 콜백
+
+        # 컴포지션 구조로 각 로직 컴포넌트 초기화
+        self._core = MTTreeViewModelCore()
+        self._model = MTTreeViewModelModel()
     
     # RF : 반환형이 인터페이스 -> DIP (구현이 아닌 인터페이스에 의존하는 원칙. 추상화에 의존하는 원칙. 해당 인터페이스로 구현한 어떤 객체든 반환 -> 유연성, 추상화 보장)
     def get_item(self, item_id: str) -> IMTTreeItem | None:
@@ -217,3 +223,15 @@ class MTTreeViewModel(IMTTreeViewModel):
             return {}
 
         return tree.get_all_items()
+
+    def get_items(self) -> List[MTTreeItemData]:
+        return self._core.get_items()
+
+    def select_item(self, item_id: str, multi_select: bool = False) -> bool:
+        return self._core.select_item(item_id, multi_select)
+
+    def undo(self) -> bool:
+        return self._model.undo()
+
+    def redo(self) -> bool:
+        return self._model.redo()

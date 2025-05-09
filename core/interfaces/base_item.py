@@ -8,7 +8,6 @@ from .base_item_data import MTTreeItemData
 # -------------------
 class TreeItemKeys:
     """트리 아이템의 UI/확장/부가 속성 키 상수"""
-    ID = "id"
     DATA = "data"
     EXPANDED = "expanded"
     SELECTED = "selected"

@@ -193,6 +193,7 @@ class MTTree:
         self._name = name
         self._items: Dict[str, IMTTreeItem] = {}
         self._root_id: Optional[str] = None
+        # RF : 인터페이스 (내부) 위임 : 내부에서 큰 덩어리로 생성하여 변수로 할당 
         self._common = _MTTreeCommon(self)
         self._readable = _MTTreeReadable(self)
         self._modifiable = _MTTreeModifiable(self)
