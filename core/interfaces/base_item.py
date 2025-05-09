@@ -34,14 +34,8 @@ class IMTTreeItem(IMTBaseItem, Protocol):
     """매크로 트리 아이템 인터페이스
     
     트리에서 사용되는 개별 아이템의 인터페이스입니다.
-    id만 직접 접근 속성으로 제공하고, 나머지는 data 딕셔너리를 통해 액세스합니다.
     """
     # id와 data 프로퍼티는 IMTBaseItem에서 이미 정의됨
-    
-    @property
-    def data(self) -> MTTreeItemData:
-        """아이템 데이터를 가져옵니다."""
-        ...
     
     def get_property(self, key: str, default: T | None = None) -> T | None:
         """아이템 속성을 가져옵니다."""
