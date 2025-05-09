@@ -1,6 +1,7 @@
 # import os  # setWindowTitle에서만 필요하다면 해당 함수 내에서 import
 from PyQt6.QtWidgets import QFileDialog, QMessageBox, QMenuBar
 from PyQt6.QtGui import QAction
+import os
 
 class ExtTreeAppMixin:
     # 메뉴바 생성 및 파일 메뉴 구성

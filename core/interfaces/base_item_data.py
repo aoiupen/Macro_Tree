@@ -47,7 +47,7 @@ class MTKeyboardAction(Enum):
 # 액션/액션데이터 인터페이스(프로토콜)
 # -------------------
 # Enum용 TypeVar
-E = TypeVar("E", bound=Enum)
+E = TypeVar("E", bound=Enum, covariant=True)
 # ActionData용 TypeVar
 
 class IMTAction(Protocol, Generic[E]):
@@ -59,7 +59,7 @@ class IMTActionData(Protocol):
     """액션 데이터 인터페이스 (각 액션 실행에 필요한 데이터)"""
     def clear(self) -> None: ...
 
-D = TypeVar("D", bound=IMTActionData)
+D = TypeVar("D", bound=IMTActionData, contravariant=True)
 
 class IMTMouseActionData(IMTActionData, Protocol):
     """마우스 액션 데이터 인터페이스"""

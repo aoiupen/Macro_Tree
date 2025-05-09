@@ -29,7 +29,7 @@ class MTTreeItem(IMTTreeItem):
     # RF : 대신 deepcopy는 속도 저하 가능성
     # RF : 그러므로 불변 객체는 딕셔너리에 저장하고, 가변 객체는 캡슐화,불변 래퍼로 처리하면 얕은 복사로도 불변 보장
     @property
-    def data(self) -> Dict[str, Any]:
+    def data(self) -> MTTreeItemData:
         """아이템 데이터를 깊은 복사로 반환 (불변성 보장)"""
         return copy.deepcopy(self._data)
     
