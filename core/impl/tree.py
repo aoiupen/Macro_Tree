@@ -169,11 +169,11 @@ class _MTTreeSerializable:
             return MTTree("", "")
 
 class _MTTreeCommon:
-    def __init__(self, tree):
+    def __init__(self, tree : "MTTree"):
         self._tree = tree
 
     def clone(self) -> "MTTree":
-        return copy.deepcopy(self)
+        return copy.deepcopy(self._tree)
 
 # MTTree: 역할별 구현체를 컴포지션(위임)으로 합침
 class MTTree:
@@ -323,10 +323,10 @@ class MTTree:
             return False
         
         parent_id = item.get_property("parent_id")
-        if parent_id is None:
+        if isinstance(parent_id, str):
+            return self._is_descendant(ancestor_id, parent_id)
+        else:
             return False
-        
-        return self._is_descendant(ancestor_id, parent_id)
     
     # 직렬화 인터페이스 위임
     # RF : MTTree는 공개 클래스이므로 내부 클래스의 메서드만 노출하고, 구현은 비공개로
