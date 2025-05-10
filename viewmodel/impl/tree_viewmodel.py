@@ -9,6 +9,7 @@ from core.interfaces.base_item_data import MTTreeItemData
 from core.impl.utils import to_tree_item_data
 from viewmodel.impl.tree_viewmodel_core import MTTreeViewModelCore
 from viewmodel.impl.tree_viewmodel_model import MTTreeViewModelModel
+import core.exceptions as exc
 
 class MTTreeViewModel(IMTTreeViewModel):
     """데모 트리 뷰모델 구현"""
@@ -65,7 +66,9 @@ class MTTreeViewModel(IMTTreeViewModel):
             tree.add_item(new_item, parent_id)
             self._notify_change()
             return item_id
-        except ValueError:
+        except exc.MTTreeItemAlreadyExistsError:
+            return None
+        except exc.MTTreeItemNotFoundError:
             return None
     
     def get_current_tree(self) -> IMTTree | None:
@@ -105,7 +108,9 @@ class MTTreeViewModel(IMTTreeViewModel):
         if parent_id is not None:
             try:
                 tree.move_item(item_id, parent_id)
-            except ValueError:
+            except exc.MTTreeItemNotFoundError:
+                return False
+            except exc.MTTreeError:
                 return False
         
         self._notify_change()
@@ -129,7 +134,7 @@ class MTTreeViewModel(IMTTreeViewModel):
             tree.remove_item(item_id)
             self._notify_change()
             return True
-        except ValueError:
+        except exc.MTTreeItemNotFoundError:
             return False
 
     
@@ -182,7 +187,9 @@ class MTTreeViewModel(IMTTreeViewModel):
             tree.move_item(item_id, new_parent_id)
             self._notify_change()
             return True
-        except ValueError:
+        except exc.MTTreeItemNotFoundError:
+            return False
+        except exc.MTTreeError:
             return False
     
     def get_item_children(self, parent_id: str | None = None) -> list[MTTreeItemData]:

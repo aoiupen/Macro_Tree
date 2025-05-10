@@ -11,6 +11,7 @@ from psycopg2.extras import Json
 from core.interfaces.base_tree import IMTTree, IMTTreeJSONSerializable
 from core.impl.tree import MTTree
 from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
+import core.exceptions as exc
 
 logger = logging.getLogger(__name__)
 
@@ -306,7 +307,7 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             생성된 트리 객체
             
         Raises:
-            ValueError: 잘못된 JSON 형식
+            InvalidMTTreeItemDataError: 잘못된 JSON 형식
         """
         try:
             # JSON을 딕셔너리로 변환
@@ -315,9 +316,9 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             # 딕셔너리로부터 트리 생성
             return MTTree.from_dict(tree_dict)
         except json.JSONDecodeError as e:
-            raise ValueError(f"잘못된 JSON 형식: {e}")
+            raise exc.InvalidMTTreeItemDataError(f"잘못된 JSON 형식: {e}")
         except Exception as e:
-            raise ValueError(f"트리 생성 실패: {e}")
+            raise exc.MTTreeError(f"트리 생성 실패: {e}")
             
     # 추가 기능 - 스냅샷 관리
     def create_snapshot(self, tree_id: str, name: Optional[str] = None) -> str:

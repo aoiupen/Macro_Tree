@@ -7,6 +7,7 @@ from model.services.state.interfaces.base_tree_state_mgr import IMTTreeStateMana
 from viewmodel.interfaces.base_tree_viewmodel import IMTTreeViewModel
 from core.interfaces.base_item_data import MTTreeItemData
 from core.impl.utils import to_tree_item_data
+import core.exceptions as exc
 
 class MTTreeViewModel(IMTTreeViewModel):
     """데모 트리 뷰모델 구현"""
@@ -97,7 +98,9 @@ class MTTreeViewModel(IMTTreeViewModel):
         if parent_id is not None:
             try:
                 tree.move_item(item_id, parent_id)
-            except ValueError:
+            except exc.MTTreeItemNotFoundError:
+                return False
+            except exc.MTTreeError:
                 return False
         
         self._notify_change()
@@ -121,7 +124,7 @@ class MTTreeViewModel(IMTTreeViewModel):
             tree.remove_item(item_id)
             self._notify_change()
             return True
-        except ValueError:
+        except exc.MTTreeItemNotFoundError:
             return False
 
     
