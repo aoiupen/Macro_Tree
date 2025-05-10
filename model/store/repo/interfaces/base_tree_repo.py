@@ -1,7 +1,5 @@
-from typing import Any, Dict, Protocol, TypeVar
-
-# IMTTree 타입 참조
-IMTTree = TypeVar('IMTTree')
+from typing import Any, Dict, Protocol
+from core.interfaces.base_tree import IMTTree
 
 class IMTTreeRepository(Protocol):
     """트리 저장소 인터페이스"""

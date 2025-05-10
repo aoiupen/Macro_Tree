@@ -8,7 +8,6 @@ from .base_item_data import MTTreeItemData
 # -------------------
 class TreeItemKeys:
     """트리 아이템의 UI/확장/부가 속성 키 상수"""
-    ID = "id"
     DATA = "data"
     EXPANDED = "expanded"
     SELECTED = "selected"
@@ -37,11 +36,11 @@ class IMTTreeItem(IMTBaseItem, Protocol):
     """
     # id와 data 프로퍼티는 IMTBaseItem에서 이미 정의됨
     
-    def get_property(self, key: str, default: T | None = None) -> T | None:
+    def get_property(self, key: str, default: object = None) -> object:
         """아이템 속성을 가져옵니다."""
         ...
     
-    def set_property(self, key: str, value: T) -> None:
+    def set_property(self, key: str, value: object) -> None:
         """아이템 속성을 설정합니다."""
         ...
     

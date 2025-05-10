@@ -128,3 +128,19 @@ class IMTTreeAdvancedTraversable(Protocol, Generic[T]):
 # 진행 - UI/ViewModel : 콤보박스 변경 시 Undo/Redo 즉시 반영 문제 해결
 # 진행 - Tree : 체크된 아이템만 매크로 실행 기능 구현
 # 진행 - Tree : Ctrl+클릭 이용한 아이템 복사/붙여넣기 기능 구현 (다중 선택 지원)
+
+# 코드 자동 분석/리포트 스크립트
+- mypy . > mypy_report.txt  # 타입 검사 리포트
+- flake8 . --format=html --htmldir=flake8_report  # 린트 리포트(HTML)
+- radon cc . -s -a > radon_report.txt  # 코드 복잡도 리포트
+- pytest --cov=. --cov-report=term-missing  # 테스트 커버리지 리포트
+
+# 테스트 커버리지/품질 체크리스트
+- [ ] 모든 핵심 함수/클래스에 단위 테스트가 있는가?
+- [ ] 예외/에러 상황도 테스트하는가?
+- [ ] 타입 검사(mypy 등)에서 에러가 없는가?
+- [ ] 린트(PEP8, flake8 등) 에러가 없는가?
+- [ ] 불필요한 코드/중복/미사용 import가 없는가?
+- [ ] 주요 로직에 docstring/주석이 있는가?
+- [ ] 인터페이스/추상화가 잘 지켜지는가?
+- [ ] 테스트가 "실제 사용 시나리오"를 충분히 커버하는가?

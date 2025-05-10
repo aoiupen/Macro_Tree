@@ -23,7 +23,7 @@ class IMTTreeStateManager(Protocol):
         """현재 상태의 트리를 반환합니다."""
         ...
     
-    def save_state(self) -> None:
+    def save_state(self, tree: IMTTree) -> None:
         """현재 상태를 저장합니다."""
         ...
     

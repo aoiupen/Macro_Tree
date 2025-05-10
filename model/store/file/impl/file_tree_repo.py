@@ -3,10 +3,10 @@ import os
 from typing import Dict, Optional, Any, TypeVar, Type
 import uuid
 
-# 타입 참조만 가져옵니다
-IMTTree = TypeVar('IMTTree')
+from core.interfaces.base_tree import IMTTree
 from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
 from core.interfaces.base_tree import IMTTreeJSONSerializable
+from core.impl.tree import MTTree
 
 class MTFileTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
     """파일 기반 트리 저장소 구현체"""
@@ -24,7 +24,7 @@ class MTFileTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
         """트리 ID로부터 파일 경로를 생성합니다."""
         return os.path.join(self.storage_dir, f"{tree_id}.json")
     
-    def save(self, tree: Any, tree_id: Optional[str] = None) -> str:
+    def save(self, tree: IMTTree, tree_id: str | None = None) -> str:
         """트리를 파일로 저장합니다."""
         # ID가 없으면 새로 생성
         if tree_id is None:
@@ -42,7 +42,7 @@ class MTFileTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
         
         return tree_id
     
-    def load(self, tree_id: str) -> Optional[Any]:
+    def load(self, tree_id: str) -> IMTTree | None:
         """파일로부터 트리를 로드합니다."""
         file_path = self._get_file_path(tree_id)
         
@@ -54,7 +54,8 @@ class MTFileTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             with open(file_path, 'r', encoding='utf-8') as file:
                 json_str = file.read()
             
-            return self.from_json(json_str)
+            tree_data = json.loads(json_str)
+            return MTTree.from_dict(tree_data)
         except Exception as e:
             print(f"트리 로드 실패: {e}")
             return None

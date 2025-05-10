@@ -89,7 +89,7 @@ class IMTTreeJSONSerializable(Protocol):
 
 class IMTTreeCommon(Protocol):
     """트리 객체의 공통/필수 기능 인터페이스"""
-    def clone(self) -> "IMTTreeCommon":
+    def clone(self) -> "IMTTree":
         """트리의 복제본을 생성합니다."""
         ...
 

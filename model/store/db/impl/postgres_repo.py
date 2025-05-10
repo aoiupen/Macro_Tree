@@ -11,6 +11,7 @@ from psycopg2.extras import Json
 from core.interfaces.base_tree import IMTTree, IMTTreeJSONSerializable
 from core.impl.tree import MTTree
 from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
+import core.exceptions as exc
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +113,7 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             if conn:
                 conn.close()
 
-    def save(self, tree: IMTTree, tree_id: Optional[str] = None) -> str:
+    def save(self, tree: IMTTree, tree_id: str | None = None) -> str:
         """트리를 데이터베이스에 저장합니다.
         
         Args:
@@ -146,8 +147,7 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             else:
                 result = None
             
-            if result:
-                # 기존 트리 업데이트
+            if result is not None:
                 tree_id = result[0]
                 cursor.execute(
                     """
@@ -167,7 +167,11 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
                     """,
                     (name, Json(tree_data))
                 )
-                tree_id = cursor.fetchone()[0]
+                insert_result = cursor.fetchone()
+                if insert_result is not None:
+                    tree_id = insert_result[0]
+                else:
+                    raise Exception("Failed to insert new tree and retrieve its ID.")
                 
             conn.commit()
             return str(tree_id)
@@ -181,7 +185,7 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             if conn:
                 conn.close()
 
-    def load(self, tree_id: str) -> Optional[IMTTree]:
+    def load(self, tree_id: str) -> IMTTree | None:
         """트리를 데이터베이스에서 불러옵니다.
         
         Args:
@@ -209,12 +213,12 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
                 )
                 
             result = cursor.fetchone()
-            if not result:
+            if result is not None:
+                tree_data = result[0]
+                return MTTree.from_dict(tree_data)
+            else:
                 logger.warning(f"트리를 찾을 수 없음: {tree_id}")
                 return None
-                
-            tree_data = result[0]
-            return MTTree.from_dict(tree_data)
             
         except psycopg2.Error as e:
             logger.error(f"트리 불러오기 실패: {e}")
@@ -306,7 +310,7 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             생성된 트리 객체
             
         Raises:
-            ValueError: 잘못된 JSON 형식
+            InvalidMTTreeItemDataError: 잘못된 JSON 형식
         """
         try:
             # JSON을 딕셔너리로 변환
@@ -315,9 +319,9 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             # 딕셔너리로부터 트리 생성
             return MTTree.from_dict(tree_dict)
         except json.JSONDecodeError as e:
-            raise ValueError(f"잘못된 JSON 형식: {e}")
+            raise exc.InvalidMTTreeItemDataError(f"잘못된 JSON 형식: {e}")
         except Exception as e:
-            raise ValueError(f"트리 생성 실패: {e}")
+            raise exc.MTTreeError(f"트리 생성 실패: {e}")
             
     # 추가 기능 - 스냅샷 관리
     def create_snapshot(self, tree_id: str, name: Optional[str] = None) -> str:
@@ -345,11 +349,11 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             )
             
             result = cursor.fetchone()
-            if not result:
+            if result is not None:
+                tree_state = result[0]
+            else:
                 raise TreeNotFoundError(f"트리를 찾을 수 없음: {tree_id}")
                 
-            tree_state = result[0]
-            
             # 스냅샷 저장
             cursor.execute(
                 """
@@ -360,7 +364,12 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
                 (int(tree_id), name, Json(tree_state))
             )
             
-            snapshot_id = cursor.fetchone()[0]
+            snapshot_result = cursor.fetchone()
+            if snapshot_result is not None:
+                snapshot_id = snapshot_result[0]
+            else:
+                raise Exception("Failed to create snapshot and retrieve its ID.")
+            
             conn.commit()
             return str(snapshot_id)
             
@@ -399,11 +408,11 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             )
             
             result = cursor.fetchone()
-            if not result:
+            if result is not None:
+                tree_id, snapshot_data, tree_name = result
+            else:
                 raise TreeNotFoundError(f"스냅샷을 찾을 수 없음: {snapshot_id}")
                 
-            tree_id, snapshot_data, tree_name = result
-            
             # 복원된 트리 이름 생성
             restored_name = f"{tree_name}_restored_{int(time.time())}"
             
@@ -417,7 +426,12 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
                 (restored_name, Json(snapshot_data))
             )
             
-            new_tree_id = cursor.fetchone()[0]
+            new_tree_result = cursor.fetchone()
+            if new_tree_result is not None:
+                new_tree_id = new_tree_result[0]
+            else:
+                raise Exception("Failed to restore tree and retrieve its ID.")
+            
             conn.commit()
             return str(new_tree_id)
             
