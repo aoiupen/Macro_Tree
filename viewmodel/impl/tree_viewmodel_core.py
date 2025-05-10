@@ -2,9 +2,8 @@ from typing import Callable, Dict, List, Optional, Set
 from uuid import uuid4
 
 from core.impl.tree import MTTreeItem
-from core.impl.utils import to_tree_item_data
 from core.interfaces.base_item_data import MTTreeItemData
-from core.interfaces.base_tree import IMTTreeItem
+from core.interfaces.base_tree import IMTTreeItem, IMTTree
 import core.exceptions as exc
 from model.services.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
 from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
@@ -25,7 +24,7 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
             repository: 트리 저장소
             state_manager: 트리 상태 관리자
         """
-        self._tree = tree
+        self._tree: IMTTree | None = tree
         self._repository = repository
         self._state_mgr = state_manager
         self._selected_items: Set[str] = set()  # 선택된 아이템 ID 집합

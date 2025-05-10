@@ -7,7 +7,7 @@ from viewmodel.interfaces.base_tree_viewmodel_view import IMTTreeViewModelView
 
 class MTTreeViewModelView(IMTTreeViewModelView):
     def __init__(self, tree=None, selected_items=None, notify_change: Callable[[], None] | None = None):
-        self._tree = tree
+        self._tree:IMTTree | None = tree
         self._selected_items = selected_items if selected_items is not None else set()
         self._notify_change = notify_change if notify_change is not None else lambda: None
 

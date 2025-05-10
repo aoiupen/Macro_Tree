@@ -12,35 +12,29 @@ T = TypeVar('T', bound=IMTTreeItem)
 
 # 역할별 내부 구현 클래스 분리
 class _MTTreeReadable:
-    def __init__(self, tree):
+    def __init__(self, tree: IMTTree):
         self._tree = tree
 
     @property
     def id(self) -> str:
-        return self._tree._id
+        return self._tree.id
 
     @property
     def name(self) -> str:
-        return self._tree._name
+        return self._tree.name
 
     @property
     def root_id(self) -> Optional[str]:
-        return self._tree._root_id
+        return self._tree.root_id
 
     def get_all_items(self) -> Dict[str, IMTTreeItem]:
-        return self._tree._items.copy()
+        return self._tree.get_all_items()
 
     def get_item(self, item_id: str) -> IMTTreeItem | None:
-        return self._tree._items.get(item_id)
+        return self._tree.get_item(item_id)
 
     def get_children(self, parent_id: str | None) -> List[IMTTreeItem]:
-        result = []
-        for item in self._tree._items.values():
-            item_parent_id = item.get_property("parent_id")
-            if (parent_id is None and item_parent_id is None) or \
-               (parent_id is not None and item_parent_id == parent_id):
-                result.append(item)
-        return result
+        return self._tree.get_children(parent_id)
 
 class _MTTreeModifiable:
     def __init__(self, tree):
@@ -146,7 +140,7 @@ class _MTTreeSerializable:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]):
+    def from_dict(cls, data: Dict[str, Any]) -> IMTTree:
         tree_id = data.get("id", "")
         tree_name = data.get("name", "")
         tree = MTTree(tree_id, tree_name)
@@ -161,7 +155,7 @@ class _MTTreeSerializable:
         return json.dumps(self.to_dict(), ensure_ascii=False, indent=2)
 
     @classmethod
-    def from_json(cls, json_str: str):
+    def from_json(cls, json_str: str) -> IMTTree:
         try:
             data = json.loads(json_str)
             return cls.from_dict(data)
@@ -242,7 +236,7 @@ class MTTree:
         return self._readable.get_children(parent_id)
     
     # 수정 인터페이스 위임
-    def add_item(self, item: IMTTreeItem, parent_id: str | None) -> bool:
+    def add_item(self, item: IMTTreeItem, parent_id: str | None = None) -> bool:
         """아이템을 트리에 추가합니다.
         
         Args:
@@ -316,7 +310,7 @@ class MTTree:
         """
         self._traversable.traverse(visitor, node_id)
     
-    def clone(self) -> "MTTree":
+    def clone(self) -> IMTTree:
         return self._common.clone()
     
     def _is_descendant(self, ancestor_id: str, descendant_id: str) -> bool:

@@ -14,7 +14,7 @@ class IMTTreeReadable (Protocol):
     
     @property
     def name(self) -> str: ...
-    
+
     @property
     def root_id(self) -> str | None: ...
     

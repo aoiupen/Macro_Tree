@@ -1,12 +1,13 @@
 from viewmodel.impl.tree_viewmodel_core import MTTreeViewModelCore
 from viewmodel.impl.tree_viewmodel_model import MTTreeViewModelModel
 from viewmodel.impl.tree_viewmodel_view import MTTreeViewModelView
+from core.interfaces.base_tree import IMTTreeItem
 
 class MTTreeViewModel:
     def __init__(self, tree, repository=None, state_manager=None):
-        self._core = MTTreeViewModelCore(tree, repository, state_manager)
-        self._model = MTTreeViewModelModel()
-        self._view = MTTreeViewModelView()
+        self._core: MTTreeViewModelCore = MTTreeViewModelCore(tree, repository, state_manager)
+        self._model: MTTreeViewModelModel = MTTreeViewModelModel()
+        self._view: MTTreeViewModelView = MTTreeViewModelView()
 
     # 1. Core wrapper (비즈니스 로직/데이터 접근)
     def add_item(self, name: str, parent_id: str | None = None) -> str | None:
