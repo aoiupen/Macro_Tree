@@ -39,7 +39,7 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         tree = self._tree
         if not tree:
             return {}
-        return tree.get_all_items()
+        return tree.items
 
     # 2. CRUD/비즈니스 로직
     def add_item(self, name: str, parent_id: str | None = None) -> str | None:

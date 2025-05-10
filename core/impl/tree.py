@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Iterator, List, Optional, Set, TypeVar
+from typing import Any, Callable, Dict, Iterator, List, Optional, Set, TypeVar, cast
 import json
 import copy
 
@@ -24,12 +24,13 @@ class _MTTreeReadable:
         return self._tree.name
 
     @property
-    def root_id(self) -> Optional[str]:
+    def root_id(self) -> str | None:
         return self._tree.root_id
 
-    def get_all_items(self) -> Dict[str, IMTTreeItem]:
-        return self._tree.get_all_items()
-
+    @property
+    def items(self) -> dict[str, IMTTreeItem]:
+        return cast("MTTree", self._tree)._items
+    
     def get_item(self, item_id: str) -> IMTTreeItem | None:
         return self._tree.get_item(item_id)
 
@@ -213,12 +214,9 @@ class MTTree:
         """루트 아이템 ID를 반환합니다."""
         return self._readable.root_id
     
-    # RF : Wrapper 함수 (내부 함수와 동일한 이름이어도 무관)
-    def get_all_items(self) -> Dict[str, IMTTreeItem]:
-        """
-        트리 내의 모든 아이템(노드)을 반환합니다.
-        """
-        return self._readable.get_all_items()
+    @property
+    def items(self) -> dict[str, IMTTreeItem]:
+        return self._readable.items
     
     def get_item(self, item_id: str) -> IMTTreeItem | None:
         """ID로 아이템을 찾습니다."""
