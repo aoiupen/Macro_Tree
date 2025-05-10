@@ -8,7 +8,7 @@ from core.interfaces.base_item import IMTTreeItem
 class IMTTreeView(Protocol):
     """트리 뷰 인터페이스"""
     
-    def set_items(self, items: List[MTTreeItemData]) -> None:
+    def set_items(self, items: list[MTTreeItemData]) -> None:
         """트리 아이템 설정"""
         ...
     

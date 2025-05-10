@@ -1,6 +1,7 @@
 from enum import Enum
-from typing import Protocol, Any, List, TypedDict, TypeVar, Generic
+from typing import Protocol, Any, List, TypedDict, TypeVar, Generic, Optional
 from core.interfaces.base_types import IMTPoint
+from dataclasses import dataclass, field
 
 """
 core/interfaces/base_item_data.py
@@ -90,16 +91,16 @@ class IMTActionPerformer(Protocol, Generic[D]):
 # -------------------
 # RF: TypedDict는 구조체. 그 아래는 인터페이스 가질 수 있음
 # RF: I는 TypedDict, dataclass, enum에 쓰지 않는다
-class MTTreeItemData(TypedDict, total=False):
-    """트리 아이템 데이터 구조 (total=False: 모든 필드 선택적)"""
-    id: str
-    name: str
-    parent_id: str | None
-    children_ids: List[str]
-    node_type: MTNodeType
-    device: MTDevice | None
-    action: IMTAction | None
-    action_data: IMTActionData | None
+@dataclass
+class MTTreeItemData:
+    id: str = ""
+    name: str = ""
+    parent_id: str | None = None
+    children_ids: List[str] = field(default_factory=list)
+    node_type: MTNodeType | None = None
+    device: MTDevice | None = None
+    action: IMTAction | None = None
+    action_data: IMTActionData | None = None
     # 기타 UI/확장 속성은 필요에 따라 추가
 
 # -------------------

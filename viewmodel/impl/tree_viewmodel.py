@@ -224,7 +224,7 @@ class MTTreeViewModel(IMTTreeViewModel):
 
         return tree.get_all_items()
 
-    def get_items(self) -> List[MTTreeItemData]:
+    def get_items(self) -> list[MTTreeItemData]:
         return self._core.get_items()
 
     def select_item(self, item_id: str, multi_select: bool = False) -> bool:

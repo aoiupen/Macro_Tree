@@ -17,7 +17,7 @@ class IMTTreeViewModel(Protocol):
         """현재 로드된 트리 반환"""
         ...
     
-    def get_items(self) -> List[MTTreeItemData]:
+    def get_items(self) -> list[MTTreeItemData]:
         """UI 표시용 트리 아이템 목록 반환"""
         ...
     
@@ -29,7 +29,7 @@ class IMTTreeViewModel(Protocol):
         """선택된 아이템 ID 목록 반환"""
         ...
     
-    def get_item_children(self, parent_id: str | None) -> List[MTTreeItemData]:
+    def get_item_children(self, parent_id: str | None) -> list[MTTreeItemData]:
         """특정 부모의 자식 아이템 목록 (IMTTreeReadable 사용)"""
         ...
     
