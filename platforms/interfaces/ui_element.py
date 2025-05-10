@@ -1,6 +1,6 @@
 from typing import Any, Callable, Dict, List, Optional, Protocol
 
-from model.tree_item import IMTTreeItem
+from core.interfaces.base_tree import IMTTreeItem
 
 
 class IMTUIElement(Protocol):

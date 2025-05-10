@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.6">
-<title>model.store.db.impl API documentation</title>
+<title>core.interfaces.base_utils API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
@@ -33,22 +33,39 @@ el.replaceWith(d);
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>model.store.db.impl</code></h1>
+<h1 class="title">Module <code>core.interfaces.base_utils</code></h1>
 </header>
 <section id="section-intro">
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt><code class="name"><a title="model.store.db.impl.postgres_repo" href="postgres_repo.html">model.store.db.impl.postgres_repo</a></code></dt>
+<dt id="core.interfaces.base_utils.to_tree_item_data"><code class="name flex">
+<span>def <span class="ident">to_tree_item_data</span></span>(<span>item: <a title="core.interfaces.base_item.IMTTreeItem" href="base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a>,<br>parent_id: str | None,<br>selected: bool = False) ‑> <a title="core.interfaces.base_item_data.MTTreeItemData" href="base_item_data.html#core.interfaces.base_item_data.MTTreeItemData">MTTreeItemData</a></span>
+</code></dt>
 <dd>
-<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_tree_item_data(
+    item: IMTTreeItem,
+    parent_id: Optional[str],
+    selected: bool = False
+) -&gt; MTTreeItemData:
+    &#34;&#34;&#34;
+    IMTTreeItem 객체와 parent_id, selected 정보를 받아 MTTreeItemData로 변환하는 함수의 인터페이스입니다.
+    &#34;&#34;&#34;
+    # RF : 클래스 밖에 있는 함수는 인터페이스여도 pass나 ... 대신 raise NotImplementedError 을 추가해야 mypy 정적 검사 통과
+    raise NotImplementedError</code></pre>
+</details>
+<div class="desc"><p>IMTTreeItem 객체와 parent_id, selected 정보를 받아 MTTreeItemData로 변환하는 함수의 인터페이스입니다.</p></div>
 </dd>
 </dl>
-</section>
-<section>
-</section>
-<section>
 </section>
 <section>
 </section>
@@ -60,12 +77,12 @@ el.replaceWith(d);
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="model.store.db" href="../index.html">model.store.db</a></code></li>
+<li><code><a title="core.interfaces" href="index.html">core.interfaces</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
-<ul>
-<li><code><a title="model.store.db.impl.postgres_repo" href="postgres_repo.html">model.store.db.impl.postgres_repo</a></code></li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="core.interfaces.base_utils.to_tree_item_data" href="#core.interfaces.base_utils.to_tree_item_data">to_tree_item_data</a></code></li>
 </ul>
 </li>
 </ul>

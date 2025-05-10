@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.6">
-<title>core.interfaces.base_item API documentation</title>
+<title>viewmodel.interfaces.base_tree_viewmodel_view API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
@@ -33,7 +33,7 @@ el.replaceWith(d);
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>core.interfaces.base_item</code></h1>
+<h1 class="title">Module <code>viewmodel.interfaces.base_tree_viewmodel_view</code></h1>
 </header>
 <section id="section-intro">
 </section>
@@ -46,8 +46,8 @@ el.replaceWith(d);
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="core.interfaces.base_item.IMTBaseItem"><code class="flex name class">
-<span>class <span class="ident">IMTBaseItem</span></span>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView"><code class="flex name class">
+<span>class <span class="ident">IMTTreeViewModelView</span></span>
 <span>(</span><span>*args, **kwargs)</span>
 </code></dt>
 <dd>
@@ -55,16 +55,41 @@ el.replaceWith(d);
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@runtime_checkable
-class IMTBaseItem(Protocol):
-    &#34;&#34;&#34;기본 아이템 인터페이스&#34;&#34;&#34;
-    @property
-    def id(self) -&gt; str: ...
-    
-    @property
-    def data(self) -&gt; MTTreeItemData: ...</code></pre>
+<pre><code class="python">class IMTTreeViewModelView(Protocol):
+    def get_items(self) -&gt; List[MTTreeItemData]: ...
+    def select_item(self, item_id: str, multi_select: bool = False) -&gt; bool: ...
+    def get_current_tree(self) -&gt; IMTTree | None: ...
+    def get_item(self, item_id: str) -&gt; IMTTreeItem | None: ...
+    def get_selected_items(self) -&gt; list[str]: ...
+    def get_item_children(self, parent_id: str | None = None) -&gt; list[MTTreeItemData]: ...
+    def toggle_expanded(self, item_id: str, expanded: bool | None = None) -&gt; bool: ...
+    # 기타 view 기반 필수 메서드 </code></pre>
 </details>
-<div class="desc"><p>기본 아이템 인터페이스</p></div>
+<div class="desc"><p>Base class for protocol classes.</p>
+<p>Protocol classes are defined as::</p>
+<pre><code>class Proto(Protocol):
+    def meth(self) -&gt; int:
+        ...
+</code></pre>
+<p>Such classes are primarily used with static type checkers that recognize
+structural subtyping (static duck-typing), for example::</p>
+<pre><code>class C:
+    def meth(self) -&gt; int:
+        return 0
+
+def func(x: Proto) -&gt; int:
+    return x.meth()
+
+func(C())  # Passes static type check
+</code></pre>
+<p>See PEP 544 for details. Protocol classes decorated with
+@typing.runtime_checkable act as simple-minded runtime protocols that check
+only the presence of given attributes, ignoring their type signatures.
+Protocol classes can be generic, they are defined as::</p>
+<pre><code>class GenProto(Protocol[T]):
+    def meth(self) -&gt; T:
+        ...
+</code></pre></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>typing.Protocol</li>
@@ -72,158 +97,92 @@ class IMTBaseItem(Protocol):
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li><a title="core.interfaces.base_item.IMTTreeItem" href="#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a></li>
-</ul>
-<h3>Instance variables</h3>
-<dl>
-<dt id="core.interfaces.base_item.IMTBaseItem.data"><code class="name">prop <span class="ident">data</span> : <a title="core.interfaces.base_item_data.MTTreeItemData" href="base_item_data.html#core.interfaces.base_item_data.MTTreeItemData">MTTreeItemData</a></code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def data(self) -&gt; MTTreeItemData: ...</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
-<dt id="core.interfaces.base_item.IMTBaseItem.id"><code class="name">prop <span class="ident">id</span> : str</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def id(self) -&gt; str: ...</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
-</dl>
-</dd>
-<dt id="core.interfaces.base_item.IMTTreeItem"><code class="flex name class">
-<span>class <span class="ident">IMTTreeItem</span></span>
-<span>(</span><span>*args, **kwargs)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@runtime_checkable
-class IMTTreeItem(IMTBaseItem, Protocol):
-    &#34;&#34;&#34;매크로 트리 아이템 인터페이스
-    
-    트리에서 사용되는 개별 아이템의 인터페이스입니다.
-    &#34;&#34;&#34;
-    # id와 data 프로퍼티는 IMTBaseItem에서 이미 정의됨
-    
-    def get_property(self, key: str, default: object = None) -&gt; object:
-        &#34;&#34;&#34;아이템 속성을 가져옵니다.&#34;&#34;&#34;
-        ...
-    
-    def set_property(self, key: str, value: object) -&gt; None:
-        &#34;&#34;&#34;아이템 속성을 설정합니다.&#34;&#34;&#34;
-        ...
-    
-    def clone(self) -&gt; &#39;IMTTreeItem&#39;:
-        &#34;&#34;&#34;아이템의 복제본을 생성합니다.&#34;&#34;&#34;
-        ...</code></pre>
-</details>
-<div class="desc"><p>매크로 트리 아이템 인터페이스</p>
-<p>트리에서 사용되는 개별 아이템의 인터페이스입니다.</p></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="core.interfaces.base_item.IMTBaseItem" href="#core.interfaces.base_item.IMTBaseItem">IMTBaseItem</a></li>
-<li>typing.Protocol</li>
-<li>typing.Generic</li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="core.impl.item.MTTreeItem" href="../impl/item.html#core.impl.item.MTTreeItem">MTTreeItem</a></li>
+<li><a title="viewmodel.impl.tree_viewmodel_view.MTTreeViewModelView" href="../impl/tree_viewmodel_view.html#viewmodel.impl.tree_viewmodel_view.MTTreeViewModelView">MTTreeViewModelView</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="core.interfaces.base_item.IMTTreeItem.clone"><code class="name flex">
-<span>def <span class="ident">clone</span></span>(<span>self) ‑> <a title="core.interfaces.base_item.IMTTreeItem" href="#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a></span>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.get_current_tree"><code class="name flex">
+<span>def <span class="ident">get_current_tree</span></span>(<span>self) ‑> <a title="core.interfaces.base_tree.IMTTree" href="../../core/interfaces/base_tree.html#core.interfaces.base_tree.IMTTree">IMTTree</a> | None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def clone(self) -&gt; &#39;IMTTreeItem&#39;:
-    &#34;&#34;&#34;아이템의 복제본을 생성합니다.&#34;&#34;&#34;
-    ...</code></pre>
+<pre><code class="python">def get_current_tree(self) -&gt; IMTTree | None: ...</code></pre>
 </details>
-<div class="desc"><p>아이템의 복제본을 생성합니다.</p></div>
+<div class="desc"></div>
 </dd>
-<dt id="core.interfaces.base_item.IMTTreeItem.get_property"><code class="name flex">
-<span>def <span class="ident">get_property</span></span>(<span>self, key: str, default: object = None) ‑> object</span>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.get_item"><code class="name flex">
+<span>def <span class="ident">get_item</span></span>(<span>self, item_id: str) ‑> <a title="core.interfaces.base_item.IMTTreeItem" href="../../core/interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a> | None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_property(self, key: str, default: object = None) -&gt; object:
-    &#34;&#34;&#34;아이템 속성을 가져옵니다.&#34;&#34;&#34;
-    ...</code></pre>
+<pre><code class="python">def get_item(self, item_id: str) -&gt; IMTTreeItem | None: ...</code></pre>
 </details>
-<div class="desc"><p>아이템 속성을 가져옵니다.</p></div>
+<div class="desc"></div>
 </dd>
-<dt id="core.interfaces.base_item.IMTTreeItem.set_property"><code class="name flex">
-<span>def <span class="ident">set_property</span></span>(<span>self, key: str, value: object) ‑> None</span>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.get_item_children"><code class="name flex">
+<span>def <span class="ident">get_item_children</span></span>(<span>self, parent_id: str | None = None) ‑> list[<a title="core.interfaces.base_item_data.MTTreeItemData" href="../../core/interfaces/base_item_data.html#core.interfaces.base_item_data.MTTreeItemData">MTTreeItemData</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def set_property(self, key: str, value: object) -&gt; None:
-    &#34;&#34;&#34;아이템 속성을 설정합니다.&#34;&#34;&#34;
-    ...</code></pre>
+<pre><code class="python">def get_item_children(self, parent_id: str | None = None) -&gt; list[MTTreeItemData]: ...</code></pre>
 </details>
-<div class="desc"><p>아이템 속성을 설정합니다.</p></div>
+<div class="desc"></div>
 </dd>
-</dl>
-</dd>
-<dt id="core.interfaces.base_item.TreeItemKeys"><code class="flex name class">
-<span>class <span class="ident">TreeItemKeys</span></span>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.get_items"><code class="name flex">
+<span>def <span class="ident">get_items</span></span>(<span>self) ‑> List[<a title="core.interfaces.base_item_data.MTTreeItemData" href="../../core/interfaces/base_item_data.html#core.interfaces.base_item_data.MTTreeItemData">MTTreeItemData</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TreeItemKeys:
-    &#34;&#34;&#34;트리 아이템의 UI/확장/부가 속성 키 상수&#34;&#34;&#34;
-    DATA = &#34;data&#34;
-    EXPANDED = &#34;expanded&#34;
-    SELECTED = &#34;selected&#34;
-    VISIBLE = &#34;visible&#34;
-    ICON = &#34;icon&#34;</code></pre>
+<pre><code class="python">def get_items(self) -&gt; List[MTTreeItemData]: ...</code></pre>
 </details>
-<div class="desc"><p>트리 아이템의 UI/확장/부가 속성 키 상수</p></div>
-<h3>Class variables</h3>
-<dl>
-<dt id="core.interfaces.base_item.TreeItemKeys.DATA"><code class="name">var <span class="ident">DATA</span></code></dt>
-<dd>
 <div class="desc"></div>
 </dd>
-<dt id="core.interfaces.base_item.TreeItemKeys.EXPANDED"><code class="name">var <span class="ident">EXPANDED</span></code></dt>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.get_selected_items"><code class="name flex">
+<span>def <span class="ident">get_selected_items</span></span>(<span>self) ‑> list[str]</span>
+</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_selected_items(self) -&gt; list[str]: ...</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
-<dt id="core.interfaces.base_item.TreeItemKeys.ICON"><code class="name">var <span class="ident">ICON</span></code></dt>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.select_item"><code class="name flex">
+<span>def <span class="ident">select_item</span></span>(<span>self, item_id: str, multi_select: bool = False) ‑> bool</span>
+</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def select_item(self, item_id: str, multi_select: bool = False) -&gt; bool: ...</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
-<dt id="core.interfaces.base_item.TreeItemKeys.SELECTED"><code class="name">var <span class="ident">SELECTED</span></code></dt>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.toggle_expanded"><code class="name flex">
+<span>def <span class="ident">toggle_expanded</span></span>(<span>self, item_id: str, expanded: bool | None = None) ‑> bool</span>
+</code></dt>
 <dd>
-<div class="desc"></div>
-</dd>
-<dt id="core.interfaces.base_item.TreeItemKeys.VISIBLE"><code class="name">var <span class="ident">VISIBLE</span></code></dt>
-<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def toggle_expanded(self, item_id: str, expanded: bool | None = None) -&gt; bool: ...</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -238,34 +197,21 @@ class IMTTreeItem(IMTBaseItem, Protocol):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="core.interfaces" href="index.html">core.interfaces</a></code></li>
+<li><code><a title="viewmodel.interfaces" href="index.html">viewmodel.interfaces</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="core.interfaces.base_item.IMTBaseItem" href="#core.interfaces.base_item.IMTBaseItem">IMTBaseItem</a></code></h4>
-<ul class="">
-<li><code><a title="core.interfaces.base_item.IMTBaseItem.data" href="#core.interfaces.base_item.IMTBaseItem.data">data</a></code></li>
-<li><code><a title="core.interfaces.base_item.IMTBaseItem.id" href="#core.interfaces.base_item.IMTBaseItem.id">id</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="core.interfaces.base_item.IMTTreeItem" href="#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a></code></h4>
-<ul class="">
-<li><code><a title="core.interfaces.base_item.IMTTreeItem.clone" href="#core.interfaces.base_item.IMTTreeItem.clone">clone</a></code></li>
-<li><code><a title="core.interfaces.base_item.IMTTreeItem.get_property" href="#core.interfaces.base_item.IMTTreeItem.get_property">get_property</a></code></li>
-<li><code><a title="core.interfaces.base_item.IMTTreeItem.set_property" href="#core.interfaces.base_item.IMTTreeItem.set_property">set_property</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="core.interfaces.base_item.TreeItemKeys" href="#core.interfaces.base_item.TreeItemKeys">TreeItemKeys</a></code></h4>
-<ul class="">
-<li><code><a title="core.interfaces.base_item.TreeItemKeys.DATA" href="#core.interfaces.base_item.TreeItemKeys.DATA">DATA</a></code></li>
-<li><code><a title="core.interfaces.base_item.TreeItemKeys.EXPANDED" href="#core.interfaces.base_item.TreeItemKeys.EXPANDED">EXPANDED</a></code></li>
-<li><code><a title="core.interfaces.base_item.TreeItemKeys.ICON" href="#core.interfaces.base_item.TreeItemKeys.ICON">ICON</a></code></li>
-<li><code><a title="core.interfaces.base_item.TreeItemKeys.SELECTED" href="#core.interfaces.base_item.TreeItemKeys.SELECTED">SELECTED</a></code></li>
-<li><code><a title="core.interfaces.base_item.TreeItemKeys.VISIBLE" href="#core.interfaces.base_item.TreeItemKeys.VISIBLE">VISIBLE</a></code></li>
+<h4><code><a title="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView" href="#viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView">IMTTreeViewModelView</a></code></h4>
+<ul class="two-column">
+<li><code><a title="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.get_current_tree" href="#viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.get_current_tree">get_current_tree</a></code></li>
+<li><code><a title="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.get_item" href="#viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.get_item">get_item</a></code></li>
+<li><code><a title="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.get_item_children" href="#viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.get_item_children">get_item_children</a></code></li>
+<li><code><a title="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.get_items" href="#viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.get_items">get_items</a></code></li>
+<li><code><a title="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.get_selected_items" href="#viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.get_selected_items">get_selected_items</a></code></li>
+<li><code><a title="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.select_item" href="#viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.select_item">select_item</a></code></li>
+<li><code><a title="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.toggle_expanded" href="#viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.toggle_expanded">toggle_expanded</a></code></li>
 </ul>
 </li>
 </ul>

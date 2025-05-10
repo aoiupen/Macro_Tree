@@ -57,7 +57,7 @@ el.replaceWith(d);
 <pre><code class="python">class MTTreeEventManager(IMTTreeObservable):
     &#34;&#34;&#34;트리 이벤트 관리자 구현체&#34;&#34;&#34;
     
-    def __init__(self):
+    def __init__(self) -&gt; None:
         &#34;&#34;&#34;이벤트 관리자 초기화&#34;&#34;&#34;
         self._subscribers: Dict[MTTreeEvent, List[TreeEventCallback]] = {
             event: [] for event in MTTreeEvent

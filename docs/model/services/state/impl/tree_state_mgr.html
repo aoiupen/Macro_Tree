@@ -46,8 +46,8 @@ el.replaceWith(d);
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="model.services.state.impl.tree_state_mgr.TreeStateManager"><code class="flex name class">
-<span>class <span class="ident">TreeStateManager</span></span>
+<dt id="model.services.state.impl.tree_state_mgr.MTTreeStateManager"><code class="flex name class">
+<span>class <span class="ident">MTTreeStateManager</span></span>
 <span>(</span><span>max_history: int = 50)</span>
 </code></dt>
 <dd>
@@ -55,7 +55,7 @@ el.replaceWith(d);
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TreeStateManager(IMTTreeStateManager):
+<pre><code class="python">class MTTreeStateManager(IMTTreeStateManager):
     &#34;&#34;&#34;매크로 트리 상태 관리자 구현&#34;&#34;&#34;
     
     def __init__(self, max_history: int = 50):
@@ -158,7 +158,7 @@ el.replaceWith(d);
 </ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="model.services.state.impl.tree_state_mgr.TreeStateManager.current_state"><code class="name">prop <span class="ident">current_state</span> : <a title="core.interfaces.base_tree.IMTTree" href="../../../../core/interfaces/base_tree.html#core.interfaces.base_tree.IMTTree">IMTTree</a> | None</code></dt>
+<dt id="model.services.state.impl.tree_state_mgr.MTTreeStateManager.current_state"><code class="name">prop <span class="ident">current_state</span> : <a title="core.interfaces.base_tree.IMTTree" href="../../../../core/interfaces/base_tree.html#core.interfaces.base_tree.IMTTree">IMTTree</a> | None</code></dt>
 <dd>
 <details class="source">
 <summary>
@@ -176,7 +176,7 @@ def current_state(self) -&gt; IMTTree | None:
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="model.services.state.impl.tree_state_mgr.TreeStateManager.can_redo"><code class="name flex">
+<dt id="model.services.state.impl.tree_state_mgr.MTTreeStateManager.can_redo"><code class="name flex">
 <span>def <span class="ident">can_redo</span></span>(<span>self) ‑> bool</span>
 </code></dt>
 <dd>
@@ -190,7 +190,7 @@ def current_state(self) -&gt; IMTTree | None:
 </details>
 <div class="desc"><p>다시 실행 가능 여부 확인</p></div>
 </dd>
-<dt id="model.services.state.impl.tree_state_mgr.TreeStateManager.can_undo"><code class="name flex">
+<dt id="model.services.state.impl.tree_state_mgr.MTTreeStateManager.can_undo"><code class="name flex">
 <span>def <span class="ident">can_undo</span></span>(<span>self) ‑> bool</span>
 </code></dt>
 <dd>
@@ -204,7 +204,7 @@ def current_state(self) -&gt; IMTTree | None:
 </details>
 <div class="desc"><p>실행 취소 가능 여부 확인</p></div>
 </dd>
-<dt id="model.services.state.impl.tree_state_mgr.TreeStateManager.redo"><code class="name flex">
+<dt id="model.services.state.impl.tree_state_mgr.MTTreeStateManager.redo"><code class="name flex">
 <span>def <span class="ident">redo</span></span>(<span>self) ‑> <a title="core.interfaces.base_tree.IMTTree" href="../../../../core/interfaces/base_tree.html#core.interfaces.base_tree.IMTTree">IMTTree</a> | None</span>
 </code></dt>
 <dd>
@@ -223,7 +223,7 @@ def current_state(self) -&gt; IMTTree | None:
 </details>
 <div class="desc"><p>다음 상태로 복원</p></div>
 </dd>
-<dt id="model.services.state.impl.tree_state_mgr.TreeStateManager.save_state"><code class="name flex">
+<dt id="model.services.state.impl.tree_state_mgr.MTTreeStateManager.save_state"><code class="name flex">
 <span>def <span class="ident">save_state</span></span>(<span>self,<br>tree: <a title="core.interfaces.base_tree.IMTTree" href="../../../../core/interfaces/base_tree.html#core.interfaces.base_tree.IMTTree">IMTTree</a>) ‑> None</span>
 </code></dt>
 <dd>
@@ -253,7 +253,7 @@ def current_state(self) -&gt; IMTTree | None:
 </details>
 <div class="desc"><p>현재 트리 상태를 이력에 저장</p></div>
 </dd>
-<dt id="model.services.state.impl.tree_state_mgr.TreeStateManager.undo"><code class="name flex">
+<dt id="model.services.state.impl.tree_state_mgr.MTTreeStateManager.undo"><code class="name flex">
 <span>def <span class="ident">undo</span></span>(<span>self) ‑> <a title="core.interfaces.base_tree.IMTTree" href="../../../../core/interfaces/base_tree.html#core.interfaces.base_tree.IMTTree">IMTTree</a> | None</span>
 </code></dt>
 <dd>
@@ -301,14 +301,14 @@ def current_state(self) -&gt; IMTTree | None:
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="model.services.state.impl.tree_state_mgr.TreeStateManager" href="#model.services.state.impl.tree_state_mgr.TreeStateManager">TreeStateManager</a></code></h4>
+<h4><code><a title="model.services.state.impl.tree_state_mgr.MTTreeStateManager" href="#model.services.state.impl.tree_state_mgr.MTTreeStateManager">MTTreeStateManager</a></code></h4>
 <ul class="two-column">
-<li><code><a title="model.services.state.impl.tree_state_mgr.TreeStateManager.can_redo" href="#model.services.state.impl.tree_state_mgr.TreeStateManager.can_redo">can_redo</a></code></li>
-<li><code><a title="model.services.state.impl.tree_state_mgr.TreeStateManager.can_undo" href="#model.services.state.impl.tree_state_mgr.TreeStateManager.can_undo">can_undo</a></code></li>
-<li><code><a title="model.services.state.impl.tree_state_mgr.TreeStateManager.current_state" href="#model.services.state.impl.tree_state_mgr.TreeStateManager.current_state">current_state</a></code></li>
-<li><code><a title="model.services.state.impl.tree_state_mgr.TreeStateManager.redo" href="#model.services.state.impl.tree_state_mgr.TreeStateManager.redo">redo</a></code></li>
-<li><code><a title="model.services.state.impl.tree_state_mgr.TreeStateManager.save_state" href="#model.services.state.impl.tree_state_mgr.TreeStateManager.save_state">save_state</a></code></li>
-<li><code><a title="model.services.state.impl.tree_state_mgr.TreeStateManager.undo" href="#model.services.state.impl.tree_state_mgr.TreeStateManager.undo">undo</a></code></li>
+<li><code><a title="model.services.state.impl.tree_state_mgr.MTTreeStateManager.can_redo" href="#model.services.state.impl.tree_state_mgr.MTTreeStateManager.can_redo">can_redo</a></code></li>
+<li><code><a title="model.services.state.impl.tree_state_mgr.MTTreeStateManager.can_undo" href="#model.services.state.impl.tree_state_mgr.MTTreeStateManager.can_undo">can_undo</a></code></li>
+<li><code><a title="model.services.state.impl.tree_state_mgr.MTTreeStateManager.current_state" href="#model.services.state.impl.tree_state_mgr.MTTreeStateManager.current_state">current_state</a></code></li>
+<li><code><a title="model.services.state.impl.tree_state_mgr.MTTreeStateManager.redo" href="#model.services.state.impl.tree_state_mgr.MTTreeStateManager.redo">redo</a></code></li>
+<li><code><a title="model.services.state.impl.tree_state_mgr.MTTreeStateManager.save_state" href="#model.services.state.impl.tree_state_mgr.MTTreeStateManager.save_state">save_state</a></code></li>
+<li><code><a title="model.services.state.impl.tree_state_mgr.MTTreeStateManager.undo" href="#model.services.state.impl.tree_state_mgr.MTTreeStateManager.undo">undo</a></code></li>
 </ul>
 </li>
 </ul>

@@ -1,4 +1,3 @@
-from typing import Optional
 from core.interfaces.base_tree import IMTTreeItem
 from core.interfaces.base_item_data import MTTreeItemData
 from dataclasses import asdict

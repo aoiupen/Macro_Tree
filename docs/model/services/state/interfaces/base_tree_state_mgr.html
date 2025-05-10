@@ -48,7 +48,7 @@ el.replaceWith(d);
 <dl>
 <dt id="model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager"><code class="flex name class">
 <span>class <span class="ident">IMTTreeStateManager</span></span>
-<span>(</span><span>max_history: int = 50)</span>
+<span>(</span><span>*args, **kwargs)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -74,7 +74,7 @@ el.replaceWith(d);
         &#34;&#34;&#34;현재 상태의 트리를 반환합니다.&#34;&#34;&#34;
         ...
     
-    def save_state(self) -&gt; None:
+    def save_state(self, tree: IMTTree) -&gt; None:
         &#34;&#34;&#34;현재 상태를 저장합니다.&#34;&#34;&#34;
         ...
     
@@ -107,8 +107,7 @@ el.replaceWith(d);
         ...</code></pre>
 </details>
 <div class="desc"><p>매크로 트리 상태 관리자 인터페이스</p>
-<p>트리의 상태 변경을 추적하고 관리합니다.</p>
-<p>상태 관리자를 초기화합니다.</p></div>
+<p>트리의 상태 변경을 추적하고 관리합니다.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>typing.Protocol</li>
@@ -116,7 +115,7 @@ el.replaceWith(d);
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li><a title="model.services.state.impl.tree_state_mgr.TreeStateManager" href="../impl/tree_state_mgr.html#model.services.state.impl.tree_state_mgr.TreeStateManager">TreeStateManager</a></li>
+<li><a title="model.services.state.impl.tree_state_mgr.MTTreeStateManager" href="../impl/tree_state_mgr.html#model.services.state.impl.tree_state_mgr.MTTreeStateManager">MTTreeStateManager</a></li>
 </ul>
 <h3>Instance variables</h3>
 <dl>
@@ -193,14 +192,14 @@ def current_state(self) -&gt; IMTTree | None:
 <div class="desc"><p>다음 상태로 복원합니다.</p></div>
 </dd>
 <dt id="model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.save_state"><code class="name flex">
-<span>def <span class="ident">save_state</span></span>(<span>self) ‑> None</span>
+<span>def <span class="ident">save_state</span></span>(<span>self,<br>tree: <a title="core.interfaces.base_tree.IMTTree" href="../../../../core/interfaces/base_tree.html#core.interfaces.base_tree.IMTTree">IMTTree</a>) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def save_state(self) -&gt; None:
+<pre><code class="python">def save_state(self, tree: IMTTree) -&gt; None:
     &#34;&#34;&#34;현재 상태를 저장합니다.&#34;&#34;&#34;
     ...</code></pre>
 </details>
