@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.6">
-<title>model.store.db.impl API documentation</title>
+<title>viewmodel.interfaces.base_tree_viewmodel_core API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
@@ -33,24 +33,119 @@ el.replaceWith(d);
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>model.store.db.impl</code></h1>
+<h1 class="title">Module <code>viewmodel.interfaces.base_tree_viewmodel_core</code></h1>
 </header>
 <section id="section-intro">
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt><code class="name"><a title="model.store.db.impl.postgres_repo" href="postgres_repo.html">model.store.db.impl.postgres_repo</a></code></dt>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore"><code class="flex name class">
+<span>class <span class="ident">IMTTreeViewModelCore</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class IMTTreeViewModelCore(Protocol):
+    &#34;&#34;&#34;트리 뷰모델 인터페이스 - 플랫폼 독립적 (Core)&#34;&#34;&#34;
+    
+    def __init__(self, repository: IMTTreeRepository, state_manager: IMTTreeStateManager):
+        &#34;&#34;&#34;ViewModel 초기화&#34;&#34;&#34;
+        ...
+
+    # 1. 데이터 접근/조회
+    def get_tree_items(self) -&gt; dict[str, IMTTreeItem]: ...
+
+    # 2. CRUD/비즈니스 로직
+    def add_item(self, name: str, parent_id: str | None = None) -&gt; str | None: ...
+    def update_item(self, item_id: str, name: str | None = None, parent_id: str | None = None) -&gt; bool: ...
+    def remove_item(self, item_id: str) -&gt; bool: ...
+    def move_item(self, item_id: str, new_parent_id: str | None = None) -&gt; bool: ...</code></pre>
+</details>
+<div class="desc"><p>트리 뷰모델 인터페이스 - 플랫폼 독립적 (Core)</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="viewmodel.impl.tree_viewmodel_core.MTTreeViewModelCore" href="../impl/tree_viewmodel_core.html#viewmodel.impl.tree_viewmodel_core.MTTreeViewModelCore">MTTreeViewModelCore</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore.add_item"><code class="name flex">
+<span>def <span class="ident">add_item</span></span>(<span>self, name: str, parent_id: str | None = None) ‑> str | None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_item(self, name: str, parent_id: str | None = None) -&gt; str | None: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore.get_tree_items"><code class="name flex">
+<span>def <span class="ident">get_tree_items</span></span>(<span>self) ‑> dict[str, <a title="core.interfaces.base_item.IMTTreeItem" href="../../core/interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a>]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_tree_items(self) -&gt; dict[str, IMTTreeItem]: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore.move_item"><code class="name flex">
+<span>def <span class="ident">move_item</span></span>(<span>self, item_id: str, new_parent_id: str | None = None) ‑> bool</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def move_item(self, item_id: str, new_parent_id: str | None = None) -&gt; bool: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore.remove_item"><code class="name flex">
+<span>def <span class="ident">remove_item</span></span>(<span>self, item_id: str) ‑> bool</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def remove_item(self, item_id: str) -&gt; bool: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore.update_item"><code class="name flex">
+<span>def <span class="ident">update_item</span></span>(<span>self, item_id: str, name: str | None = None, parent_id: str | None = None) ‑> bool</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def update_item(self, item_id: str, name: str | None = None, parent_id: str | None = None) -&gt; bool: ...</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -60,12 +155,21 @@ el.replaceWith(d);
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="model.store.db" href="../index.html">model.store.db</a></code></li>
+<li><code><a title="viewmodel.interfaces" href="index.html">viewmodel.interfaces</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
-<li><code><a title="model.store.db.impl.postgres_repo" href="postgres_repo.html">model.store.db.impl.postgres_repo</a></code></li>
+<li>
+<h4><code><a title="viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore" href="#viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore">IMTTreeViewModelCore</a></code></h4>
+<ul class="">
+<li><code><a title="viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore.add_item" href="#viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore.add_item">add_item</a></code></li>
+<li><code><a title="viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore.get_tree_items" href="#viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore.get_tree_items">get_tree_items</a></code></li>
+<li><code><a title="viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore.move_item" href="#viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore.move_item">move_item</a></code></li>
+<li><code><a title="viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore.remove_item" href="#viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore.remove_item">remove_item</a></code></li>
+<li><code><a title="viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore.update_item" href="#viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore.update_item">update_item</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

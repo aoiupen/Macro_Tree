@@ -48,329 +48,66 @@ el.replaceWith(d);
 <dl>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel"><code class="flex name class">
 <span>class <span class="ident">MTTreeViewModel</span></span>
-<span>(</span><span>repository: <a title="model.store.repo.interfaces.base_tree_repo.IMTTreeRepository" href="../../model/store/repo/interfaces/base_tree_repo.html#model.store.repo.interfaces.base_tree_repo.IMTTreeRepository">IMTTreeRepository</a>,<br>state_manager: <a title="model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager" href="../../model/services/state/interfaces/base_tree_state_mgr.html#model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager">IMTTreeStateManager</a>)</span>
+<span>(</span><span>tree, repository=None, state_manager=None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class MTTreeViewModel(IMTTreeViewModel):
-    &#34;&#34;&#34;데모 트리 뷰모델 구현&#34;&#34;&#34;
-    
-    def __init__(self, repository: IMTTreeRepository, state_manager: IMTTreeStateManager):
-        &#34;&#34;&#34;뷰모델 초기화
-        
-        Args:
-            repository: 트리 저장소
-            state_manager: 트리 상태 관리자
-        &#34;&#34;&#34;
-        self._repository = repository
-        self._state_mgr = state_manager
-        self._selected_items: Set[str] = set()  # 선택된 아이템 ID 집합
-        self._subscribers: Set[Callable[[], None]] = set()  # 변경 알림을 받을 콜백
-    
-    def get_item(self, item_id: str) -&gt; IMTTreeItem | None:
-        &#34;&#34;&#34;ID로 아이템을 찾습니다.&#34;&#34;&#34;
-        tree = self.get_current_tree()
-        if tree:
-            return tree.get_item(item_id)
-        return None
-    
+<pre><code class="python">class MTTreeViewModel:
+    def __init__(self, tree, repository=None, state_manager=None):
+        self._core = MTTreeViewModelCore(tree, repository, state_manager)
+        self._model = MTTreeViewModelModel()
+        self._view = MTTreeViewModelView()
+
+    # 1. Core wrapper (비즈니스 로직/데이터 접근)
     def add_item(self, name: str, parent_id: str | None = None) -&gt; str | None:
-        &#34;&#34;&#34;새 아이템을 추가합니다.
-        
-        Args:
-            name: 아이템 이름
-            parent_id: 부모 아이템 ID (None이면 최상위 레벨)
-            
-        Returns:
-            추가된 아이템 ID 또는 None (실패 시)
-        &#34;&#34;&#34;
-        tree = self.get_current_tree()
-        if not tree:
-            return None
-        
-        # 상태 저장 (UNDO를 위해)
-        self._state_mgr.save_state(tree)
-        
-        # 새 아이템 생성
-        item_id = str(uuid4())
-        new_item = IMTTreeItem(item_id, name)
-        
-        # 트리에 추가
-        try:
-            tree.add_item(new_item, parent_id)
-            self._notify_change()
-            return item_id
-        except ValueError:
-            return None
-    
-    def get_current_tree(self) -&gt; IMTTree | None:
-        &#34;&#34;&#34;현재 트리를 반환합니다.&#34;&#34;&#34;
-        return self._state_mgr.current_state
-    
-    def get_items(self) -&gt; List[Dict[str, Any]]:
-        &#34;&#34;&#34;UI에 표시할 아이템 목록을 반환합니다.&#34;&#34;&#34;
-        tree = self.get_current_tree()
-        if not tree:
-            return []
-        
-        result = []
-        
-        # 트리 순회하면서 아이템 정보 수집
-        def visitor(item: IMTTreeItem) -&gt; None:
-            parent_id = None
-            for pid, children in tree._children_map.items():
-                if item.id in children:
-                    parent_id = pid
-                    break
-            
-            item_data = {
-                &#34;id&#34;: item.id,
-                &#34;parent_id&#34;: parent_id,
-                &#34;name&#34;: item.get_property(&#34;name&#34;, &#34;unnamed&#34;),
-                &#34;expanded&#34;: item.get_property(&#34;expanded&#34;, False),
-                &#34;selected&#34;: item.id in self._selected_items
-            }
-            result.append(item_data)
-        
-        tree.traverse(visitor)
-        return result
-    
-    def load_tree(self, tree_id: str) -&gt; bool:
-        &#34;&#34;&#34;저장소에서 트리를 로드합니다.&#34;&#34;&#34;
-        try:
-            tree = self._repository.load(tree_id)
-            if tree:
-                self._state_mgr.set_initial_state(tree)
-                self._selected_items.clear()
-                self._notify_change()
-                return True
-        except ValueError:
-            pass
-        return False
-    
-    def save_tree(self, tree_id: str | None = None) -&gt; str | None:
-        &#34;&#34;&#34;현재 트리를 저장소에 저장합니다.&#34;&#34;&#34;
-        tree = self.get_current_tree()
-        if not tree:
-            return None
-        
-        try:
-            saved_id = self._repository.save(tree, tree_id)
-            return saved_id
-        except Exception:
-            return None
-    
+        return self._core.add_item(name, parent_id)
     def update_item(self, item_id: str, name: str | None = None, parent_id: str | None = None) -&gt; bool:
-        &#34;&#34;&#34;아이템을 업데이트합니다.
-        
-        Args:
-            item_id: 업데이트할 아이템 ID
-            name: 새 이름 (None이면 변경 안 함)
-            parent_id: 새 부모 ID (None이면 변경 안 함)
-            
-        Returns:
-            성공 여부
-        &#34;&#34;&#34;
-        tree = self.get_current_tree()
-        if not tree:
-            return False
-        
-        # 상태 저장 (UNDO를 위해)
-        self._state_mgr.save_state(tree)
-        
-        # 아이템 찾기
-        item = tree.get_item(item_id)
-        if not item:
-            return False
-        
-        # 이름 변경
-        if name is not None:
-            item.set_property(&#34;name&#34;, name)
-        
-        # 부모 변경
-        if parent_id is not None:
-            try:
-                tree.move_item(item_id, parent_id)
-            except ValueError:
-                return False
-        
-        self._notify_change()
-        return True
-    
+        return self._core.update_item(item_id, name, parent_id)
     def remove_item(self, item_id: str) -&gt; bool:
-        &#34;&#34;&#34;아이템을 삭제합니다.&#34;&#34;&#34;
-        tree = self.get_current_tree()
-        if not tree:
-            return False
-        
-        # 상태 저장 (UNDO를 위해)
-        self._state_mgr.save_state(tree)
-        
-        # 선택된 아이템에서 제거
-        if item_id in self._selected_items:
-            self._selected_items.remove(item_id)
-        
-        # 트리에서 제거
-        try:
-            tree.remove_item(item_id)
-            self._notify_change()
-            return True
-        except ValueError:
-            return False
-    
-    def select_item(self, item_id: str, multi_select: bool = False) -&gt; bool:
-        &#34;&#34;&#34;아이템을 선택합니다.
-        
-        Args:
-            item_id: 선택할 아이템 ID
-            multi_select: 다중 선택 모드
-            
-        Returns:
-            성공 여부
-        &#34;&#34;&#34;
-        tree = self.get_current_tree()
-        if not tree or not tree.get_item(item_id):
-            return False
-        
-        # 다중 선택이 아니면 기존 선택 초기화
-        if not multi_select:
-            self._selected_items.clear()
-        
-        # 선택 토글
-        if item_id in self._selected_items:
-            self._selected_items.remove(item_id)
-        else:
-            self._selected_items.add(item_id)
-        
-        self._notify_change()
-        return True
-    
-    def get_selected_items(self) -&gt; List[str]:
-        &#34;&#34;&#34;선택된 아이템 ID 목록을 반환합니다.&#34;&#34;&#34;
-        return list(self._selected_items)
-    
-    def toggle_expanded(self, item_id: str, expanded: bool | None = None) -&gt; bool:
-        &#34;&#34;&#34;아이템 확장/축소 상태를 토글합니다.
-        
-        Args:
-            item_id: 토글할 아이템 ID
-            expanded: 확장 상태 (None이면 현재 상태의 반대)
-            
-        Returns:
-            성공 여부
-        &#34;&#34;&#34;
-        tree = self.get_current_tree()
-        if not tree:
-            return False
-        
-        item = tree.get_item(item_id)
-        if not item:
-            return False
-        
-        # 상태 저장 (UNDO를 위해)
-        self._state_mgr.save_state(tree)
-        
-        # 확장 상태 결정
-        current = item.get_property(&#34;expanded&#34;, False)
-        new_state = not current if expanded is None else expanded
-        
-        # 상태 변경
-        item.set_property(&#34;expanded&#34;, new_state)
-        
-        self._notify_change()
-        return True
-    
-    def can_undo(self) -&gt; bool:
-        &#34;&#34;&#34;실행 취소 가능 여부를 반환합니다.&#34;&#34;&#34;
-        return self._state_mgr.can_undo()
-    
-    def can_redo(self) -&gt; bool:
-        &#34;&#34;&#34;다시 실행 가능 여부를 반환합니다.&#34;&#34;&#34;
-        return self._state_mgr.can_redo()
-    
-    def undo(self) -&gt; bool:
-        &#34;&#34;&#34;이전 상태로 되돌립니다.&#34;&#34;&#34;
-        result = self._state_mgr.undo() is not None
-        if result:
-            self._notify_change()
-        return result
-    
-    def redo(self) -&gt; bool:
-        &#34;&#34;&#34;다음 상태로 복원합니다.&#34;&#34;&#34;
-        result = self._state_mgr.redo() is not None
-        if result:
-            self._notify_change()
-        return result
-    
+        return self._core.remove_item(item_id)
     def move_item(self, item_id: str, new_parent_id: str | None = None) -&gt; bool:
-        &#34;&#34;&#34;아이템을 이동합니다.&#34;&#34;&#34;
-        tree = self.get_current_tree()
-        if not tree:
-            return False
-        
-        # 상태 저장 (UNDO를 위해)
-        self._state_mgr.save_state(tree)
-        
-        # 이동 수행
-        try:
-            tree.move_item(item_id, new_parent_id)
-            self._notify_change()
-            return True
-        except ValueError:
-            return False
-    
-    def get_item_children(self, parent_id: str | None = None) -&gt; List[Dict[str, Any]]:
-        &#34;&#34;&#34;특정 부모의 자식 아이템 정보를 반환합니다.&#34;&#34;&#34;
-        tree = self.get_current_tree()
-        if not tree:
-            return []
-        
-        result = []
-        children = tree.get_children(parent_id)
-        
-        for child in children:
-            item_data = {
-                &#34;id&#34;: child.id,
-                &#34;name&#34;: child.get_property(&#34;name&#34;, &#34;unnamed&#34;),
-                &#34;expanded&#34;: child.get_property(&#34;expanded&#34;, False),
-                &#34;selected&#34;: child.id in self._selected_items
-            }
-            result.append(item_data)
-        
-        return result
-    
-    def subscribe(self, callback: Callable[[], None]) -&gt; None:
-        &#34;&#34;&#34;변경 알림을 구독합니다.&#34;&#34;&#34;
-        self._subscribers.add(callback)
-    
-    def unsubscribe(self, callback: Callable[[], None]) -&gt; None:
-        &#34;&#34;&#34;변경 알림 구독을 해제합니다.&#34;&#34;&#34;
-        if callback in self._subscribers:
-            self._subscribers.remove(callback)
-    
-    def _notify_change(self) -&gt; None:
-        &#34;&#34;&#34;모든 구독자에게 변경을 알립니다.&#34;&#34;&#34;
-        for callback in self._subscribers:
-            callback()</code></pre>
+        return self._core.move_item(item_id, new_parent_id)
+    def get_tree_items(self):
+        return self._core.get_tree_items()
+
+    # 2. Model wrapper (상태/이벤트/저장/복원)
+    def subscribe(self, callback):
+        return self._model.subscribe(callback)
+    def unsubscribe(self, callback):
+        return self._model.unsubscribe(callback)
+    def undo(self) -&gt; bool:
+        return self._model.undo()
+    def redo(self) -&gt; bool:
+        return self._model.redo()
+    def save_tree(self, tree_id: str | None = None) -&gt; str | None:
+        return self._model.save_tree(tree_id)
+    def load_tree(self, tree_id: str) -&gt; bool:
+        return self._model.load_tree(tree_id)
+    def can_undo(self) -&gt; bool:
+        return self._model.can_undo()
+    def can_redo(self) -&gt; bool:
+        return self._model.can_redo()
+
+    # 3. View wrapper (UI/조회/상태)
+    def get_items(self) -&gt; list:
+        return self._view.get_items()
+    def select_item(self, item_id: str, multi_select: bool = False) -&gt; bool:
+        return self._view.select_item(item_id, multi_select)
+    def get_current_tree(self):
+        return self._view.get_current_tree()
+    def get_item(self, item_id: str):
+        return self._view.get_item(item_id)
+    def get_selected_items(self) -&gt; list:
+        return self._view.get_selected_items()
+    def get_item_children(self, parent_id: str | None = None):
+        return self._view.get_item_children(parent_id)
+    def toggle_expanded(self, item_id: str, expanded: bool | None = None) -&gt; bool:
+        return self._view.toggle_expanded(item_id, expanded)</code></pre>
 </details>
-<div class="desc"><p>데모 트리 뷰모델 구현</p>
-<p>뷰모델 초기화</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>repository</code></strong></dt>
-<dd>트리 저장소</dd>
-<dt><strong><code>state_manager</code></strong></dt>
-<dd>트리 상태 관리자</dd>
-</dl></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="viewmodel.interfaces.base_tree_viewmodel.IMTTreeViewModel" href="../interfaces/base_tree_viewmodel.html#viewmodel.interfaces.base_tree_viewmodel.IMTTreeViewModel">IMTTreeViewModel</a></li>
-<li>typing.Protocol</li>
-<li>typing.Generic</li>
-</ul>
+<div class="desc"></div>
 <h3>Methods</h3>
 <dl>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.add_item"><code class="name flex">
@@ -382,44 +119,9 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def add_item(self, name: str, parent_id: str | None = None) -&gt; str | None:
-    &#34;&#34;&#34;새 아이템을 추가합니다.
-    
-    Args:
-        name: 아이템 이름
-        parent_id: 부모 아이템 ID (None이면 최상위 레벨)
-        
-    Returns:
-        추가된 아이템 ID 또는 None (실패 시)
-    &#34;&#34;&#34;
-    tree = self.get_current_tree()
-    if not tree:
-        return None
-    
-    # 상태 저장 (UNDO를 위해)
-    self._state_mgr.save_state(tree)
-    
-    # 새 아이템 생성
-    item_id = str(uuid4())
-    new_item = IMTTreeItem(item_id, name)
-    
-    # 트리에 추가
-    try:
-        tree.add_item(new_item, parent_id)
-        self._notify_change()
-        return item_id
-    except ValueError:
-        return None</code></pre>
+    return self._core.add_item(name, parent_id)</code></pre>
 </details>
-<div class="desc"><p>새 아이템을 추가합니다.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>name</code></strong></dt>
-<dd>아이템 이름</dd>
-<dt><strong><code>parent_id</code></strong></dt>
-<dd>부모 아이템 ID (None이면 최상위 레벨)</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>추가된 아이템 ID 또는 None (실패 시)</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.can_redo"><code class="name flex">
 <span>def <span class="ident">can_redo</span></span>(<span>self) ‑> bool</span>
@@ -430,10 +132,9 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def can_redo(self) -&gt; bool:
-    &#34;&#34;&#34;다시 실행 가능 여부를 반환합니다.&#34;&#34;&#34;
-    return self._state_mgr.can_redo()</code></pre>
+    return self._model.can_redo()</code></pre>
 </details>
-<div class="desc"><p>다시 실행 가능 여부를 반환합니다.</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.can_undo"><code class="name flex">
 <span>def <span class="ident">can_undo</span></span>(<span>self) ‑> bool</span>
@@ -444,123 +145,87 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def can_undo(self) -&gt; bool:
-    &#34;&#34;&#34;실행 취소 가능 여부를 반환합니다.&#34;&#34;&#34;
-    return self._state_mgr.can_undo()</code></pre>
+    return self._model.can_undo()</code></pre>
 </details>
-<div class="desc"><p>실행 취소 가능 여부를 반환합니다.</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.get_current_tree"><code class="name flex">
-<span>def <span class="ident">get_current_tree</span></span>(<span>self) ‑> <a title="core.interfaces.base_tree.IMTTree" href="../../core/interfaces/base_tree.html#core.interfaces.base_tree.IMTTree">IMTTree</a> | None</span>
+<span>def <span class="ident">get_current_tree</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_current_tree(self) -&gt; IMTTree | None:
-    &#34;&#34;&#34;현재 트리를 반환합니다.&#34;&#34;&#34;
-    return self._state_mgr.current_state</code></pre>
+<pre><code class="python">def get_current_tree(self):
+    return self._view.get_current_tree()</code></pre>
 </details>
-<div class="desc"><p>현재 트리를 반환합니다.</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.get_item"><code class="name flex">
-<span>def <span class="ident">get_item</span></span>(<span>self, item_id: str) ‑> <a title="core.interfaces.base_item.IMTTreeItem" href="../../core/interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a> | None</span>
+<span>def <span class="ident">get_item</span></span>(<span>self, item_id: str)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_item(self, item_id: str) -&gt; IMTTreeItem | None:
-    &#34;&#34;&#34;ID로 아이템을 찾습니다.&#34;&#34;&#34;
-    tree = self.get_current_tree()
-    if tree:
-        return tree.get_item(item_id)
-    return None</code></pre>
+<pre><code class="python">def get_item(self, item_id: str):
+    return self._view.get_item(item_id)</code></pre>
 </details>
-<div class="desc"><p>ID로 아이템을 찾습니다.</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.get_item_children"><code class="name flex">
-<span>def <span class="ident">get_item_children</span></span>(<span>self, parent_id: str | None = None) ‑> List[Dict[str, Any]]</span>
+<span>def <span class="ident">get_item_children</span></span>(<span>self, parent_id: str | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_item_children(self, parent_id: str | None = None) -&gt; List[Dict[str, Any]]:
-    &#34;&#34;&#34;특정 부모의 자식 아이템 정보를 반환합니다.&#34;&#34;&#34;
-    tree = self.get_current_tree()
-    if not tree:
-        return []
-    
-    result = []
-    children = tree.get_children(parent_id)
-    
-    for child in children:
-        item_data = {
-            &#34;id&#34;: child.id,
-            &#34;name&#34;: child.get_property(&#34;name&#34;, &#34;unnamed&#34;),
-            &#34;expanded&#34;: child.get_property(&#34;expanded&#34;, False),
-            &#34;selected&#34;: child.id in self._selected_items
-        }
-        result.append(item_data)
-    
-    return result</code></pre>
+<pre><code class="python">def get_item_children(self, parent_id: str | None = None):
+    return self._view.get_item_children(parent_id)</code></pre>
 </details>
-<div class="desc"><p>특정 부모의 자식 아이템 정보를 반환합니다.</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.get_items"><code class="name flex">
-<span>def <span class="ident">get_items</span></span>(<span>self) ‑> List[Dict[str, Any]]</span>
+<span>def <span class="ident">get_items</span></span>(<span>self) ‑> list</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_items(self) -&gt; List[Dict[str, Any]]:
-    &#34;&#34;&#34;UI에 표시할 아이템 목록을 반환합니다.&#34;&#34;&#34;
-    tree = self.get_current_tree()
-    if not tree:
-        return []
-    
-    result = []
-    
-    # 트리 순회하면서 아이템 정보 수집
-    def visitor(item: IMTTreeItem) -&gt; None:
-        parent_id = None
-        for pid, children in tree._children_map.items():
-            if item.id in children:
-                parent_id = pid
-                break
-        
-        item_data = {
-            &#34;id&#34;: item.id,
-            &#34;parent_id&#34;: parent_id,
-            &#34;name&#34;: item.get_property(&#34;name&#34;, &#34;unnamed&#34;),
-            &#34;expanded&#34;: item.get_property(&#34;expanded&#34;, False),
-            &#34;selected&#34;: item.id in self._selected_items
-        }
-        result.append(item_data)
-    
-    tree.traverse(visitor)
-    return result</code></pre>
+<pre><code class="python">def get_items(self) -&gt; list:
+    return self._view.get_items()</code></pre>
 </details>
-<div class="desc"><p>UI에 표시할 아이템 목록을 반환합니다.</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.get_selected_items"><code class="name flex">
-<span>def <span class="ident">get_selected_items</span></span>(<span>self) ‑> List[str]</span>
+<span>def <span class="ident">get_selected_items</span></span>(<span>self) ‑> list</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_selected_items(self) -&gt; List[str]:
-    &#34;&#34;&#34;선택된 아이템 ID 목록을 반환합니다.&#34;&#34;&#34;
-    return list(self._selected_items)</code></pre>
+<pre><code class="python">def get_selected_items(self) -&gt; list:
+    return self._view.get_selected_items()</code></pre>
 </details>
-<div class="desc"><p>선택된 아이템 ID 목록을 반환합니다.</p></div>
+<div class="desc"></div>
+</dd>
+<dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.get_tree_items"><code class="name flex">
+<span>def <span class="ident">get_tree_items</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_tree_items(self):
+    return self._core.get_tree_items()</code></pre>
+</details>
+<div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.load_tree"><code class="name flex">
 <span>def <span class="ident">load_tree</span></span>(<span>self, tree_id: str) ‑> bool</span>
@@ -571,19 +236,9 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def load_tree(self, tree_id: str) -&gt; bool:
-    &#34;&#34;&#34;저장소에서 트리를 로드합니다.&#34;&#34;&#34;
-    try:
-        tree = self._repository.load(tree_id)
-        if tree:
-            self._state_mgr.set_initial_state(tree)
-            self._selected_items.clear()
-            self._notify_change()
-            return True
-    except ValueError:
-        pass
-    return False</code></pre>
+    return self._model.load_tree(tree_id)</code></pre>
 </details>
-<div class="desc"><p>저장소에서 트리를 로드합니다.</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.move_item"><code class="name flex">
 <span>def <span class="ident">move_item</span></span>(<span>self, item_id: str, new_parent_id: str | None = None) ‑> bool</span>
@@ -594,23 +249,9 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def move_item(self, item_id: str, new_parent_id: str | None = None) -&gt; bool:
-    &#34;&#34;&#34;아이템을 이동합니다.&#34;&#34;&#34;
-    tree = self.get_current_tree()
-    if not tree:
-        return False
-    
-    # 상태 저장 (UNDO를 위해)
-    self._state_mgr.save_state(tree)
-    
-    # 이동 수행
-    try:
-        tree.move_item(item_id, new_parent_id)
-        self._notify_change()
-        return True
-    except ValueError:
-        return False</code></pre>
+    return self._core.move_item(item_id, new_parent_id)</code></pre>
 </details>
-<div class="desc"><p>아이템을 이동합니다.</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.redo"><code class="name flex">
 <span>def <span class="ident">redo</span></span>(<span>self) ‑> bool</span>
@@ -621,13 +262,9 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def redo(self) -&gt; bool:
-    &#34;&#34;&#34;다음 상태로 복원합니다.&#34;&#34;&#34;
-    result = self._state_mgr.redo() is not None
-    if result:
-        self._notify_change()
-    return result</code></pre>
+    return self._model.redo()</code></pre>
 </details>
-<div class="desc"><p>다음 상태로 복원합니다.</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.remove_item"><code class="name flex">
 <span>def <span class="ident">remove_item</span></span>(<span>self, item_id: str) ‑> bool</span>
@@ -638,27 +275,9 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def remove_item(self, item_id: str) -&gt; bool:
-    &#34;&#34;&#34;아이템을 삭제합니다.&#34;&#34;&#34;
-    tree = self.get_current_tree()
-    if not tree:
-        return False
-    
-    # 상태 저장 (UNDO를 위해)
-    self._state_mgr.save_state(tree)
-    
-    # 선택된 아이템에서 제거
-    if item_id in self._selected_items:
-        self._selected_items.remove(item_id)
-    
-    # 트리에서 제거
-    try:
-        tree.remove_item(item_id)
-        self._notify_change()
-        return True
-    except ValueError:
-        return False</code></pre>
+    return self._core.remove_item(item_id)</code></pre>
 </details>
-<div class="desc"><p>아이템을 삭제합니다.</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.save_tree"><code class="name flex">
 <span>def <span class="ident">save_tree</span></span>(<span>self, tree_id: str | None = None) ‑> str | None</span>
@@ -669,18 +288,9 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def save_tree(self, tree_id: str | None = None) -&gt; str | None:
-    &#34;&#34;&#34;현재 트리를 저장소에 저장합니다.&#34;&#34;&#34;
-    tree = self.get_current_tree()
-    if not tree:
-        return None
-    
-    try:
-        saved_id = self._repository.save(tree, tree_id)
-        return saved_id
-    except Exception:
-        return None</code></pre>
+    return self._model.save_tree(tree_id)</code></pre>
 </details>
-<div class="desc"><p>현재 트리를 저장소에 저장합니다.</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.select_item"><code class="name flex">
 <span>def <span class="ident">select_item</span></span>(<span>self, item_id: str, multi_select: bool = False) ‑> bool</span>
@@ -691,56 +301,22 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def select_item(self, item_id: str, multi_select: bool = False) -&gt; bool:
-    &#34;&#34;&#34;아이템을 선택합니다.
-    
-    Args:
-        item_id: 선택할 아이템 ID
-        multi_select: 다중 선택 모드
-        
-    Returns:
-        성공 여부
-    &#34;&#34;&#34;
-    tree = self.get_current_tree()
-    if not tree or not tree.get_item(item_id):
-        return False
-    
-    # 다중 선택이 아니면 기존 선택 초기화
-    if not multi_select:
-        self._selected_items.clear()
-    
-    # 선택 토글
-    if item_id in self._selected_items:
-        self._selected_items.remove(item_id)
-    else:
-        self._selected_items.add(item_id)
-    
-    self._notify_change()
-    return True</code></pre>
+    return self._view.select_item(item_id, multi_select)</code></pre>
 </details>
-<div class="desc"><p>아이템을 선택합니다.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>item_id</code></strong></dt>
-<dd>선택할 아이템 ID</dd>
-<dt><strong><code>multi_select</code></strong></dt>
-<dd>다중 선택 모드</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>성공 여부</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.subscribe"><code class="name flex">
-<span>def <span class="ident">subscribe</span></span>(<span>self, callback: Callable[[], None]) ‑> None</span>
+<span>def <span class="ident">subscribe</span></span>(<span>self, callback)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def subscribe(self, callback: Callable[[], None]) -&gt; None:
-    &#34;&#34;&#34;변경 알림을 구독합니다.&#34;&#34;&#34;
-    self._subscribers.add(callback)</code></pre>
+<pre><code class="python">def subscribe(self, callback):
+    return self._model.subscribe(callback)</code></pre>
 </details>
-<div class="desc"><p>변경 알림을 구독합니다.</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.toggle_expanded"><code class="name flex">
 <span>def <span class="ident">toggle_expanded</span></span>(<span>self, item_id: str, expanded: bool | None = None) ‑> bool</span>
@@ -751,46 +327,9 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def toggle_expanded(self, item_id: str, expanded: bool | None = None) -&gt; bool:
-    &#34;&#34;&#34;아이템 확장/축소 상태를 토글합니다.
-    
-    Args:
-        item_id: 토글할 아이템 ID
-        expanded: 확장 상태 (None이면 현재 상태의 반대)
-        
-    Returns:
-        성공 여부
-    &#34;&#34;&#34;
-    tree = self.get_current_tree()
-    if not tree:
-        return False
-    
-    item = tree.get_item(item_id)
-    if not item:
-        return False
-    
-    # 상태 저장 (UNDO를 위해)
-    self._state_mgr.save_state(tree)
-    
-    # 확장 상태 결정
-    current = item.get_property(&#34;expanded&#34;, False)
-    new_state = not current if expanded is None else expanded
-    
-    # 상태 변경
-    item.set_property(&#34;expanded&#34;, new_state)
-    
-    self._notify_change()
-    return True</code></pre>
+    return self._view.toggle_expanded(item_id, expanded)</code></pre>
 </details>
-<div class="desc"><p>아이템 확장/축소 상태를 토글합니다.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>item_id</code></strong></dt>
-<dd>토글할 아이템 ID</dd>
-<dt><strong><code>expanded</code></strong></dt>
-<dd>확장 상태 (None이면 현재 상태의 반대)</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>성공 여부</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.undo"><code class="name flex">
 <span>def <span class="ident">undo</span></span>(<span>self) ‑> bool</span>
@@ -801,28 +340,22 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def undo(self) -&gt; bool:
-    &#34;&#34;&#34;이전 상태로 되돌립니다.&#34;&#34;&#34;
-    result = self._state_mgr.undo() is not None
-    if result:
-        self._notify_change()
-    return result</code></pre>
+    return self._model.undo()</code></pre>
 </details>
-<div class="desc"><p>이전 상태로 되돌립니다.</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.unsubscribe"><code class="name flex">
-<span>def <span class="ident">unsubscribe</span></span>(<span>self, callback: Callable[[], None]) ‑> None</span>
+<span>def <span class="ident">unsubscribe</span></span>(<span>self, callback)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def unsubscribe(self, callback: Callable[[], None]) -&gt; None:
-    &#34;&#34;&#34;변경 알림 구독을 해제합니다.&#34;&#34;&#34;
-    if callback in self._subscribers:
-        self._subscribers.remove(callback)</code></pre>
+<pre><code class="python">def unsubscribe(self, callback):
+    return self._model.unsubscribe(callback)</code></pre>
 </details>
-<div class="desc"><p>변경 알림 구독을 해제합니다.</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel.MTTreeViewModel.update_item"><code class="name flex">
 <span>def <span class="ident">update_item</span></span>(<span>self, item_id: str, name: str | None = None, parent_id: str | None = None) ‑> bool</span>
@@ -833,54 +366,9 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def update_item(self, item_id: str, name: str | None = None, parent_id: str | None = None) -&gt; bool:
-    &#34;&#34;&#34;아이템을 업데이트합니다.
-    
-    Args:
-        item_id: 업데이트할 아이템 ID
-        name: 새 이름 (None이면 변경 안 함)
-        parent_id: 새 부모 ID (None이면 변경 안 함)
-        
-    Returns:
-        성공 여부
-    &#34;&#34;&#34;
-    tree = self.get_current_tree()
-    if not tree:
-        return False
-    
-    # 상태 저장 (UNDO를 위해)
-    self._state_mgr.save_state(tree)
-    
-    # 아이템 찾기
-    item = tree.get_item(item_id)
-    if not item:
-        return False
-    
-    # 이름 변경
-    if name is not None:
-        item.set_property(&#34;name&#34;, name)
-    
-    # 부모 변경
-    if parent_id is not None:
-        try:
-            tree.move_item(item_id, parent_id)
-        except ValueError:
-            return False
-    
-    self._notify_change()
-    return True</code></pre>
+    return self._core.update_item(item_id, name, parent_id)</code></pre>
 </details>
-<div class="desc"><p>아이템을 업데이트합니다.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>item_id</code></strong></dt>
-<dd>업데이트할 아이템 ID</dd>
-<dt><strong><code>name</code></strong></dt>
-<dd>새 이름 (None이면 변경 안 함)</dd>
-<dt><strong><code>parent_id</code></strong></dt>
-<dd>새 부모 ID (None이면 변경 안 함)</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>성공 여부</p></div>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -910,6 +398,7 @@ el.replaceWith(d);
 <li><code><a title="viewmodel.impl.tree_viewmodel.MTTreeViewModel.get_item_children" href="#viewmodel.impl.tree_viewmodel.MTTreeViewModel.get_item_children">get_item_children</a></code></li>
 <li><code><a title="viewmodel.impl.tree_viewmodel.MTTreeViewModel.get_items" href="#viewmodel.impl.tree_viewmodel.MTTreeViewModel.get_items">get_items</a></code></li>
 <li><code><a title="viewmodel.impl.tree_viewmodel.MTTreeViewModel.get_selected_items" href="#viewmodel.impl.tree_viewmodel.MTTreeViewModel.get_selected_items">get_selected_items</a></code></li>
+<li><code><a title="viewmodel.impl.tree_viewmodel.MTTreeViewModel.get_tree_items" href="#viewmodel.impl.tree_viewmodel.MTTreeViewModel.get_tree_items">get_tree_items</a></code></li>
 <li><code><a title="viewmodel.impl.tree_viewmodel.MTTreeViewModel.load_tree" href="#viewmodel.impl.tree_viewmodel.MTTreeViewModel.load_tree">load_tree</a></code></li>
 <li><code><a title="viewmodel.impl.tree_viewmodel.MTTreeViewModel.move_item" href="#viewmodel.impl.tree_viewmodel.MTTreeViewModel.move_item">move_item</a></code></li>
 <li><code><a title="viewmodel.impl.tree_viewmodel.MTTreeViewModel.redo" href="#viewmodel.impl.tree_viewmodel.MTTreeViewModel.redo">redo</a></code></li>

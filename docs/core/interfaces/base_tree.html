@@ -55,16 +55,31 @@ el.replaceWith(d);
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class IMTTree(IMTTreeReadable, IMTTreeModifiable, IMTTreeTraversable, Protocol):
-    &#34;&#34;&#34;매크로 트리 통합 인터페이스&#34;&#34;&#34;
+<pre><code class="python">class IMTTree(
+    IMTTreeReadable,
+    IMTTreeModifiable,
+    IMTTreeTraversable,
+    IMTTreeDictSerializable,
+    IMTTreeJSONSerializable,
+    IMTTreeCommon,
+    Protocol
+):
+    &#34;&#34;&#34;
+    트리의 모든 핵심 기능(읽기, 수정, 순회, 직렬화, 공통 기능)을 통합한 인터페이스
+    실무/협업/확장성을 고려할 때, 이 통합 인터페이스를 사용하는 것이 가장 표준적이고 유지보수에 유리함
+    &#34;&#34;&#34;
     pass</code></pre>
 </details>
-<div class="desc"><p>매크로 트리 통합 인터페이스</p></div>
+<div class="desc"><p>트리의 모든 핵심 기능(읽기, 수정, 순회, 직렬화, 공통 기능)을 통합한 인터페이스
+실무/협업/확장성을 고려할 때, 이 통합 인터페이스를 사용하는 것이 가장 표준적이고 유지보수에 유리함</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="core.interfaces.base_tree.IMTTreeReadable" href="#core.interfaces.base_tree.IMTTreeReadable">IMTTreeReadable</a></li>
 <li><a title="core.interfaces.base_tree.IMTTreeModifiable" href="#core.interfaces.base_tree.IMTTreeModifiable">IMTTreeModifiable</a></li>
 <li><a title="core.interfaces.base_tree.IMTTreeTraversable" href="#core.interfaces.base_tree.IMTTreeTraversable">IMTTreeTraversable</a></li>
+<li><a title="core.interfaces.base_tree.IMTTreeDictSerializable" href="#core.interfaces.base_tree.IMTTreeDictSerializable">IMTTreeDictSerializable</a></li>
+<li><a title="core.interfaces.base_tree.IMTTreeJSONSerializable" href="#core.interfaces.base_tree.IMTTreeJSONSerializable">IMTTreeJSONSerializable</a></li>
+<li><a title="core.interfaces.base_tree.IMTTreeCommon" href="#core.interfaces.base_tree.IMTTreeCommon">IMTTreeCommon</a></li>
 <li>typing.Protocol</li>
 <li>typing.Generic</li>
 </ul>
@@ -84,7 +99,125 @@ el.replaceWith(d);
 <li><code><a title="core.interfaces.base_tree.IMTTreeTraversable.traverse" href="#core.interfaces.base_tree.IMTTreeTraversable.traverse">traverse</a></code></li>
 </ul>
 </li>
+<li><code><b><a title="core.interfaces.base_tree.IMTTreeDictSerializable" href="#core.interfaces.base_tree.IMTTreeDictSerializable">IMTTreeDictSerializable</a></b></code>:
+<ul class="hlist">
+<li><code><a title="core.interfaces.base_tree.IMTTreeDictSerializable.from_dict" href="#core.interfaces.base_tree.IMTTreeDictSerializable.from_dict">from_dict</a></code></li>
+<li><code><a title="core.interfaces.base_tree.IMTTreeDictSerializable.to_dict" href="#core.interfaces.base_tree.IMTTreeDictSerializable.to_dict">to_dict</a></code></li>
 </ul>
+</li>
+<li><code><b><a title="core.interfaces.base_tree.IMTTreeJSONSerializable" href="#core.interfaces.base_tree.IMTTreeJSONSerializable">IMTTreeJSONSerializable</a></b></code>:
+<ul class="hlist">
+<li><code><a title="core.interfaces.base_tree.IMTTreeJSONSerializable.from_json" href="#core.interfaces.base_tree.IMTTreeJSONSerializable.from_json">from_json</a></code></li>
+<li><code><a title="core.interfaces.base_tree.IMTTreeJSONSerializable.to_json" href="#core.interfaces.base_tree.IMTTreeJSONSerializable.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li><code><b><a title="core.interfaces.base_tree.IMTTreeCommon" href="#core.interfaces.base_tree.IMTTreeCommon">IMTTreeCommon</a></b></code>:
+<ul class="hlist">
+<li><code><a title="core.interfaces.base_tree.IMTTreeCommon.clone" href="#core.interfaces.base_tree.IMTTreeCommon.clone">clone</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="core.interfaces.base_tree.IMTTreeCommon"><code class="flex name class">
+<span>class <span class="ident">IMTTreeCommon</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class IMTTreeCommon(Protocol):
+    &#34;&#34;&#34;트리 객체의 공통/필수 기능 인터페이스&#34;&#34;&#34;
+    def clone(self) -&gt; &#34;IMTTree&#34;:
+        &#34;&#34;&#34;트리의 복제본을 생성합니다.&#34;&#34;&#34;
+        ...</code></pre>
+</details>
+<div class="desc"><p>트리 객체의 공통/필수 기능 인터페이스</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="core.interfaces.base_tree.IMTTree" href="#core.interfaces.base_tree.IMTTree">IMTTree</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="core.interfaces.base_tree.IMTTreeCommon.clone"><code class="name flex">
+<span>def <span class="ident">clone</span></span>(<span>self) ‑> <a title="core.interfaces.base_tree.IMTTree" href="#core.interfaces.base_tree.IMTTree">IMTTree</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clone(self) -&gt; &#34;IMTTree&#34;:
+    &#34;&#34;&#34;트리의 복제본을 생성합니다.&#34;&#34;&#34;
+    ...</code></pre>
+</details>
+<div class="desc"><p>트리의 복제본을 생성합니다.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="core.interfaces.base_tree.IMTTreeDictSerializable"><code class="flex name class">
+<span>class <span class="ident">IMTTreeDictSerializable</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class IMTTreeDictSerializable(Protocol):
+    &#34;&#34;&#34;트리 딕셔너리 직렬화 인터페이스&#34;&#34;&#34;
+    
+    def to_dict(self) -&gt; Dict[str, Any]:
+        &#34;&#34;&#34;트리를 딕셔너리로 변환합니다.&#34;&#34;&#34;
+        ...
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -&gt; &#34;IMTTree&#34;:
+        &#34;&#34;&#34;딕셔너리에서 트리를 생성합니다.&#34;&#34;&#34;
+        ...</code></pre>
+</details>
+<div class="desc"><p>트리 딕셔너리 직렬화 인터페이스</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="core.interfaces.base_tree.IMTTree" href="#core.interfaces.base_tree.IMTTree">IMTTree</a></li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="core.interfaces.base_tree.IMTTreeDictSerializable.from_dict"><code class="name flex">
+<span>def <span class="ident">from_dict</span></span>(<span>data: Dict[str, Any]) ‑> <a title="core.interfaces.base_tree.IMTTree" href="#core.interfaces.base_tree.IMTTree">IMTTree</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>딕셔너리에서 트리를 생성합니다.</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="core.interfaces.base_tree.IMTTreeDictSerializable.to_dict"><code class="name flex">
+<span>def <span class="ident">to_dict</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_dict(self) -&gt; Dict[str, Any]:
+    &#34;&#34;&#34;트리를 딕셔너리로 변환합니다.&#34;&#34;&#34;
+    ...</code></pre>
+</details>
+<div class="desc"><p>트리를 딕셔너리로 변환합니다.</p></div>
+</dd>
+</dl>
 </dd>
 <dt id="core.interfaces.base_tree.IMTTreeJSONSerializable"><code class="flex name class">
 <span>class <span class="ident">IMTTreeJSONSerializable</span></span>
@@ -101,9 +234,10 @@ el.replaceWith(d);
     def to_json(self) -&gt; str:
         &#34;&#34;&#34;트리를 JSON 문자열로 변환합니다.&#34;&#34;&#34;
         ...
-    
+    # RF :클래스 메서드는 cls(인스턴스화 되지 않은 클래스 자체를 받음)
+    # RF : Forward Reference(문자열 타입 힌트) 사용 -&gt; 정의되지 않은 타입을 문자열로 감싸서 참조 (&#34;IMTTree&#34;)
     @classmethod
-    def from_json(cls, json_str: str) -&gt; IMTTree:
+    def from_json(cls, json_str: str) -&gt; &#34;IMTTree&#34;:
         &#34;&#34;&#34;JSON 문자열에서 트리를 생성합니다. 
         
         Raises:
@@ -119,6 +253,7 @@ el.replaceWith(d);
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
+<li><a title="core.interfaces.base_tree.IMTTree" href="#core.interfaces.base_tree.IMTTree">IMTTree</a></li>
 <li><a title="model.store.db.impl.postgres_repo.PostgreSQLTreeRepository" href="../../model/store/db/impl/postgres_repo.html#model.store.db.impl.postgres_repo.PostgreSQLTreeRepository">PostgreSQLTreeRepository</a></li>
 <li><a title="model.store.file.impl.file_tree_repo.MTFileTreeRepository" href="../../model/store/file/impl/file_tree_repo.html#model.store.file.impl.file_tree_repo.MTFileTreeRepository">MTFileTreeRepository</a></li>
 </ul>
@@ -279,7 +414,7 @@ el.replaceWith(d);
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class IMTTreeReadable (Protocol[T]):
+<pre><code class="python">class IMTTreeReadable (Protocol):
     &#34;&#34;&#34;트리 데이터 액세스 인터페이스&#34;&#34;&#34;
     
     @property
@@ -291,11 +426,11 @@ el.replaceWith(d);
     @property
     def root_id(self) -&gt; str | None: ...
     
-    def get_all_items(self) -&gt; Dict[str, T]: ...
+    def get_all_items(self) -&gt; Dict[str, IMTTreeItem]: ...
     
-    def get_item(self, item_id: str) -&gt; T | None: ...
+    def get_item(self, item_id: str) -&gt; IMTTreeItem | None: ...
     
-    def get_children(self, parent_id: str | None) -&gt; List[T]: ...</code></pre>
+    def get_children(self, parent_id: str | None) -&gt; List[IMTTreeItem]: ...</code></pre>
 </details>
 <div class="desc"><p>트리 데이터 액세스 인터페이스</p></div>
 <h3>Ancestors</h3>
@@ -346,112 +481,40 @@ def root_id(self) -&gt; str | None: ...</code></pre>
 <h3>Methods</h3>
 <dl>
 <dt id="core.interfaces.base_tree.IMTTreeReadable.get_all_items"><code class="name flex">
-<span>def <span class="ident">get_all_items</span></span>(<span>self) ‑> Dict[str, ~T]</span>
+<span>def <span class="ident">get_all_items</span></span>(<span>self) ‑> Dict[str, <a title="core.interfaces.base_item.IMTTreeItem" href="base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_all_items(self) -&gt; Dict[str, T]: ...</code></pre>
+<pre><code class="python">def get_all_items(self) -&gt; Dict[str, IMTTreeItem]: ...</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="core.interfaces.base_tree.IMTTreeReadable.get_children"><code class="name flex">
-<span>def <span class="ident">get_children</span></span>(<span>self, parent_id: str | None) ‑> List[~T]</span>
+<span>def <span class="ident">get_children</span></span>(<span>self, parent_id: str | None) ‑> List[<a title="core.interfaces.base_item.IMTTreeItem" href="base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_children(self, parent_id: str | None) -&gt; List[T]: ...</code></pre>
+<pre><code class="python">def get_children(self, parent_id: str | None) -&gt; List[IMTTreeItem]: ...</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="core.interfaces.base_tree.IMTTreeReadable.get_item"><code class="name flex">
-<span>def <span class="ident">get_item</span></span>(<span>self, item_id: str) ‑> ~T | None</span>
+<span>def <span class="ident">get_item</span></span>(<span>self, item_id: str) ‑> <a title="core.interfaces.base_item.IMTTreeItem" href="base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a> | None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_item(self, item_id: str) -&gt; T | None: ...</code></pre>
+<pre><code class="python">def get_item(self, item_id: str) -&gt; IMTTreeItem | None: ...</code></pre>
 </details>
 <div class="desc"></div>
-</dd>
-</dl>
-</dd>
-<dt id="core.interfaces.base_tree.IMTTreeSerializable"><code class="flex name class">
-<span>class <span class="ident">IMTTreeSerializable</span></span>
-<span>(</span><span>*args, **kwargs)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class IMTTreeSerializable(Protocol):
-    &#34;&#34;&#34;트리 기본 직렬화 인터페이스&#34;&#34;&#34;
-    
-    def to_dict(self) -&gt; Dict[str, Any]:
-        &#34;&#34;&#34;트리를 딕셔너리로 변환합니다.&#34;&#34;&#34;
-        ...
-    
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -&gt; IMTTree:
-        &#34;&#34;&#34;딕셔너리에서 트리를 생성합니다.&#34;&#34;&#34;
-        ...
-    
-    def clone(self) -&gt; IMTTree:
-        &#34;&#34;&#34;트리의 복제본을 생성합니다.&#34;&#34;&#34;
-        ...</code></pre>
-</details>
-<div class="desc"><p>트리 기본 직렬화 인터페이스</p></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>typing.Protocol</li>
-<li>typing.Generic</li>
-</ul>
-<h3>Static methods</h3>
-<dl>
-<dt id="core.interfaces.base_tree.IMTTreeSerializable.from_dict"><code class="name flex">
-<span>def <span class="ident">from_dict</span></span>(<span>data: Dict[str, Any]) ‑> <a title="core.interfaces.base_tree.IMTTree" href="#core.interfaces.base_tree.IMTTree">IMTTree</a></span>
-</code></dt>
-<dd>
-<div class="desc"><p>딕셔너리에서 트리를 생성합니다.</p></div>
-</dd>
-</dl>
-<h3>Methods</h3>
-<dl>
-<dt id="core.interfaces.base_tree.IMTTreeSerializable.clone"><code class="name flex">
-<span>def <span class="ident">clone</span></span>(<span>self) ‑> <a title="core.interfaces.base_tree.IMTTree" href="#core.interfaces.base_tree.IMTTree">IMTTree</a></span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def clone(self) -&gt; IMTTree:
-    &#34;&#34;&#34;트리의 복제본을 생성합니다.&#34;&#34;&#34;
-    ...</code></pre>
-</details>
-<div class="desc"><p>트리의 복제본을 생성합니다.</p></div>
-</dd>
-<dt id="core.interfaces.base_tree.IMTTreeSerializable.to_dict"><code class="name flex">
-<span>def <span class="ident">to_dict</span></span>(<span>self) ‑> Dict[str, Any]</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_dict(self) -&gt; Dict[str, Any]:
-    &#34;&#34;&#34;트리를 딕셔너리로 변환합니다.&#34;&#34;&#34;
-    ...</code></pre>
-</details>
-<div class="desc"><p>트리를 딕셔너리로 변환합니다.</p></div>
 </dd>
 </dl>
 </dd>
@@ -520,6 +583,19 @@ def root_id(self) -&gt; str | None: ...</code></pre>
 <h4><code><a title="core.interfaces.base_tree.IMTTree" href="#core.interfaces.base_tree.IMTTree">IMTTree</a></code></h4>
 </li>
 <li>
+<h4><code><a title="core.interfaces.base_tree.IMTTreeCommon" href="#core.interfaces.base_tree.IMTTreeCommon">IMTTreeCommon</a></code></h4>
+<ul class="">
+<li><code><a title="core.interfaces.base_tree.IMTTreeCommon.clone" href="#core.interfaces.base_tree.IMTTreeCommon.clone">clone</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="core.interfaces.base_tree.IMTTreeDictSerializable" href="#core.interfaces.base_tree.IMTTreeDictSerializable">IMTTreeDictSerializable</a></code></h4>
+<ul class="">
+<li><code><a title="core.interfaces.base_tree.IMTTreeDictSerializable.from_dict" href="#core.interfaces.base_tree.IMTTreeDictSerializable.from_dict">from_dict</a></code></li>
+<li><code><a title="core.interfaces.base_tree.IMTTreeDictSerializable.to_dict" href="#core.interfaces.base_tree.IMTTreeDictSerializable.to_dict">to_dict</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="core.interfaces.base_tree.IMTTreeJSONSerializable" href="#core.interfaces.base_tree.IMTTreeJSONSerializable">IMTTreeJSONSerializable</a></code></h4>
 <ul class="">
 <li><code><a title="core.interfaces.base_tree.IMTTreeJSONSerializable.from_json" href="#core.interfaces.base_tree.IMTTreeJSONSerializable.from_json">from_json</a></code></li>
@@ -545,14 +621,6 @@ def root_id(self) -&gt; str | None: ...</code></pre>
 <li><code><a title="core.interfaces.base_tree.IMTTreeReadable.id" href="#core.interfaces.base_tree.IMTTreeReadable.id">id</a></code></li>
 <li><code><a title="core.interfaces.base_tree.IMTTreeReadable.name" href="#core.interfaces.base_tree.IMTTreeReadable.name">name</a></code></li>
 <li><code><a title="core.interfaces.base_tree.IMTTreeReadable.root_id" href="#core.interfaces.base_tree.IMTTreeReadable.root_id">root_id</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="core.interfaces.base_tree.IMTTreeSerializable" href="#core.interfaces.base_tree.IMTTreeSerializable">IMTTreeSerializable</a></code></h4>
-<ul class="">
-<li><code><a title="core.interfaces.base_tree.IMTTreeSerializable.clone" href="#core.interfaces.base_tree.IMTTreeSerializable.clone">clone</a></code></li>
-<li><code><a title="core.interfaces.base_tree.IMTTreeSerializable.from_dict" href="#core.interfaces.base_tree.IMTTreeSerializable.from_dict">from_dict</a></code></li>
-<li><code><a title="core.interfaces.base_tree.IMTTreeSerializable.to_dict" href="#core.interfaces.base_tree.IMTTreeSerializable.to_dict">to_dict</a></code></li>
 </ul>
 </li>
 <li>

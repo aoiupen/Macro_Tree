@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.6">
-<title>model.store.db.impl API documentation</title>
+<title>viewmodel.interfaces.base_tree_viewmodel_model API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
@@ -33,24 +33,148 @@ el.replaceWith(d);
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>model.store.db.impl</code></h1>
+<h1 class="title">Module <code>viewmodel.interfaces.base_tree_viewmodel_model</code></h1>
 </header>
 <section id="section-intro">
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt><code class="name"><a title="model.store.db.impl.postgres_repo" href="postgres_repo.html">model.store.db.impl.postgres_repo</a></code></dt>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel"><code class="flex name class">
+<span>class <span class="ident">IMTTreeViewModelModel</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class IMTTreeViewModelModel(Protocol):
+    def undo(self) -&gt; bool: ...
+    def redo(self) -&gt; bool: ...
+    def save_tree(self, tree_id: str | None = None) -&gt; str | None: ...
+    def load_tree(self, tree_id: str) -&gt; bool: ...
+
+    def subscribe(self, callback): ...
+    def unsubscribe(self, callback): ...</code></pre>
+</details>
+<div class="desc"><p>Base class for protocol classes.</p>
+<p>Protocol classes are defined as::</p>
+<pre><code>class Proto(Protocol):
+    def meth(self) -&gt; int:
+        ...
+</code></pre>
+<p>Such classes are primarily used with static type checkers that recognize
+structural subtyping (static duck-typing), for example::</p>
+<pre><code>class C:
+    def meth(self) -&gt; int:
+        return 0
+
+def func(x: Proto) -&gt; int:
+    return x.meth()
+
+func(C())  # Passes static type check
+</code></pre>
+<p>See PEP 544 for details. Protocol classes decorated with
+@typing.runtime_checkable act as simple-minded runtime protocols that check
+only the presence of given attributes, ignoring their type signatures.
+Protocol classes can be generic, they are defined as::</p>
+<pre><code>class GenProto(Protocol[T]):
+    def meth(self) -&gt; T:
+        ...
+</code></pre></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="viewmodel.impl.tree_viewmodel_model.MTTreeViewModelModel" href="../impl/tree_viewmodel_model.html#viewmodel.impl.tree_viewmodel_model.MTTreeViewModelModel">MTTreeViewModelModel</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel.load_tree"><code class="name flex">
+<span>def <span class="ident">load_tree</span></span>(<span>self, tree_id: str) ‑> bool</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_tree(self, tree_id: str) -&gt; bool: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel.redo"><code class="name flex">
+<span>def <span class="ident">redo</span></span>(<span>self) ‑> bool</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def redo(self) -&gt; bool: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel.save_tree"><code class="name flex">
+<span>def <span class="ident">save_tree</span></span>(<span>self, tree_id: str | None = None) ‑> str | None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save_tree(self, tree_id: str | None = None) -&gt; str | None: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel.subscribe"><code class="name flex">
+<span>def <span class="ident">subscribe</span></span>(<span>self, callback)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def subscribe(self, callback): ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel.undo"><code class="name flex">
+<span>def <span class="ident">undo</span></span>(<span>self) ‑> bool</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def undo(self) -&gt; bool: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel.unsubscribe"><code class="name flex">
+<span>def <span class="ident">unsubscribe</span></span>(<span>self, callback)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def unsubscribe(self, callback): ...</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -60,12 +184,22 @@ el.replaceWith(d);
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="model.store.db" href="../index.html">model.store.db</a></code></li>
+<li><code><a title="viewmodel.interfaces" href="index.html">viewmodel.interfaces</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
-<li><code><a title="model.store.db.impl.postgres_repo" href="postgres_repo.html">model.store.db.impl.postgres_repo</a></code></li>
+<li>
+<h4><code><a title="viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel" href="#viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel">IMTTreeViewModelModel</a></code></h4>
+<ul class="two-column">
+<li><code><a title="viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel.load_tree" href="#viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel.load_tree">load_tree</a></code></li>
+<li><code><a title="viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel.redo" href="#viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel.redo">redo</a></code></li>
+<li><code><a title="viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel.save_tree" href="#viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel.save_tree">save_tree</a></code></li>
+<li><code><a title="viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel.subscribe" href="#viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel.subscribe">subscribe</a></code></li>
+<li><code><a title="viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel.undo" href="#viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel.undo">undo</a></code></li>
+<li><code><a title="viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel.unsubscribe" href="#viewmodel.interfaces.base_tree_viewmodel_model.IMTTreeViewModelModel.unsubscribe">unsubscribe</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

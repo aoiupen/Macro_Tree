@@ -1,6 +1,6 @@
 from typing import Protocol
 from platforms.interfaces.ui_element import IMTUIElement
-from model.tree_item import IMTTreeItem
+from core.interfaces.base_tree import IMTTreeItem
 
 class IMTTreeItemView(IMTUIElement, Protocol):
     def bind_tree_item(self, item: IMTTreeItem) -> None: ...

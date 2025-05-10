@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.6">
-<title>model.store.db.impl API documentation</title>
+<title>core.exceptions API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
@@ -33,24 +33,109 @@ el.replaceWith(d);
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>model.store.db.impl</code></h1>
+<h1 class="title">Module <code>core.exceptions</code></h1>
 </header>
 <section id="section-intro">
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt><code class="name"><a title="model.store.db.impl.postgres_repo" href="postgres_repo.html">model.store.db.impl.postgres_repo</a></code></dt>
+<dt id="core.exceptions.InvalidMTTreeItemDataError"><code class="flex name class">
+<span>class <span class="ident">InvalidMTTreeItemDataError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
 <dd>
-<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class InvalidMTTreeItemDataError(MTTreeError):
+    &#34;&#34;&#34;트리 아이템 데이터가 유효하지 않을 때 발생하는 예외입니다.&#34;&#34;&#34;
+    pass</code></pre>
+</details>
+<div class="desc"><p>트리 아이템 데이터가 유효하지 않을 때 발생하는 예외입니다.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="core.exceptions.MTTreeError" href="#core.exceptions.MTTreeError">MTTreeError</a></li>
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="core.exceptions.MTTreeError"><code class="flex name class">
+<span>class <span class="ident">MTTreeError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MTTreeError(Exception):
+    &#34;&#34;&#34;MTTree 관련 기본 예외 클래스입니다.&#34;&#34;&#34;
+    pass</code></pre>
+</details>
+<div class="desc"><p>MTTree 관련 기본 예외 클래스입니다.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="core.exceptions.InvalidMTTreeItemDataError" href="#core.exceptions.InvalidMTTreeItemDataError">InvalidMTTreeItemDataError</a></li>
+<li><a title="core.exceptions.MTTreeItemAlreadyExistsError" href="#core.exceptions.MTTreeItemAlreadyExistsError">MTTreeItemAlreadyExistsError</a></li>
+<li><a title="core.exceptions.MTTreeItemNotFoundError" href="#core.exceptions.MTTreeItemNotFoundError">MTTreeItemNotFoundError</a></li>
+</ul>
+</dd>
+<dt id="core.exceptions.MTTreeItemAlreadyExistsError"><code class="flex name class">
+<span>class <span class="ident">MTTreeItemAlreadyExistsError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MTTreeItemAlreadyExistsError(MTTreeError):
+    &#34;&#34;&#34;트리 아이템이 이미 존재할 때 발생하는 예외입니다.&#34;&#34;&#34;
+    pass</code></pre>
+</details>
+<div class="desc"><p>트리 아이템이 이미 존재할 때 발생하는 예외입니다.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="core.exceptions.MTTreeError" href="#core.exceptions.MTTreeError">MTTreeError</a></li>
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="core.exceptions.MTTreeItemNotFoundError"><code class="flex name class">
+<span>class <span class="ident">MTTreeItemNotFoundError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MTTreeItemNotFoundError(MTTreeError):
+    &#34;&#34;&#34;트리 아이템을 찾을 수 없을 때 발생하는 예외입니다.&#34;&#34;&#34;
+    pass</code></pre>
+</details>
+<div class="desc"><p>트리 아이템을 찾을 수 없을 때 발생하는 예외입니다.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="core.exceptions.MTTreeError" href="#core.exceptions.MTTreeError">MTTreeError</a></li>
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
 </dd>
 </dl>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
 </section>
 </article>
 <nav id="sidebar">
@@ -60,12 +145,23 @@ el.replaceWith(d);
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="model.store.db" href="../index.html">model.store.db</a></code></li>
+<li><code><a title="core" href="index.html">core</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
-<li><code><a title="model.store.db.impl.postgres_repo" href="postgres_repo.html">model.store.db.impl.postgres_repo</a></code></li>
+<li>
+<h4><code><a title="core.exceptions.InvalidMTTreeItemDataError" href="#core.exceptions.InvalidMTTreeItemDataError">InvalidMTTreeItemDataError</a></code></h4>
+</li>
+<li>
+<h4><code><a title="core.exceptions.MTTreeError" href="#core.exceptions.MTTreeError">MTTreeError</a></code></h4>
+</li>
+<li>
+<h4><code><a title="core.exceptions.MTTreeItemAlreadyExistsError" href="#core.exceptions.MTTreeItemAlreadyExistsError">MTTreeItemAlreadyExistsError</a></code></h4>
+</li>
+<li>
+<h4><code><a title="core.exceptions.MTTreeItemNotFoundError" href="#core.exceptions.MTTreeItemNotFoundError">MTTreeItemNotFoundError</a></code></h4>
+</li>
 </ul>
 </li>
 </ul>

@@ -67,8 +67,7 @@ el.replaceWith(d);
         ...
 </code></pre>
 <p>Such classes are primarily used with static type checkers that recognize
-structural subtyping (static duck-typing).</p>
-<p>For example::</p>
+structural subtyping (static duck-typing), for example::</p>
 <pre><code>class C:
     def meth(self) -&gt; int:
         return 0
@@ -82,7 +81,7 @@ func(C())  # Passes static type check
 @typing.runtime_checkable act as simple-minded runtime protocols that check
 only the presence of given attributes, ignoring their type signatures.
 Protocol classes can be generic, they are defined as::</p>
-<pre><code>class GenProto[T](Protocol):
+<pre><code>class GenProto(Protocol[T]):
     def meth(self) -&gt; T:
         ...
 </code></pre></div>
@@ -93,7 +92,7 @@ Protocol classes can be generic, they are defined as::</p>
 </ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="core.interfaces.base_item_data.IMTAction.action_type"><code class="name">prop <span class="ident">action_type</span> : ~E</code></dt>
+<dt id="core.interfaces.base_item_data.IMTAction.action_type"><code class="name">prop <span class="ident">action_type</span> : +E</code></dt>
 <dd>
 <details class="source">
 <summary>
@@ -173,7 +172,7 @@ def action_type(self) -&gt; E: ...</code></pre>
 <h3>Methods</h3>
 <dl>
 <dt id="core.interfaces.base_item_data.IMTActionPerformer.perform"><code class="name flex">
-<span>def <span class="ident">perform</span></span>(<span>self, action_data: ~D) ‑> None</span>
+<span>def <span class="ident">perform</span></span>(<span>self, action_data: -D) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -321,7 +320,7 @@ def position(self) -&gt; IMTPoint: ...</code></pre>
 </dd>
 <dt id="core.interfaces.base_item_data.MTDevice"><code class="flex name class">
 <span>class <span class="ident">MTDevice</span></span>
-<span>(</span><span>*args, **kwds)</span>
+<span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -358,7 +357,7 @@ def position(self) -&gt; IMTPoint: ...</code></pre>
 </dd>
 <dt id="core.interfaces.base_item_data.MTKeyState"><code class="flex name class">
 <span>class <span class="ident">MTKeyState</span></span>
-<span>(</span><span>*args, **kwds)</span>
+<span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -389,7 +388,7 @@ def position(self) -&gt; IMTPoint: ...</code></pre>
 </dd>
 <dt id="core.interfaces.base_item_data.MTKeyboardAction"><code class="flex name class">
 <span>class <span class="ident">MTKeyboardAction</span></span>
-<span>(</span><span>*args, **kwds)</span>
+<span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -421,7 +420,7 @@ def position(self) -&gt; IMTPoint: ...</code></pre>
 </dd>
 <dt id="core.interfaces.base_item_data.MTMouseAction"><code class="flex name class">
 <span>class <span class="ident">MTMouseAction</span></span>
-<span>(</span><span>*args, **kwds)</span>
+<span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -453,7 +452,7 @@ def position(self) -&gt; IMTPoint: ...</code></pre>
 </dd>
 <dt id="core.interfaces.base_item_data.MTNodeType"><code class="flex name class">
 <span>class <span class="ident">MTNodeType</span></span>
-<span>(</span><span>*args, **kwds)</span>
+<span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -484,30 +483,27 @@ def position(self) -&gt; IMTPoint: ...</code></pre>
 </dd>
 <dt id="core.interfaces.base_item_data.MTTreeItemData"><code class="flex name class">
 <span>class <span class="ident">MTTreeItemData</span></span>
-<span>(</span><span>*args, **kwargs)</span>
+<span>(</span><span>id: str = '',<br>name: str = '',<br>parent_id: str | None = None,<br>children_ids: List[str] = &lt;factory&gt;,<br>node_type: <a title="core.interfaces.base_item_data.MTNodeType" href="#core.interfaces.base_item_data.MTNodeType">MTNodeType</a> | None = None,<br>device: <a title="core.interfaces.base_item_data.MTDevice" href="#core.interfaces.base_item_data.MTDevice">MTDevice</a> | None = None,<br>action: <a title="core.interfaces.base_item_data.IMTAction" href="#core.interfaces.base_item_data.IMTAction">IMTAction</a> | None = None,<br>action_data: <a title="core.interfaces.base_item_data.IMTActionData" href="#core.interfaces.base_item_data.IMTActionData">IMTActionData</a> | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class MTTreeItemData(TypedDict, total=False):
-    &#34;&#34;&#34;트리 아이템 데이터 구조 (total=False: 모든 필드 선택적)&#34;&#34;&#34;
-    node_type: MTNodeType
-    name: str
-    parent_id: str | None
-    children_ids: List[str]
-    device: MTDevice | None
-    action: IMTAction | None
-    action_data: IMTActionData | None
+<pre><code class="python">@dataclass
+class MTTreeItemData:
+    id: str = &#34;&#34;
+    name: str = &#34;&#34;
+    parent_id: str | None = None
+    children_ids: List[str] = field(default_factory=list)
+    node_type: MTNodeType | None = None
+    device: MTDevice | None = None
+    action: IMTAction | None = None
+    action_data: IMTActionData | None = None
     # 기타 UI/확장 속성은 필요에 따라 추가</code></pre>
 </details>
-<div class="desc"><p>트리 아이템 데이터 구조 (total=False: 모든 필드 선택적)</p></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>builtins.dict</li>
-</ul>
-<h3>Class variables</h3>
+<div class="desc"><p>MTTreeItemData(id: str = '', name: str = '', parent_id: str | None = None, children_ids: List[str] = <factory>, node_type: core.interfaces.base_item_data.MTNodeType | None = None, device: core.interfaces.base_item_data.MTDevice | None = None, action: core.interfaces.base_item_data.IMTAction | None = None, action_data: core.interfaces.base_item_data.IMTActionData | None = None)</p></div>
+<h3>Instance variables</h3>
 <dl>
 <dt id="core.interfaces.base_item_data.MTTreeItemData.action"><code class="name">var <span class="ident">action</span> : <a title="core.interfaces.base_item_data.IMTAction" href="#core.interfaces.base_item_data.IMTAction">IMTAction</a> | None</code></dt>
 <dd>
@@ -525,11 +521,15 @@ def position(self) -&gt; IMTPoint: ...</code></pre>
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="core.interfaces.base_item_data.MTTreeItemData.id"><code class="name">var <span class="ident">id</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="core.interfaces.base_item_data.MTTreeItemData.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="core.interfaces.base_item_data.MTTreeItemData.node_type"><code class="name">var <span class="ident">node_type</span> : <a title="core.interfaces.base_item_data.MTNodeType" href="#core.interfaces.base_item_data.MTNodeType">MTNodeType</a></code></dt>
+<dt id="core.interfaces.base_item_data.MTTreeItemData.node_type"><code class="name">var <span class="ident">node_type</span> : <a title="core.interfaces.base_item_data.MTNodeType" href="#core.interfaces.base_item_data.MTNodeType">MTNodeType</a> | None</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -550,6 +550,7 @@ def position(self) -&gt; IMTPoint: ...</code></pre>
 <pre><code class="python">class TreeItemKeys:
     &#34;&#34;&#34;트리 아이템의 속성 키 상수 (도메인 + UI/확장)&#34;&#34;&#34;
     # 도메인 속성 키
+    ID = &#34;id&#34;
     NAME = &#34;name&#34;
     PARENT_ID = &#34;parent_id&#34;
     CHILDREN = &#34;children_ids&#34;
@@ -574,6 +575,10 @@ def position(self) -&gt; IMTPoint: ...</code></pre>
 <div class="desc"></div>
 </dd>
 <dt id="core.interfaces.base_item_data.TreeItemKeys.DEVICE"><code class="name">var <span class="ident">DEVICE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="core.interfaces.base_item_data.TreeItemKeys.ID"><code class="name">var <span class="ident">ID</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -683,6 +688,7 @@ def position(self) -&gt; IMTPoint: ...</code></pre>
 <li><code><a title="core.interfaces.base_item_data.MTTreeItemData.action_data" href="#core.interfaces.base_item_data.MTTreeItemData.action_data">action_data</a></code></li>
 <li><code><a title="core.interfaces.base_item_data.MTTreeItemData.children_ids" href="#core.interfaces.base_item_data.MTTreeItemData.children_ids">children_ids</a></code></li>
 <li><code><a title="core.interfaces.base_item_data.MTTreeItemData.device" href="#core.interfaces.base_item_data.MTTreeItemData.device">device</a></code></li>
+<li><code><a title="core.interfaces.base_item_data.MTTreeItemData.id" href="#core.interfaces.base_item_data.MTTreeItemData.id">id</a></code></li>
 <li><code><a title="core.interfaces.base_item_data.MTTreeItemData.name" href="#core.interfaces.base_item_data.MTTreeItemData.name">name</a></code></li>
 <li><code><a title="core.interfaces.base_item_data.MTTreeItemData.node_type" href="#core.interfaces.base_item_data.MTTreeItemData.node_type">node_type</a></code></li>
 <li><code><a title="core.interfaces.base_item_data.MTTreeItemData.parent_id" href="#core.interfaces.base_item_data.MTTreeItemData.parent_id">parent_id</a></code></li>
@@ -695,6 +701,7 @@ def position(self) -&gt; IMTPoint: ...</code></pre>
 <li><code><a title="core.interfaces.base_item_data.TreeItemKeys.ACTION_DATA" href="#core.interfaces.base_item_data.TreeItemKeys.ACTION_DATA">ACTION_DATA</a></code></li>
 <li><code><a title="core.interfaces.base_item_data.TreeItemKeys.CHILDREN" href="#core.interfaces.base_item_data.TreeItemKeys.CHILDREN">CHILDREN</a></code></li>
 <li><code><a title="core.interfaces.base_item_data.TreeItemKeys.DEVICE" href="#core.interfaces.base_item_data.TreeItemKeys.DEVICE">DEVICE</a></code></li>
+<li><code><a title="core.interfaces.base_item_data.TreeItemKeys.ID" href="#core.interfaces.base_item_data.TreeItemKeys.ID">ID</a></code></li>
 <li><code><a title="core.interfaces.base_item_data.TreeItemKeys.NAME" href="#core.interfaces.base_item_data.TreeItemKeys.NAME">NAME</a></code></li>
 <li><code><a title="core.interfaces.base_item_data.TreeItemKeys.NODE_TYPE" href="#core.interfaces.base_item_data.TreeItemKeys.NODE_TYPE">NODE_TYPE</a></code></li>
 <li><code><a title="core.interfaces.base_item_data.TreeItemKeys.PARENT_ID" href="#core.interfaces.base_item_data.TreeItemKeys.PARENT_ID">PARENT_ID</a></code></li>
