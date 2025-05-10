@@ -1,20 +1,23 @@
-from typing import Dict, List, Any, Optional, Callable, Set
+from typing import Callable, Dict, List, Optional, Set
 from uuid import uuid4
-from core.interfaces.base_tree import IMTTree
-from core.interfaces.base_tree import IMTTreeItem
-from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
-from model.services.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
-from viewmodel.interfaces.base_tree_viewmodel_core import IMTTreeViewModelCore
-from core.interfaces.base_item_data import MTTreeItemData
+
+from core.impl.tree import MTTreeItem
 from core.impl.utils import to_tree_item_data
-from viewmodel.impl.tree_viewmodel_view import MTTreeViewModelView
-from viewmodel.impl.tree_viewmodel_model import MTTreeViewModelModel
+from core.interfaces.base_item_data import MTTreeItemData
+from core.interfaces.base_tree import IMTTreeItem
 import core.exceptions as exc
+from model.services.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
+from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
+from viewmodel.impl.tree_viewmodel_model import MTTreeViewModelModel
+from viewmodel.impl.tree_viewmodel_view import MTTreeViewModelView
+from viewmodel.interfaces.base_tree_viewmodel_core import IMTTreeViewModelCore
+from viewmodel.interfaces.base_tree_viewmodel_model import IMTTreeViewModelModel
+from viewmodel.interfaces.base_tree_viewmodel_view import IMTTreeViewModelView
 
 class MTTreeViewModelCore(IMTTreeViewModelCore):
     """데모 트리 뷰모델 구현"""
     
-    def __init__(self, tree, repository=None, state_manager=None):
+    def __init__(self, tree, repository=None, state_manager=None) -> None:
         """뷰모델 초기화
         
         Args:
@@ -28,8 +31,8 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         self._selected_items: Set[str] = set()  # 선택된 아이템 ID 집합
 
         # 컴포지션 구조로 각 로직 컴포넌트 초기화
-        self._view = MTTreeViewModelView()
-        self._model = MTTreeViewModelModel()
+        self._view: IMTTreeViewModelView = MTTreeViewModelView()
+        self._model: IMTTreeViewModelModel = MTTreeViewModelModel()
     
     # 1. 데이터 접근/조회
     def get_tree_items(self) -> Dict[str, IMTTreeItem]:
@@ -46,7 +49,8 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
             return None
         self._state_mgr.save_state(tree)
         item_id = str(uuid4())
-        new_item = IMTTreeItem(item_id, name)
+        item_data = MTTreeItemData(name=name)
+        new_item = MTTreeItem(item_id, item_data)
         try:
             tree.add_item(new_item, parent_id)
             self._notify_change()
@@ -103,3 +107,7 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
             return False
         except exc.MTTreeError:
             return False
+
+    def _notify_change(self) -> None:
+        # 변경 알림 구독자 콜백 호출 (구현 필요시 여기에 추가)
+        pass

@@ -1,11 +1,12 @@
-from viewmodel.interfaces.base_tree_viewmodel_view import IMTTreeViewModelView
+from typing import Callable, List
+
 from core.interfaces.base_item_data import MTTreeItemData
-from core.interfaces.base_tree import IMTTreeItem, IMTTree
+from core.interfaces.base_tree import IMTTree, IMTTreeItem
 from core.impl.utils import to_tree_item_data
-from typing import List, Callable
+from viewmodel.interfaces.base_tree_viewmodel_view import IMTTreeViewModelView
 
 class MTTreeViewModelView(IMTTreeViewModelView):
-    def __init__(self, tree=None, selected_items=None, notify_change: Callable[[], None] = None):
+    def __init__(self, tree=None, selected_items=None, notify_change: Callable[[], None] | None = None):
         self._tree = tree
         self._selected_items = selected_items if selected_items is not None else set()
         self._notify_change = notify_change if notify_change is not None else lambda: None
@@ -17,8 +18,11 @@ class MTTreeViewModelView(IMTTreeViewModelView):
             return []
         result = []
         # DFS(깊이 우선 탐색) 순회로 트리 아이템을 방문
+        # RF : nested func. 여기서만 공유. Result 확인 용이. 깔끔한 코드
         def dfs(item: IMTTreeItem):
             parent_id = item.get_property("parent_id")
+            if not (isinstance(parent_id, str) or parent_id is None):
+                parent_id = None
             result.append(
                 to_tree_item_data(
                     item,

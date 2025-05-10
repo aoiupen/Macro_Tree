@@ -5,7 +5,7 @@ from dataclasses import asdict
 
 def to_tree_item_data(
     item: IMTTreeItem,
-    parent_id: Optional[str],
+    parent_id: str | None,
     selected: bool = False
 ) -> MTTreeItemData:
     """

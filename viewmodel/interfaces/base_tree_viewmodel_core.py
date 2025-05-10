@@ -1,9 +1,8 @@
 from typing import List, Protocol
-from core.interfaces.base_tree import IMTTree
+
 from core.interfaces.base_item import IMTTreeItem
-from core.interfaces.base_item_data import MTTreeItemData
-from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
 from model.services.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
+from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
 
 class IMTTreeViewModelCore(Protocol):
     """트리 뷰모델 인터페이스 - 플랫폼 독립적 (Core)"""
