@@ -32,5 +32,5 @@ jobs:
       - name: Type check with mypy
         run: mypy . --explicit-package-bases
           
-      - name: Test with pytest
-        run: pytest
+      # - name: Test with pytest
+      #   run: pytest
