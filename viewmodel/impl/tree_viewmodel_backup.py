@@ -4,12 +4,12 @@ from core.interfaces.base_tree import IMTTree
 from core.interfaces.base_tree import IMTTreeItem
 from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
 from model.services.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
-from viewmodel.interfaces.base_tree_viewmodel import IMTTreeViewModel
+from viewmodel.interfaces.base_tree_viewmodel_core import IMTTreeViewModelCore
 from core.interfaces.base_item_data import MTTreeItemData
 from core.impl.utils import to_tree_item_data
 import core.exceptions as exc
 
-class MTTreeViewModel(IMTTreeViewModel):
+class MTTreeViewModelCore(IMTTreeViewModelCore):
     """데모 트리 뷰모델 구현"""
     
     def __init__(self, repository: IMTTreeRepository | None, state_manager: IMTTreeStateManager | None):

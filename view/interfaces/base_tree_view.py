@@ -1,7 +1,7 @@
 from typing import List, Dict, Any, Protocol, runtime_checkable
 from core.interfaces.base_tree import IMTTreeReadable
 from core.interfaces.base_item_data import MTTreeItemData
-from viewmodel.interfaces.base_tree_viewmodel import IMTTreeViewModel
+from viewmodel.interfaces.base_tree_viewmodel_core import IMTTreeViewModelCore
 from core.interfaces.base_item import IMTTreeItem
 
 @runtime_checkable
@@ -16,7 +16,7 @@ class IMTTreeView(Protocol):
         """선택된 아이템 ID 목록 반환"""
         ...
     
-    def set_view_model(self, view_model: 'IMTTreeViewModel') -> None:
+    def set_view_model(self, view_model: 'IMTTreeViewModelCore') -> None:
         """뷰 모델 설정"""
         ...
     

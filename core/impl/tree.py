@@ -219,8 +219,11 @@ class MTTree:
         """루트 아이템 ID를 반환합니다."""
         return self._readable.root_id
     
+    # RF : Wrapper 함수 (내부 함수와 동일한 이름이어도 무관)
     def get_all_items(self) -> Dict[str, IMTTreeItem]:
-        """모든 아이템을 반환합니다."""
+        """
+        트리 내의 모든 아이템(노드)을 반환합니다.
+        """
         return self._readable.get_all_items()
     
     def get_item(self, item_id: str) -> IMTTreeItem | None:
