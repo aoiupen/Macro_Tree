@@ -335,7 +335,8 @@ class MTTree:
         return self._serializable.to_dict()
     
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'MTTree':
+    # RF : MTTree구체 반환이어도 IMTTree인터페이스 반환으로 처리 가능
+    def from_dict(cls, data: Dict[str, Any]) -> IMTTree:
         """딕셔너리에서 트리를 생성합니다."""
         return _MTTreeSerializable.from_dict(data)
     
@@ -349,14 +350,7 @@ class MTTree:
     
     @classmethod
     def from_json(cls, json_str: str) -> IMTTree:
-        """JSON 문자열에서 트리 구조를 로드합니다.
-        
-        Args:
-            json_str: JSON 문자열
-            
-        Returns:
-            Tree 인스턴스
-        """
+        """JSON 문자열에서 트리 구조를 로드합니다."""
         return _MTTreeSerializable.from_json(json_str)
 
     def _notify(self, event_type, data):

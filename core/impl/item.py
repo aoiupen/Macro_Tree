@@ -46,6 +46,6 @@ class MTTreeItem(IMTTreeItem):
         """아이템 속성을 설정합니다."""
         setattr(self._data, key, value)
     
-    def clone(self) -> 'MTTreeItem':
+    def clone(self) -> IMTTreeItem:
         """아이템의 복제본을 생성합니다."""
         return MTTreeItem(self._id, copy.deepcopy(self._data))

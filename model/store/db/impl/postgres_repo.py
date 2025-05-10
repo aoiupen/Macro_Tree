@@ -112,7 +112,7 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             if conn:
                 conn.close()
 
-    def save(self, tree: IMTTree, tree_id: Optional[str] = None) -> str:
+    def save(self, tree: IMTTree, tree_id: str | None = None) -> str:
         """트리를 데이터베이스에 저장합니다.
         
         Args:
@@ -181,7 +181,7 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             if conn:
                 conn.close()
 
-    def load(self, tree_id: str) -> Optional[IMTTree]:
+    def load(self, tree_id: str) -> IMTTree | None:
         """트리를 데이터베이스에서 불러옵니다.
         
         Args:
