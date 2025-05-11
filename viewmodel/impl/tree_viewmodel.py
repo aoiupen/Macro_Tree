@@ -7,7 +7,7 @@ from model.events.interfaces.base_tree_event_mgr import IMTTreeEventManager
 class MTTreeViewModel:
     def __init__(self, tree: IMTTree, repository=None, state_manager=None, event_manager:IMTTreeEventManager | None=None):
         self._tree = tree
-        self._core: MTTreeViewModelCore = MTTreeViewModelCore(self._tree, repository, state_manager)
+        self._core: MTTreeViewModelCore = MTTreeViewModelCore(self._tree)
         self._model: MTTreeViewModelModel = MTTreeViewModelModel()
         self._view: MTTreeViewModelView = MTTreeViewModelView(self._tree)
         self._event_manager = event_manager  # 이벤트 매니저 인스턴스 저장
@@ -18,6 +18,7 @@ class MTTreeViewModel:
             for event_type in MTTreeEvent:
                 self._event_manager.subscribe(event_type, self.on_tree_event)
 
+    # RF : 느슨하게 결합
     def set_view(self, ui_view):
         self._ui_view = ui_view
 
@@ -30,20 +31,38 @@ class MTTreeViewModel:
                 self._ui_view.on_viewmodel_signal('item_removed', data)
             elif event_type == 'ITEM_MOVED' or (hasattr(event_type, 'name') and event_type.name == 'ITEM_MOVED'):
                 self._ui_view.on_viewmodel_signal('item_moved', data)
+            elif event_type == 'TREE_RESET' or (hasattr(event_type, 'name') and event_type.name == 'TREE_RESET'):
+                self._ui_view.on_viewmodel_signal('tree_reset', data)
+            elif event_type == 'ITEM_MODIFIED' or (hasattr(event_type, 'name') and event_type.name == 'ITEM_MODIFIED'):
+                self._ui_view.on_viewmodel_signal('item_modified', data)
             # 기타 이벤트 분기 추가 가능
 
     # 1. Core wrapper (비즈니스 로직/데이터 접근)
     def add_item(self, name: str, parent_id: str | None = None) -> str | None:
-        return self._core.add_item(name, parent_id)
+        result = self._core.add_item(name, parent_id)
+        if result and self._event_manager:
+            self._event_manager.notify(MTTreeEvent.ITEM_ADDED, {"item_id": result, "name": name, "parent_id": parent_id})
+        return result
     def update_item(self, item_id: str, name: str | None = None, parent_id: str | None = None) -> bool:
-        return self._core.update_item(item_id, name, parent_id)
+        result = self._core.update_item(item_id, name, parent_id)
+        if result and self._event_manager:
+            self._event_manager.notify(MTTreeEvent.ITEM_MODIFIED, {"item_id": item_id, "name": name, "parent_id": parent_id})
+        return result
     def remove_item(self, item_id: str) -> bool:
-        return self._core.remove_item(item_id)
+        result = self._core.remove_item(item_id)
+        if result and self._event_manager:
+            self._event_manager.notify(MTTreeEvent.ITEM_REMOVED, {"item_id": item_id})
+        return result
     def move_item(self, item_id: str, new_parent_id: str | None = None) -> bool:
         result = self._core.move_item(item_id, new_parent_id)
         if result and self._event_manager:
             self._event_manager.notify(MTTreeEvent.ITEM_MOVED, {"item_id": item_id, "new_parent_id": new_parent_id})
         return result
+    def reset_tree(self):
+        self._core.reset_tree()
+        if self._event_manager:
+            self._event_manager.notify(MTTreeEvent.TREE_RESET, {"tree": self._tree})
+            
     def get_tree_items(self):
         return self._core.get_tree_items()
 

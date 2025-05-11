@@ -1,13 +1,13 @@
 from typing import List, Protocol
 
 from core.interfaces.base_item import IMTTreeItem
-from model.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
-from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
+# from model.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
+# from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
 
 class IMTTreeViewModelCore(Protocol):
     """트리 뷰모델 인터페이스 - 플랫폼 독립적 (Core)"""
     
-    def __init__(self, repository: IMTTreeRepository, state_manager: IMTTreeStateManager):
+    def __init__(self, tree):
         """ViewModel 초기화"""
         ...
 
