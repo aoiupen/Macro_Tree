@@ -20,7 +20,7 @@ class IMTTreeEventHandler(Protocol):
         """이벤트를 처리합니다."""
         ...
 
-class IMTTreeObservable(Protocol):
+class IMTTreeEventManager(Protocol):
     """트리 이벤트 관리 인터페이스"""
     
     def subscribe(self, event_type: MTTreeEvent, callback: TreeEventCallback) -> None:

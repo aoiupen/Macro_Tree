@@ -48,19 +48,19 @@ class MTKeyboardAction(Enum):
 # 액션/액션데이터 인터페이스(프로토콜)
 # -------------------
 # Enum용 TypeVar
-E = TypeVar("E", bound=Enum, covariant=True)
+TActionEnum = TypeVar("TActionEnum", bound=Enum, covariant=True)
 # ActionData용 TypeVar
 
-class IMTAction(Protocol, Generic[E]):
+class IMTAction(Protocol, Generic[TActionEnum]):
     @property
-    def action_type(self) -> E: ...
+    def action_type(self) -> TActionEnum: ...
     # 기타 공통 메서드/속성
 
 class IMTActionData(Protocol):
     """액션 데이터 인터페이스 (각 액션 실행에 필요한 데이터)"""
     def clear(self) -> None: ...
 
-D = TypeVar("D", bound=IMTActionData, contravariant=True)
+TActionData = TypeVar("TActionData", bound=IMTActionData, contravariant=True)
 
 class IMTMouseActionData(IMTActionData, Protocol):
     """마우스 액션 데이터 인터페이스"""
@@ -82,9 +82,9 @@ class IMTKeyboardActionData(IMTActionData, Protocol):
     # 시퀀스가 필요하면 key_sequence 속성/메서드 추가
 
 # 3. ActionPerformer: 실제 동작만 담당 (함수/실행자)
-class IMTActionPerformer(Protocol, Generic[D]):
+class IMTActionPerformer(Protocol, Generic[TActionData]):
     """액션 실행자 인터페이스 (구현체: model/action/impl/ 등)"""
-    def perform(self, action_data: D) -> None: ...
+    def perform(self, action_data: TActionData) -> None: ...
 
 # -------------------
 # TreeItemData (TypedDict)

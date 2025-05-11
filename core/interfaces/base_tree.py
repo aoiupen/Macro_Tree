@@ -1,11 +1,6 @@
-from enum import Enum
-from typing import Any, Callable, Dict, Generic, Iterator, List, Protocol, TypeVar
-
+from typing import Any, Callable, Dict, List, Protocol
 from core.interfaces.base_item import IMTTreeItem
 
-T_co = TypeVar('T_co', covariant=True)  # 공변성 타입 변수
-
-# 트리 메타데이터 인터페이스
 class IMTTreeReadable (Protocol):
     """트리 데이터 액세스 인터페이스"""
     

@@ -6,7 +6,10 @@ from core.impl.tree import MTTree
 from core.impl.item import MTTreeItem
 from viewmodel.impl.tree_viewmodel import MTTreeViewModel
 from view.impl.tree_view import TreeView
-from model.services.state.impl.tree_state_mgr import MTTreeStateManager
+from model.state.impl.tree_state_mgr import MTTreeStateManager
+from model.events.impl.tree_event_mgr import MTTreeEventManager
+from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
+from core.interfaces.base_item_data import MTNodeType
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -19,29 +22,29 @@ class MainWindow(QMainWindow):
         self.tree = MTTree(tree_id="root", name="Root Tree")
         
         # 샘플 데이터 추가
-        root_item = MTTreeItem("root", {"name": "Root Item"})
+        root_item = MTTreeItem("root", {"name": "Root Item", "node_type": MTNodeType.GROUP})
         self.tree.add_item(root_item, None)
         
         # 첫 번째 그룹
-        group1 = MTTreeItem("group1", {"name": "Group 1"})
+        group1 = MTTreeItem("group1", {"name": "Group 1", "node_type": MTNodeType.GROUP})
         self.tree.add_item(group1, "root")
         
         # 두 번째 그룹
-        group2 = MTTreeItem("group2", {"name": "Group 2"})
+        group2 = MTTreeItem("group2", {"name": "Group 2", "node_type": MTNodeType.GROUP})
         self.tree.add_item(group2, "root")
         
         # 그룹 1의 하위 항목
         for i in range(3):
-            item = MTTreeItem(f"item-g1-{i}", {"name": f"Item {i} in Group 1"})
+            item = MTTreeItem(f"item-g1-{i}", {"name": f"Item {i} in Group 1", "node_type": MTNodeType.INSTRUCTION})
             self.tree.add_item(item, "group1")
         
         # 그룹 2의 하위 항목
         for i in range(2):
-            item = MTTreeItem(f"item-g2-{i}", {"name": f"Item {i} in Group 2"})
+            item = MTTreeItem(f"item-g2-{i}", {"name": f"Item {i} in Group 2", "node_type": MTNodeType.INSTRUCTION})
             self.tree.add_item(item, "group2")
             
             # 서브 아이템 추가
-            sub_item = MTTreeItem(f"item-g2-{i}-sub", {"name": f"Sub-item of {i}"})
+            sub_item = MTTreeItem(f"item-g2-{i}-sub", {"name": f"Sub-item of {i}", "node_type": MTNodeType.INSTRUCTION})
             self.tree.add_item(sub_item, f"item-g2-{i}")
         
         # 루트 항목 확장 상태로 설정
@@ -49,7 +52,8 @@ class MainWindow(QMainWindow):
         
         # ViewModel 생성
         self.state_manager = MTTreeStateManager()
-        self.viewmodel = MTTreeViewModel(self.tree, self.state_manager)
+        self.event_manager = MTTreeEventManager()
+        self.viewmodel = MTTreeViewModel(self.tree, None, self.state_manager, self.event_manager)
         
         # 트리 뷰 생성 및 설정
         self.tree_view = TreeView(self.viewmodel)
@@ -64,6 +68,13 @@ class MainWindow(QMainWindow):
         
         self.current_file_path = ""
 
+        # 여기서 ViewModel에 View를 연결!
+        self.viewmodel.set_view(self.tree_view)
+
+        # 이벤트 매니저에 콜백 등록
+        self.event_manager.subscribe(MTTreeEvent.ITEM_ADDED, self.viewmodel.on_tree_event)
+        self.event_manager.subscribe(MTTreeEvent.ITEM_REMOVED, self.viewmodel.on_tree_event)
+        self.event_manager.subscribe(MTTreeEvent.ITEM_MOVED, self.viewmodel.on_tree_event)
 
 def main():
     app = QApplication(sys.argv)

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Protocol, TypeVar, TypedDict, runtime_checkable
+from typing import Protocol, TypeVar, runtime_checkable
 from .base_item_data import MTTreeItemData
 
 # -------------------
@@ -16,8 +16,6 @@ class TreeItemKeys:
 
 # 타입 변수 정의
 # RF : 호출 시점에 타입이 결정
-T = TypeVar('T')  # 제네릭 타입 변수 정의
-
 @runtime_checkable
 class IMTBaseItem(Protocol):
     """기본 아이템 인터페이스"""

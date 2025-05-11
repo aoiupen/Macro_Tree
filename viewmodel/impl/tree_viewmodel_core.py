@@ -5,7 +5,7 @@ from core.impl.tree import MTTreeItem
 from core.interfaces.base_item_data import MTTreeItemData
 from core.interfaces.base_tree import IMTTreeItem, IMTTree
 import core.exceptions as exc
-from model.services.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
+from model.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
 from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
 from viewmodel.impl.tree_viewmodel_model import MTTreeViewModelModel
 from viewmodel.impl.tree_viewmodel_view import MTTreeViewModelView
@@ -16,7 +16,7 @@ from viewmodel.interfaces.base_tree_viewmodel_view import IMTTreeViewModelView
 class MTTreeViewModelCore(IMTTreeViewModelCore):
     """데모 트리 뷰모델 구현"""
     
-    def __init__(self, tree, repository=None, state_manager=None) -> None:
+    def __init__(self, tree, repository=None, state_manager:IMTTreeStateManager|None=None) -> None:
         """뷰모델 초기화
         
         Args:
@@ -26,12 +26,10 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         """
         self._tree: IMTTree | None = tree
         self._repository = repository
-        self._state_mgr = state_manager
+        self._state_mgr: IMTTreeStateManager | None = state_manager
         self._selected_items: Set[str] = set()  # 선택된 아이템 ID 집합
 
         # 컴포지션 구조로 각 로직 컴포넌트 초기화
-        self._view: IMTTreeViewModelView = MTTreeViewModelView()
-        self._model: IMTTreeViewModelModel = MTTreeViewModelModel()
     
     # 1. 데이터 접근/조회
     def get_tree_items(self) -> Dict[str, IMTTreeItem]:
@@ -46,7 +44,8 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         tree = self._tree
         if not tree:
             return None
-        self._state_mgr.save_state(tree)
+        if self._state_mgr:
+            self._state_mgr.save_state(tree)
         item_id = str(uuid4())
         item_data = MTTreeItemData(name=name)
         new_item = MTTreeItem(item_id, item_data)
@@ -63,7 +62,8 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         tree = self._tree
         if not tree:
             return False
-        self._state_mgr.save_state(tree)
+        if self._state_mgr:
+            self._state_mgr.save_state(tree)
         item = tree.get_item(item_id)
         if not item:
             return False
@@ -83,7 +83,8 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         tree = self._tree
         if not tree:
             return False
-        self._state_mgr.save_state(tree)
+        if self._state_mgr:
+            self._state_mgr.save_state(tree)
         if item_id in self._selected_items:
             self._selected_items.remove(item_id)
         try:
@@ -97,7 +98,9 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         tree = self._tree
         if not tree:
             return False
-        self._state_mgr.save_state(tree)
+        if self._state_mgr:
+            pass #임시 test
+            #self._state_mgr.save_state(tree)
         try:
             tree.move_item(item_id, new_parent_id)
             self._notify_change()
