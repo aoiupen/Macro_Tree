@@ -152,9 +152,12 @@ class TreeView(QTreeWidget):
 
     def on_viewmodel_signal(self, signal_type, data):
         if signal_type == 'item_added':
+            print("added")
             self.update_tree_items()
         elif signal_type == 'item_removed':
+            print("removed")
             self.update_tree_items()
         elif signal_type == 'item_moved':
+            print("moved")
             self.update_tree_items()
         # 필요시 추가 분기 및 UI 갱신 로직 작성

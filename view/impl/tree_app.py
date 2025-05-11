@@ -7,6 +7,8 @@ from core.impl.item import MTTreeItem
 from viewmodel.impl.tree_viewmodel import MTTreeViewModel
 from view.impl.tree_view import TreeView
 from model.state.impl.tree_state_mgr import MTTreeStateManager
+from model.events.impl.tree_event_mgr import MTTreeEventManager
+from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 from core.interfaces.base_item_data import MTNodeType
 
 class MainWindow(QMainWindow):
@@ -50,7 +52,8 @@ class MainWindow(QMainWindow):
         
         # ViewModel 생성
         self.state_manager = MTTreeStateManager()
-        self.viewmodel = MTTreeViewModel(self.tree, self.state_manager)
+        self.event_manager = MTTreeEventManager()
+        self.viewmodel = MTTreeViewModel(self.tree, None, self.state_manager, self.event_manager)
         
         # 트리 뷰 생성 및 설정
         self.tree_view = TreeView(self.viewmodel)
@@ -65,6 +68,13 @@ class MainWindow(QMainWindow):
         
         self.current_file_path = ""
 
+        # 여기서 ViewModel에 View를 연결!
+        self.viewmodel.set_view(self.tree_view)
+
+        # 이벤트 매니저에 콜백 등록
+        self.event_manager.subscribe(MTTreeEvent.ITEM_ADDED, self.viewmodel.on_tree_event)
+        self.event_manager.subscribe(MTTreeEvent.ITEM_REMOVED, self.viewmodel.on_tree_event)
+        self.event_manager.subscribe(MTTreeEvent.ITEM_MOVED, self.viewmodel.on_tree_event)
 
 def main():
     app = QApplication(sys.argv)

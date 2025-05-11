@@ -1,14 +1,22 @@
 from viewmodel.impl.tree_viewmodel_core import MTTreeViewModelCore
 from viewmodel.impl.tree_viewmodel_model import MTTreeViewModelModel
 from viewmodel.impl.tree_viewmodel_view import MTTreeViewModelView
-from core.interfaces.base_tree import IMTTreeItem
-
+from core.interfaces.base_tree import IMTTree
+from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
+from model.events.interfaces.base_tree_event_mgr import IMTTreeEventManager
 class MTTreeViewModel:
-    def __init__(self, tree, repository=None, state_manager=None):
-        self._core: MTTreeViewModelCore = MTTreeViewModelCore(tree, repository, state_manager)
+    def __init__(self, tree: IMTTree, repository=None, state_manager=None, event_manager:IMTTreeEventManager | None=None):
+        self._tree = tree
+        self._core: MTTreeViewModelCore = MTTreeViewModelCore(self._tree, repository, state_manager)
         self._model: MTTreeViewModelModel = MTTreeViewModelModel()
-        self._view: MTTreeViewModelView = MTTreeViewModelView()
-        self._ui_view = None  # 실제 View 인스턴스 (TreeView 등) 할당용
+        self._view: MTTreeViewModelView = MTTreeViewModelView(self._tree)
+        self._event_manager = event_manager  # 이벤트 매니저 인스턴스 저장
+        self._ui_view = None
+
+        # 트리 이벤트 구독
+        if self._event_manager:
+            for event_type in MTTreeEvent:
+                self._event_manager.subscribe(event_type, self.on_tree_event)
 
     def set_view(self, ui_view):
         self._ui_view = ui_view
@@ -32,7 +40,10 @@ class MTTreeViewModel:
     def remove_item(self, item_id: str) -> bool:
         return self._core.remove_item(item_id)
     def move_item(self, item_id: str, new_parent_id: str | None = None) -> bool:
-        return self._core.move_item(item_id, new_parent_id)
+        result = self._core.move_item(item_id, new_parent_id)
+        if result and self._event_manager:
+            self._event_manager.notify(MTTreeEvent.ITEM_MOVED, {"item_id": item_id, "new_parent_id": new_parent_id})
+        return result
     def get_tree_items(self):
         return self._core.get_tree_items()
 

@@ -30,8 +30,6 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         self._selected_items: Set[str] = set()  # 선택된 아이템 ID 집합
 
         # 컴포지션 구조로 각 로직 컴포넌트 초기화
-        self._view: IMTTreeViewModelView = MTTreeViewModelView()
-        self._model: IMTTreeViewModelModel = MTTreeViewModelModel()
     
     # 1. 데이터 접근/조회
     def get_tree_items(self) -> Dict[str, IMTTreeItem]:
@@ -101,7 +99,8 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         if not tree:
             return False
         if self._state_mgr:
-            self._state_mgr.save_state(tree)
+            pass #임시 test
+            #self._state_mgr.save_state(tree)
         try:
             tree.move_item(item_id, new_parent_id)
             self._notify_change()
