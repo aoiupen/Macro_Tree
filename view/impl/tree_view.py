@@ -1,6 +1,8 @@
 from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QAbstractItemView
 from PyQt6.QtCore import Qt
 from viewmodel.impl.tree_viewmodel import MTTreeViewModel
+from PyQt6.QtGui import QIcon
+import os
 
 # RF : 트리뷰는 트리뷰모델을 상속받지 않고, 참조
 class TreeView(QTreeWidget):
@@ -77,6 +79,16 @@ class TreeView(QTreeWidget):
     def _add_tree_item(self, item, parent_widget):
         widget_item = QTreeWidgetItem(parent_widget, [item.get_property("name", item.id)])
         widget_item.setData(0, Qt.ItemDataRole.UserRole, item.id)
+        # node_type에 따라 아이콘 지정
+        node_type = item.get_property("node_type", None)
+        icon_path = None
+        if node_type is not None:
+            if str(node_type) == "MTNodeType.GROUP" or str(node_type) == "group":
+                icon_path = os.path.join("images", "icons", "group.png")
+            elif str(node_type) == "MTNodeType.INSTRUCTION" or str(node_type) == "instruction":
+                icon_path = os.path.join("images", "icons", "inst.png")
+        if icon_path and os.path.exists(icon_path):
+            widget_item.setIcon(0, QIcon(icon_path))
         self._id_to_widget_map[item.id] = widget_item
     
     def item_clicked(self, item, column):
@@ -99,7 +111,7 @@ class TreeView(QTreeWidget):
         """
         # 드롭 대상 (위치)
         drop_indicator = self.dropIndicatorPosition()
-        target_item = self.itemAt(event.pos())
+        target_item = self.itemAt(event.position().toPoint())
         
         # 드래그 중인 아이템 (QTreeWidgetItem)
         dragged_item = self.currentItem()
@@ -121,7 +133,11 @@ class TreeView(QTreeWidget):
             self._viewmodel.move_item(dragged_id, target_id)
         elif drop_indicator == QTreeWidget.DropIndicatorPosition.AboveItem or drop_indicator == QTreeWidget.DropIndicatorPosition.BelowItem:
             # 항목 위나 아래에 드롭: 같은 레벨로 이동
-            target_parent_id = self._viewmodel.get_item(target_id).get_property("parent_id")
+            target_item_obj = self._viewmodel.get_item(target_id)
+            if target_item_obj is None:
+                event.ignore()
+                return
+            target_parent_id = target_item_obj.get_property("parent_id")
             self._viewmodel.move_item(dragged_id, target_parent_id)
         else:
             # 기타 위치 (루트 레벨로 이동)

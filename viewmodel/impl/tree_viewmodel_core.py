@@ -16,7 +16,7 @@ from viewmodel.interfaces.base_tree_viewmodel_view import IMTTreeViewModelView
 class MTTreeViewModelCore(IMTTreeViewModelCore):
     """데모 트리 뷰모델 구현"""
     
-    def __init__(self, tree, repository=None, state_manager=None) -> None:
+    def __init__(self, tree, repository=None, state_manager:IMTTreeStateManager|None=None) -> None:
         """뷰모델 초기화
         
         Args:
@@ -26,7 +26,7 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         """
         self._tree: IMTTree | None = tree
         self._repository = repository
-        self._state_mgr = state_manager
+        self._state_mgr: IMTTreeStateManager | None = state_manager
         self._selected_items: Set[str] = set()  # 선택된 아이템 ID 집합
 
         # 컴포지션 구조로 각 로직 컴포넌트 초기화
@@ -46,7 +46,8 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         tree = self._tree
         if not tree:
             return None
-        self._state_mgr.save_state(tree)
+        if self._state_mgr:
+            self._state_mgr.save_state(tree)
         item_id = str(uuid4())
         item_data = MTTreeItemData(name=name)
         new_item = MTTreeItem(item_id, item_data)
@@ -63,7 +64,8 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         tree = self._tree
         if not tree:
             return False
-        self._state_mgr.save_state(tree)
+        if self._state_mgr:
+            self._state_mgr.save_state(tree)
         item = tree.get_item(item_id)
         if not item:
             return False
@@ -83,7 +85,8 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         tree = self._tree
         if not tree:
             return False
-        self._state_mgr.save_state(tree)
+        if self._state_mgr:
+            self._state_mgr.save_state(tree)
         if item_id in self._selected_items:
             self._selected_items.remove(item_id)
         try:
@@ -97,7 +100,8 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         tree = self._tree
         if not tree:
             return False
-        self._state_mgr.save_state(tree)
+        if self._state_mgr:
+            self._state_mgr.save_state(tree)
         try:
             tree.move_item(item_id, new_parent_id)
             self._notify_change()
