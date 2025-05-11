@@ -6,13 +6,7 @@ from .base_item_data import MTTreeItemData
 # - 도메인 키: core/interfaces/base_item_data.py
 # - UI/확장/부가 키: core/interfaces/base_item.py
 # -------------------
-class TreeItemKeys:
-    """트리 아이템의 UI/확장/부가 속성 키 상수"""
-    DATA = "data"
-    EXPANDED = "expanded"
-    SELECTED = "selected"
-    VISIBLE = "visible"
-    ICON = "icon"
+
 
 # 타입 변수 정의
 # RF : 호출 시점에 타입이 결정

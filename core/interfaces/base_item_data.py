@@ -103,17 +103,3 @@ class MTTreeItemData:
     action_data: IMTActionData | None = None
     # 기타 UI/확장 속성은 필요에 따라 추가
 
-# -------------------
-# TreeItemKeys (도메인 + UI/확장 키 상수)
-# -------------------
-class TreeItemKeys:
-    """트리 아이템의 속성 키 상수 (도메인 + UI/확장)"""
-    # 도메인 속성 키
-    ID = "id"
-    NAME = "name"
-    PARENT_ID = "parent_id"
-    CHILDREN = "children_ids"
-    NODE_TYPE = "node_type"
-    DEVICE = "device"
-    ACTION = "action"
-    ACTION_DATA = "action_data"

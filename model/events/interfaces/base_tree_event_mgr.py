@@ -10,6 +10,12 @@ class MTTreeEvent(Enum):
     ITEM_MOVED = "item_moved"
     TREE_RESET = "tree_reset"
 
+class MTTreeUIEvent(Enum):
+    """트리 UI 이벤트 유형"""
+    ITEM_SELECTED = "item_selected"
+    ITEM_EXPANDED = "item_expanded"
+    ITEM_COLLAPSED = "item_collapsed"
+
 # 콜백 타입 정의 (타입 힌트)
 TreeEventCallback = Callable[[MTTreeEvent, Dict[str, Any]], None]
 

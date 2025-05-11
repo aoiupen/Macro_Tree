@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QAbstractItemView
 from PyQt6.QtCore import Qt
 from viewmodel.impl.tree_viewmodel import MTTreeViewModel
 from PyQt6.QtGui import QIcon
+from core.interfaces.base_item_data import MTNodeType
 import os
 
 # RF : 트리뷰는 트리뷰모델을 상속받지 않고, 참조
@@ -130,7 +131,17 @@ class TreeView(QTreeWidget):
         # 드롭 위치에 따라 처리
         if drop_indicator == QTreeWidget.DropIndicatorPosition.OnItem:
             # 항목 위에 드롭: 하위 항목으로 이동
-            self._viewmodel.move_item(dragged_id, target_id)
+            # node_type이 group인 경우 자식으로 이동
+            # node_type이 instruction인 경우 이동하지 않음
+            dragged_item_obj = self._viewmodel.get_item(dragged_id)
+            if dragged_item_obj is None:
+                event.ignore()
+                print("dragged_item_obj is None")
+                return
+            dragged_item_type = dragged_item_obj.get_property("node_type")
+            print("dragged_item_type : ", dragged_item_type)
+            if dragged_item_type == MTNodeType.GROUP:
+                self._viewmodel.move_item(dragged_id, target_id)
         elif drop_indicator == QTreeWidget.DropIndicatorPosition.AboveItem or drop_indicator == QTreeWidget.DropIndicatorPosition.BelowItem:
             # 항목 위나 아래에 드롭: 같은 레벨로 이동
             target_item_obj = self._viewmodel.get_item(target_id)

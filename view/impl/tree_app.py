@@ -72,9 +72,9 @@ class MainWindow(QMainWindow):
         self.viewmodel.set_view(self.tree_view)
 
         # 이벤트 매니저에 콜백 등록
-        self.event_manager.subscribe(MTTreeEvent.ITEM_ADDED, self.viewmodel.on_tree_event)
-        self.event_manager.subscribe(MTTreeEvent.ITEM_REMOVED, self.viewmodel.on_tree_event)
-        self.event_manager.subscribe(MTTreeEvent.ITEM_MOVED, self.viewmodel.on_tree_event)
+        self.event_manager.subscribe(MTTreeEvent.ITEM_ADDED, self.viewmodel.on_tree_mod_event)
+        self.event_manager.subscribe(MTTreeEvent.ITEM_REMOVED, self.viewmodel.on_tree_mod_event)
+        self.event_manager.subscribe(MTTreeEvent.ITEM_MOVED, self.viewmodel.on_tree_mod_event)
 
 def main():
     app = QApplication(sys.argv)

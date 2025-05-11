@@ -4,6 +4,11 @@ from viewmodel.impl.tree_viewmodel_view import MTTreeViewModelView
 from core.interfaces.base_tree import IMTTree
 from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 from model.events.interfaces.base_tree_event_mgr import IMTTreeEventManager
+
+"""
+이 ViewModel은 Adapter 계층을 통해
+프레임워크별 UI 이벤트를 공통 이벤트 Enum(MTTreeUIEvent)으로 전달받아 처리합니다.
+"""
 class MTTreeViewModel:
     def __init__(self, tree: IMTTree, repository=None, state_manager=None, event_manager:IMTTreeEventManager | None=None):
         self._tree = tree
@@ -16,13 +21,13 @@ class MTTreeViewModel:
         # 트리 이벤트 구독
         if self._event_manager:
             for event_type in MTTreeEvent:
-                self._event_manager.subscribe(event_type, self.on_tree_event)
+                self._event_manager.subscribe(event_type, self.on_tree_mod_event)
 
     # RF : 느슨하게 결합
     def set_view(self, ui_view):
         self._ui_view = ui_view
 
-    def on_tree_event(self, event_type, data):
+    def on_tree_mod_event(self, event_type, data):
         # 트리 이벤트에 따라 내부 상태 갱신 및 View에 신호 전달
         if self._ui_view:
             if event_type == 'ITEM_ADDED' or (hasattr(event_type, 'name') and event_type.name == 'ITEM_ADDED'):
@@ -35,6 +40,15 @@ class MTTreeViewModel:
                 self._ui_view.on_viewmodel_signal('tree_reset', data)
             elif event_type == 'ITEM_MODIFIED' or (hasattr(event_type, 'name') and event_type.name == 'ITEM_MODIFIED'):
                 self._ui_view.on_viewmodel_signal('item_modified', data)
+
+    def on_tree_ui_event(self, event_type, data):
+        if self._ui_view:
+            if event_type == 'ITEM_SELECTED' or (hasattr(event_type, 'name') and event_type.name == 'ITEM_SELECTED'):
+                self._ui_view.on_viewmodel_signal('item_selected', data)
+            elif event_type == 'ITEM_EXPANDED' or (hasattr(event_type, 'name') and event_type.name == 'ITEM_EXPANDED'):
+                self._ui_view.on_viewmodel_signal('item_expanded', data)
+            elif event_type == 'ITEM_COLLAPSED' or (hasattr(event_type, 'name') and event_type.name == 'ITEM_COLLAPSED'):
+                self._ui_view.on_viewmodel_signal('item_collapsed', data)
             # 기타 이벤트 분기 추가 가능
 
     # 1. Core wrapper (비즈니스 로직/데이터 접근)
