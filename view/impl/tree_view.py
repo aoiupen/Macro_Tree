@@ -149,3 +149,12 @@ class TreeView(QTreeWidget):
         # 기본 처리 무시 (직접 처리했으므로)
 
         event.accept()
+
+    def on_viewmodel_signal(self, signal_type, data):
+        if signal_type == 'item_added':
+            self.update_tree_items()
+        elif signal_type == 'item_removed':
+            self.update_tree_items()
+        elif signal_type == 'item_moved':
+            self.update_tree_items()
+        # 필요시 추가 분기 및 UI 갱신 로직 작성

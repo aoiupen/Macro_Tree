@@ -8,6 +8,21 @@ class MTTreeViewModel:
         self._core: MTTreeViewModelCore = MTTreeViewModelCore(tree, repository, state_manager)
         self._model: MTTreeViewModelModel = MTTreeViewModelModel()
         self._view: MTTreeViewModelView = MTTreeViewModelView()
+        self._ui_view = None  # 실제 View 인스턴스 (TreeView 등) 할당용
+
+    def set_view(self, ui_view):
+        self._ui_view = ui_view
+
+    def on_tree_event(self, event_type, data):
+        # 트리 이벤트에 따라 내부 상태 갱신 및 View에 신호 전달
+        if self._ui_view:
+            if event_type == 'ITEM_ADDED' or (hasattr(event_type, 'name') and event_type.name == 'ITEM_ADDED'):
+                self._ui_view.on_viewmodel_signal('item_added', data)
+            elif event_type == 'ITEM_REMOVED' or (hasattr(event_type, 'name') and event_type.name == 'ITEM_REMOVED'):
+                self._ui_view.on_viewmodel_signal('item_removed', data)
+            elif event_type == 'ITEM_MOVED' or (hasattr(event_type, 'name') and event_type.name == 'ITEM_MOVED'):
+                self._ui_view.on_viewmodel_signal('item_moved', data)
+            # 기타 이벤트 분기 추가 가능
 
     # 1. Core wrapper (비즈니스 로직/데이터 접근)
     def add_item(self, name: str, parent_id: str | None = None) -> str | None:
