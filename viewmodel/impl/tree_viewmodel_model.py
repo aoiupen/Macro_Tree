@@ -1,7 +1,7 @@
 from typing import Callable, Set
 
-from model.services.state.impl.tree_state_mgr import MTTreeStateManager
-from model.services.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
+from model.state.impl.tree_state_mgr import MTTreeStateManager
+from model.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
 from model.store.db.impl.postgres_repo import PostgreSQLTreeRepository
 from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
 from viewmodel.impl.tree_viewmodel_view import MTTreeViewModelView

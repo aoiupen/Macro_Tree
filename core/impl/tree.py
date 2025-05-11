@@ -1,15 +1,12 @@
-from typing import Any, Callable, Dict, Iterator, List, Optional, Set, TypeVar, cast
+from typing import Any, Callable, Dict, List, Optional, Set, cast
 import json
 import copy
 
 from core.interfaces.base_item import IMTTreeItem
 from core.interfaces.base_tree import IMTTree
 from core.impl.item import MTTreeItem
-from model.events.interfaces.base_tree_event_mgr import MTTreeEvent, IMTTreeObservable
+from model.events.interfaces.base_tree_event_mgr import MTTreeEvent, IMTTreeEventManager
 import core.exceptions as exc
-
-T = TypeVar('T', bound=IMTTreeItem)
-
 # 역할별 내부 구현 클래스 분리
 class _MTTreeReadable:
     def __init__(self, tree: IMTTree):
@@ -178,7 +175,7 @@ class MTTree:
     매크로 트리를 관리하고 조작하는 기능을 제공합니다.
     """
     
-    def __init__(self, tree_id: str, name: str, event_manager: IMTTreeObservable | None = None):
+    def __init__(self, tree_id: str, name: str, event_manager: IMTTreeEventManager | None = None):
         """트리 초기화
         
         Args:

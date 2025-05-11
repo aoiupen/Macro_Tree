@@ -6,7 +6,7 @@ from core.impl.tree import MTTree
 from core.impl.item import MTTreeItem
 from viewmodel.impl.tree_viewmodel import MTTreeViewModel
 from view.impl.tree_view import TreeView
-from model.services.state.impl.tree_state_mgr import MTTreeStateManager
+from model.state.impl.tree_state_mgr import MTTreeStateManager
 from core.interfaces.base_item_data import MTNodeType
 
 class MainWindow(QMainWindow):

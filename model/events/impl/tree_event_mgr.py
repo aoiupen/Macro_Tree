@@ -1,9 +1,8 @@
 from typing import Any, Dict, List
 
-from model.events.interfaces.base_tree_event_mgr import IMTTreeObservable, TreeEventCallback, MTTreeEvent
-from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
+from model.events.interfaces.base_tree_event_mgr import IMTTreeEventManager, TreeEventCallback, MTTreeEvent
 
-class MTTreeEventManager(IMTTreeObservable):
+class MTTreeEventManager(IMTTreeEventManager):
     """트리 이벤트 관리자 구현체"""
     
     def __init__(self) -> None:

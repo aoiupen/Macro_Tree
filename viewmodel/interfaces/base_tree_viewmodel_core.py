@@ -1,7 +1,7 @@
 from typing import List, Protocol
 
 from core.interfaces.base_item import IMTTreeItem
-from model.services.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
+from model.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
 from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
 
 class IMTTreeViewModelCore(Protocol):

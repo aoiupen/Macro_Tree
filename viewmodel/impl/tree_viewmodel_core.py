@@ -5,7 +5,7 @@ from core.impl.tree import MTTreeItem
 from core.interfaces.base_item_data import MTTreeItemData
 from core.interfaces.base_tree import IMTTreeItem, IMTTree
 import core.exceptions as exc
-from model.services.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
+from model.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
 from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
 from viewmodel.impl.tree_viewmodel_model import MTTreeViewModelModel
 from viewmodel.impl.tree_viewmodel_view import MTTreeViewModelView
