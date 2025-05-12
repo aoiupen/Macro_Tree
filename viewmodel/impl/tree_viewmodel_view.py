@@ -1,4 +1,4 @@
-from typing import Callable, List
+from typing import Callable, List, Set
 
 from core.interfaces.base_item_data import MTTreeItemData
 from core.interfaces.base_tree import IMTTree, IMTTreeItem
@@ -54,11 +54,9 @@ class MTTreeViewModelView(IMTTreeViewModelView):
         tree = self.get_current_tree()
         if not tree or not tree.get_item(item_id):
             return False
-        
         # 다중 선택이 아니면 기존 선택 초기화
         if not multi_select:
             self._selected_items.clear()
-        
         # 선택 토글
         if item_id in self._selected_items:
             self._selected_items.remove(item_id)
@@ -107,3 +105,18 @@ class MTTreeViewModelView(IMTTreeViewModelView):
         item.set_property("expanded", new_state)
         self._notify_change()
         return True
+
+    def clear_selection_state(self):
+        """선택 상태를 초기화합니다."""
+        if not self._selected_items:
+            return # 변경 없으면 아무것도 안 함
+
+        self._selected_items.clear()
+        print("ViewModelView: Selection cleared.")
+        # 선택 상태 변경을 View나 다른 곳에 알려야 한다면 여기서 알림 로직 추가
+        self._notify_change() # 예시: 내부 변경 알림 메서드 호출
+
+    def _notify_change(self):
+         # ViewModel이나 외부 구독자에게 변경을 알리는 로직 (현재 구현 방식에 맞게)
+         # 예를 들어, ViewModel을 통해 signal을 emit 하거나 콜백 호출
+         pass

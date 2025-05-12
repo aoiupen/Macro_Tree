@@ -1,186 +1,192 @@
-from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QAbstractItemView
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QVBoxLayout, QWidget, QPushButton, QHBoxLayout, QSizePolicy
+from PyQt6.QtGui import QIcon, QPixmap, QFontMetrics
+from PyQt6.QtCore import Qt, QSize
 from viewmodel.impl.tree_viewmodel import MTTreeViewModel
-from PyQt6.QtGui import QIcon
+from view.impl.tree_widget import MTTreeWidget
 from core.interfaces.base_item_data import MTNodeType
 import os
 
-# RF : 트리뷰는 트리뷰모델을 상속받지 않고, 참조
-class TreeView(QTreeWidget):
+class TreeView(QWidget):
     def __init__(self, viewmodel: MTTreeViewModel, parent=None):
         super().__init__(parent)
         self._viewmodel = viewmodel
-        
-        self.setHeaderLabel("Macro Tree")
-        self.update_tree_items()
 
-        # 이벤트 연결
-        self.itemClicked.connect(self.item_clicked)
-        self.itemExpanded.connect(self._on_item_expanded)
-        self.itemCollapsed.connect(self._on_item_collapsed)
-        
-        # 드래그 앤 드롭 설정
-        self.setDragEnabled(True)
-        self.setAcceptDrops(True)
-        self.setDropIndicatorShown(True)
-        self.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
-        
-    def set_viewmodel(self, viewmodel):
-        """
-        뷰모델을 설정합니다.
-        
-        Args:
-            viewmodel: 새 뷰모델
-        """
-        self._viewmodel = viewmodel
-        self.update_tree_items()
-    
-    def update_tree_items(self):
-        # 현재 선택 상태 기억
-        selected_ids = self._viewmodel.get_selected_items()
-        
-        self.clear()
-        
-        # 아이템 ID -> QTreeWidgetItem 매핑
-        self._id_to_widget_map = {}
-        
-        # 부모-자식 관계 처리를 위한 두 단계 접근법
-        self._build_tree_items()
-        self._apply_tree_state()
-        self.print_ui_tree()
+        self.layout = QVBoxLayout(self)
 
-    def print_ui_tree(self):
-        for i in range(self.topLevelItemCount()):
-            item = self.topLevelItem(i)
-            self._print_ui_tree_children(item, level=0)
+        # 버튼을 위한 수평 레이아웃 (왼쪽 정렬)
+        button_layout = QHBoxLayout()
+        button_layout.setContentsMargins(0, 0, 0, 0)
+        # 버튼 사이 간격 설정 (예: 5px)
+        button_layout.setSpacing(5)
 
-    def _print_ui_tree_children(self, item, level):
-        print("  " * level + item.text(0))
-        for i in range(item.childCount()):
-            child = item.child(i)
-            self._print_ui_tree_children(child, level+1)
-    
-    def _build_tree_items(self):
-        all_items = self._viewmodel.get_tree_items()
-        def add_children(parent_id, parent_widget):
-            for item_id, item in all_items.items():
-                if item.get_property("parent_id") == parent_id:
-                    self._add_tree_item(item, parent_widget)
-                    add_children(item.id, self._id_to_widget_map[item.id])
-        # 루트부터 시작
-        for item_id, item in all_items.items():
-            if not item.get_property("parent_id"):
-                self._add_tree_item(item, self)
-                add_children(item.id, self._id_to_widget_map[item.id])
+        # 아이콘 경로 - 프로젝트 루트 아래 images 폴더 기준
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")) # view/impl 에서 두 단계 위
+        icon_path = os.path.join(project_root, "images/icons", "add.png") # images 폴더 안의 add.png
 
-    def _apply_tree_state(self):
-        # 2단계: 확장/선택 상태 적용
-        for item_id, widget_item in self._id_to_widget_map.items():
-            item = self._viewmodel.get_item(item_id)
-            if item:
-                # 확장 상태 적용
-                if item.get_property("expanded", False):
-                    self.expandItem(widget_item)
-                
-                # 선택 상태 적용
-                if item_id in self._viewmodel.get_selected_items():
-                    widget_item.setSelected(True)
-    
-    def _add_tree_item(self, item, parent_widget):
-        widget_item = QTreeWidgetItem(parent_widget, [item.get_property("name", item.id)])
-        widget_item.setData(0, Qt.ItemDataRole.UserRole, item.id)
-        # node_type에 따라 아이콘 지정
-        node_type = item.get_property("node_type", None)
-        icon_path = None
-        if node_type is not None:
-            if str(node_type) == "MTNodeType.GROUP" or str(node_type) == "group":
-                icon_path = os.path.join("images", "icons", "group.png")
-            elif str(node_type) == "MTNodeType.INSTRUCTION" or str(node_type) == "instruction":
-                icon_path = os.path.join("images", "icons", "inst.png")
-        if icon_path and os.path.exists(icon_path):
-            widget_item.setIcon(0, QIcon(icon_path))
-        self._id_to_widget_map[item.id] = widget_item
-    
-    def item_clicked(self, item, column):
-        item_id = item.data(0, Qt.ItemDataRole.UserRole)
-        self._viewmodel.select_item(item_id)
-        self.update_tree_items()
-
-    def _on_item_expanded(self, item):
-        item_id = item.data(0, Qt.ItemDataRole.UserRole)
-        self._viewmodel.toggle_expanded(item_id, True)
-
-    def _on_item_collapsed(self, item):
-        item_id = item.data(0, Qt.ItemDataRole.UserRole)
-        self._viewmodel.toggle_expanded(item_id, False) 
-    
-    # RF : 드래그 앤 드롭 이벤트 처리하는 핸들러. UI 프레임워크가 호출하는 콜백이므로 구현체만 있으면 충분
-    def dropEvent(self, event):
-        """
-        드래그 앤 드롭으로 아이템 이동 시 호출됨
-        """
-        # 드롭 대상 (위치)
-        drop_indicator = self.dropIndicatorPosition()
-        target_item = self.itemAt(event.position().toPoint())
-        
-        # 드래그 중인 아이템 (QTreeWidgetItem)
-        dragged_item = self.currentItem()
-        
-        if not dragged_item or not target_item:
-            event.ignore()
-            return
-            
-        dragged_id = dragged_item.data(0, Qt.ItemDataRole.UserRole)
-        target_id = target_item.data(0, Qt.ItemDataRole.UserRole)
-        
-        if dragged_id == target_id:
-            event.ignore()
-            return
-            
-        # 드롭 위치에 따라 처리
-        if drop_indicator == QTreeWidget.DropIndicatorPosition.OnItem:
-            # 항목 위에 드롭: 하위 항목으로 이동
-            # target의 node_type이 group인 경우만 허용, instruction이면 이동하지 않음
-            target_item_obj = self._viewmodel.get_item(target_id)
-            if target_item_obj is None:
-                event.ignore()
-                print("target_item_obj is None")
-                return
-            target_node_type = target_item_obj.get_property("node_type")
-            print("target_node_type : ", target_node_type)
-            if target_node_type == MTNodeType.GROUP:
-                self._viewmodel.move_item(dragged_id, target_id)
-            else:
-                event.ignore()
-                print("target의 node_type이 group이 아님: 이동 불가")
-                return
-        elif drop_indicator == QTreeWidget.DropIndicatorPosition.AboveItem or drop_indicator == QTreeWidget.DropIndicatorPosition.BelowItem:
-            # 항목 위나 아래에 드롭: 같은 레벨로 이동
-            target_item_obj = self._viewmodel.get_item(target_id)
-            if target_item_obj is None:
-                event.ignore()
-                return
-            target_parent_id = target_item_obj.get_property("parent_id")
-            self._viewmodel.move_item(dragged_id, target_parent_id)
+        if not os.path.exists(icon_path):
+            print(f"Warning: Icon file not found at {icon_path}.")
+            icon = QIcon() # 최종적으로 못 찾으면 빈 아이콘
         else:
-            # 기타 위치 (루트 레벨로 이동)
-            self._viewmodel.move_item(dragged_id, None)
-            
-        # UI 갱신
-        self.update_tree_items()
-        
-        # 기본 처리 무시 (직접 처리했으므로)
+            icon = QIcon(icon_path) # images 폴더 기준 경로 사용
 
-        event.accept()
+        # 버튼 생성 및 설정
+        self.add_button = QPushButton("Add")
+        self.add_button.setIcon(icon)
+        if icon.isNull():
+             self.add_button.setIconSize(self.add_button.iconSize()) # 기본 아이콘 크기 유지
+        else:
+             # 아이콘 크기를 버튼 텍스트 높이에 맞춤
+             font = self.add_button.font()
+             fm = QFontMetrics(font)
+             text_height = fm.height()
+             # 아이콘이 텍스트 높이에 적절히 보이도록 크기 조정 (예: 텍스트 높이보다 2px 작게)
+             icon_dimension = max(8, text_height - 2)  # 최소 크기 8px 보장
+             self.add_button.setIconSize(QSize(icon_dimension, icon_dimension))
+
+        # 아이콘 왼쪽에 약간의 여백 추가 (버튼 내용 전체가 오른쪽으로 이동)
+        self.add_button.setStyleSheet("QPushButton { padding-left: 8px; padding-right: 5px; padding-top: 1px; padding-bottom: 1px; }")
+
+        # 버튼의 최소 높이를 현재 sizeHint보다 10% 크게 설정
+        current_add_button_hint_height = self.add_button.sizeHint().height()
+        target_min_button_height = int(current_add_button_hint_height * 1.1)
+        self.add_button.setMinimumHeight(target_min_button_height)
+
+        self.add_button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        # 버튼의 최대 너비를 기존보다 10% 크게 설정
+        base_width_percentage = 0.25
+        increased_width_percentage = base_width_percentage * 1.1
+        base_fallback_width = 200
+        increased_fallback_width = int(base_fallback_width * 1.1)
+
+        self.add_button.setMaximumWidth(int(self.width() * increased_width_percentage) if self.width() > 0 else increased_fallback_width)
+        self.add_button.clicked.connect(self.on_add_item)
+
+        # --- Del 버튼 아이콘 경로 및 설정 --- #
+        del_icon_path = os.path.join(project_root, "images/icons", "del.png")
+        if not os.path.exists(del_icon_path):
+            print(f"Warning: Icon file not found at {del_icon_path}.")
+            del_icon = QIcon()
+        else:
+            del_icon = QIcon(del_icon_path)
+
+        # "Del" 버튼 생성
+        self.del_button = QPushButton("Del")
+        self.del_button.setIcon(del_icon) # 아이콘 설정
+        if del_icon.isNull():
+            self.del_button.setIconSize(self.del_button.iconSize())
+        else:
+            # Del 버튼 아이콘 크기도 텍스트 높이에 맞춤
+            del_font = self.del_button.font()
+            del_fm = QFontMetrics(del_font)
+            del_text_height = del_fm.height()
+            del_icon_dimension = max(8, del_text_height - 2)
+            self.del_button.setIconSize(QSize(del_icon_dimension, del_icon_dimension))
+
+        # Del 버튼 스타일 및 크기 정책 (Add 버튼과 동일하게)
+        self.del_button.setStyleSheet("QPushButton { padding-left: 8px; padding-right: 5px; padding-top: 1px; padding-bottom: 1px; }")
+        self.del_button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        self.del_button.setMinimumHeight(target_min_button_height) # Add 버튼 기준으로 계산된 최소 높이 적용
+        # Del 버튼 최대 너비도 Add 버튼과 동일하게 설정
+        self.del_button.setMaximumWidth(int(self.width() * increased_width_percentage) if self.width() > 0 else increased_fallback_width)
+
+        self.del_button.clicked.connect(self.on_del_item)
+
+        # 버튼을 레이아웃에 추가 (왼쪽 정렬을 위해 addStretch 사용)
+        button_layout.addWidget(self.add_button) # alignment 제거
+        button_layout.addWidget(self.del_button)
+        button_layout.addStretch(1) # 버튼들을 왼쪽으로 밀어주는 신축성 공간 추가
+
+        # 버튼 레이아웃을 메인 레이아웃에 추가
+        self.layout.addLayout(button_layout)
+
+        self.tree_widget = MTTreeWidget(self._viewmodel)
+        self.layout.addWidget(self.tree_widget)
+        self.setLayout(self.layout)
+
+    def resizeEvent(self, event):
+        if self.add_button:
+            # 창 크기 변경 시 버튼 최대 폭도 10% 증가된 값으로 조정
+            base_width_percentage = 0.25
+            increased_width_percentage = base_width_percentage * 1.1
+            self.add_button.setMaximumWidth(int(self.width() * increased_width_percentage))
+            # Del 버튼 너비도 동일하게 조정
+            if hasattr(self, 'del_button') and self.del_button:
+                self.del_button.setMaximumWidth(int(self.width() * increased_width_percentage))
+                # Del 버튼 최소 높이도 resizeEvent에서 Add 버튼 기준으로 업데이트 (필요하다면)
+                # self.del_button.setMinimumHeight(target_min_button_height) # target_min_button_height가 이 스코프에 있어야 함
+
+            # 높이도 sizeHint 기반으로 resizeEvent에서 업데이트 필요시 여기에 추가 (보통은 __init__에서 충분)
+            # current_hint_height = self.add_button.sizeHint().height()
+            # self.add_button.setMinimumHeight(int(current_hint_height * 1.1))
+        super().resizeEvent(event)
+
+    def on_add_item(self):
+        selected_items = self.tree_widget.selectedItems()
+        parent_id = None
+        if selected_items:
+            parent_id = selected_items[0].data(0, 32)  # Qt.ItemDataRole.UserRole
+        self._viewmodel.add_item('New Item', parent_id, node_type=MTNodeType.INSTRUCTION)
+
+    def on_del_item(self):
+        print("Delete button clicked")
+        selected_items = self.tree_widget.selectedItems()
+        if selected_items:
+            item_to_delete = selected_items[0]
+            item_id = item_to_delete.data(0, 32) # UserRole에서 ID 가져오기
+            print(f"Attempting to delete item with ID: {item_id}")
+            # self._viewmodel.remove_item(item_id) # 뷰모델에 삭제 요청
+        else:
+            print("No item selected to delete.")
+
+    def set_viewmodel(self, viewmodel):
+        self._viewmodel = viewmodel
+        self.tree_widget.set_viewmodel(viewmodel)
 
     def on_viewmodel_signal(self, signal_type, data):
+        # ViewModel로부터 받은 신호에 따라 TreeWidget의 특정 업데이트 메서드 호출
         if signal_type == 'item_added':
-            print("added")
-            self.update_tree_items()
+            item_id = data.get('item_id')
+            parent_id = data.get('parent_id')
+            if item_id:
+                # ViewModel을 통해 추가된 아이템의 상세 정보 가져오기
+                item_data = self._viewmodel.get_item(item_id)
+                if item_data:
+                    print(f"View: Received item_added signal for {item_id}, calling handle_item_added...")
+                    self.tree_widget.handle_item_added(item_data, parent_id)
+                else:
+                    print(f"Warning: Could not get item data for added item {item_id}")
+                    self.tree_widget.update_tree_items() # 예외 처리: 정보 없으면 전체 업데이트
+            else:
+                 self.tree_widget.update_tree_items() # 예외 처리: ID 없으면 전체 업데이트
+
         elif signal_type == 'item_removed':
-            print("removed")
-            self.update_tree_items()
+            item_id = data.get('item_id')
+            if item_id:
+                print(f"View: Received item_removed signal for {item_id}, calling handle_item_removed...")
+                self.tree_widget.handle_item_removed(item_id)
+            else:
+                self.tree_widget.update_tree_items() # 예외 처리
+
         elif signal_type == 'item_moved':
-            print("moved")
-            self.update_tree_items()
-        # 필요시 추가 분기 및 UI 갱신 로직 작성
+            item_id = data.get('item_id')
+            new_parent_id = data.get('new_parent_id')
+            old_parent_id = data.get('old_parent_id') # 이동 전 부모 정보도 필요할 수 있음
+            if item_id:
+                 print(f"View: Received item_moved signal for {item_id}, calling handle_item_moved...")
+                 self.tree_widget.handle_item_moved(item_id, new_parent_id, old_parent_id)
+            else:
+                 self.tree_widget.update_tree_items() # 예외 처리
+
+        elif signal_type == 'item_modified':
+            item_id = data.get('item_id')
+            changes = data.get('changes')
+            if item_id and changes:
+                 print(f"View: Received item_modified signal for {item_id}, calling handle_item_modified...")
+                 self.tree_widget.handle_item_modified(item_id, changes)
+            else:
+                 self.tree_widget.update_tree_items() # 예외 처리
+
+        elif signal_type == 'tree_reset':
+            print("View: Received tree_reset signal, calling update_tree_items...")
+            self.tree_widget.update_tree_items() # 트리가 리셋되면 전체 업데이트 필요
+        # 필요시 추가 분기

@@ -44,17 +44,16 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         return tree.items
 
     # 2. CRUD/비즈니스 로직
-    def add_item(self, name: str, parent_id: str | None = None) -> str | None:
+    def add_item(self, name: str, parent_id: str | None = None, node_type: str = "INSTRUCTION") -> str | None:
         tree = self._get_tree()
         item_id = str(uuid4())
-        item_data = MTTreeItemData(name=name)
+        item_data = MTTreeItemData(name=name, node_type=node_type)
         new_item = MTTreeItem(item_id, item_data)
         try:
             tree.add_item(new_item, parent_id)
             # state manager 관련 코드 필요시 아래 주석 해제
             # if self._state_mgr:
             #     self._state_mgr.save_state(tree)
-            self._notify_change()
             return item_id
         except exc.MTTreeItemAlreadyExistsError:
             return None
@@ -77,7 +76,7 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
                 return False
             except exc.MTTreeError:
                 return False
-        self._notify_change()
+        # self._notify_change()
         return True
 
     def remove_item(self, item_id: str) -> bool:
@@ -88,7 +87,7 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
             self._selected_items.remove(item_id)
         try:
             tree.remove_item(item_id)
-            self._notify_change()
+            # self._notify_change()
             return True
         except exc.MTTreeItemNotFoundError:
             return False
@@ -99,7 +98,7 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         #     self._state_mgr.save_state(tree)
         try:
             tree.move_item(item_id, new_parent_id)
-            self._notify_change()
+            # self._notify_change()
             return True
         except exc.MTTreeItemNotFoundError:
             return False
