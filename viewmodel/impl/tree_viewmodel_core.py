@@ -44,10 +44,10 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         return tree.items
 
     # 2. CRUD/비즈니스 로직
-    def add_item(self, name: str, parent_id: str | None = None) -> str | None:
+    def add_item(self, name: str, parent_id: str | None = None, node_type: str = "INSTRUCTION") -> str | None:
         tree = self._get_tree()
         item_id = str(uuid4())
-        item_data = MTTreeItemData(name=name)
+        item_data = MTTreeItemData(name=name, node_type=node_type)
         new_item = MTTreeItem(item_id, item_data)
         try:
             tree.add_item(new_item, parent_id)

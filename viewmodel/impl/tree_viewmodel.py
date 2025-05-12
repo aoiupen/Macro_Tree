@@ -53,8 +53,8 @@ class MTTreeViewModel:
             # 기타 이벤트 분기 추가 가능
 
     # 1. Core wrapper (비즈니스 로직/데이터 접근)
-    def add_item(self, name: str, parent_id: str | None = None) -> str | None:
-        result = self._core.add_item(name, parent_id)
+    def add_item(self, name: str, parent_id: str | None = None, node_type: str = "INSTRUCTION") -> str | None:
+        result = self._core.add_item(name, parent_id, node_type)
         if result and self._event_manager:
             self._event_manager.notify(MTTreeEvent.ITEM_ADDED, {"item_id": result, "name": name, "parent_id": parent_id})
         return result
