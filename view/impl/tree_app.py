@@ -19,7 +19,9 @@ class MainWindow(QMainWindow):
         # 모델 생성
         # RF : 구현체끼리 서로 import는 순환참조 문제 등으로 피하는 것이 좋다
         # RF : 하지만, 최상위(MainWindow/앱/엔트리포인트/main.py)에서는 구현체를 선택해서 인스턴스를 만들기 때문에 구현체 import가 허용됨 
-        self.tree = MTTree(tree_id="root", name="Root Tree")
+        self.state_manager = MTTreeStateManager()
+        self.event_manager = MTTreeEventManager()
+        self.tree = MTTree(tree_id="root", name="Root Tree", event_manager=self.event_manager)
         
         # 샘플 데이터: 그룹 1개와 그 하위에 INSTRUCTION 1개만 추가
         group = MTTreeItem("group-1", {"name": "Group 1", "node_type": MTNodeType.GROUP})
@@ -27,11 +29,7 @@ class MainWindow(QMainWindow):
         instr = MTTreeItem("item-1", {"name": "Instruction 1", "node_type": MTNodeType.INSTRUCTION})
         self.tree.add_item(instr, "group-1")
 
-        # 그 외 노드는 추가하지 않음
-        
         # ViewModel 생성
-        self.state_manager = MTTreeStateManager()
-        self.event_manager = MTTreeEventManager()
         self.viewmodel = MTTreeViewModel(self.tree, None, self.state_manager, self.event_manager)
         
         # 트리 뷰 생성 및 설정
@@ -45,8 +43,6 @@ class MainWindow(QMainWindow):
         
         self.resize(400, 300)
         
-        self.current_file_path = ""
-
         # 여기서 ViewModel에 View를 연결!
         self.viewmodel.set_view(self.tree_view)
 
