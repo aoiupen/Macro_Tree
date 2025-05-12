@@ -47,23 +47,32 @@ class TreeView(QTreeWidget):
         # 부모-자식 관계 처리를 위한 두 단계 접근법
         self._build_tree_items()
         self._apply_tree_state()
+        self.print_ui_tree()
+
+    def print_ui_tree(self):
+        for i in range(self.topLevelItemCount()):
+            item = self.topLevelItem(i)
+            self._print_ui_tree_children(item, level=0)
+
+    def _print_ui_tree_children(self, item, level):
+        print("  " * level + item.text(0))
+        for i in range(item.childCount()):
+            child = item.child(i)
+            self._print_ui_tree_children(child, level+1)
     
     def _build_tree_items(self):
-        # 1단계: 모든 아이템 생성
         all_items = self._viewmodel.get_tree_items()
-        # 먼저 루트 아이템 추가
+        def add_children(parent_id, parent_widget):
+            for item_id, item in all_items.items():
+                if item.get_property("parent_id") == parent_id:
+                    self._add_tree_item(item, parent_widget)
+                    add_children(item.id, self._id_to_widget_map[item.id])
+        # 루트부터 시작
         for item_id, item in all_items.items():
-            parent_id = item.get_property("parent_id")
-            if not parent_id:
+            if not item.get_property("parent_id"):
                 self._add_tree_item(item, self)
-        
-        # 다음 자식 아이템 추가 (부모 참조로)
-        for item_id, item in all_items.items():
-            parent_id = item.get_property("parent_id")
-            if parent_id and parent_id in self._id_to_widget_map:
-                parent_widget = self._id_to_widget_map[parent_id]
-                self._add_tree_item(item, parent_widget)
-    
+                add_children(item.id, self._id_to_widget_map[item.id])
+
     def _apply_tree_state(self):
         # 2단계: 확장/선택 상태 적용
         for item_id, widget_item in self._id_to_widget_map.items():
@@ -131,17 +140,20 @@ class TreeView(QTreeWidget):
         # 드롭 위치에 따라 처리
         if drop_indicator == QTreeWidget.DropIndicatorPosition.OnItem:
             # 항목 위에 드롭: 하위 항목으로 이동
-            # node_type이 group인 경우 자식으로 이동
-            # node_type이 instruction인 경우 이동하지 않음
-            dragged_item_obj = self._viewmodel.get_item(dragged_id)
-            if dragged_item_obj is None:
+            # target의 node_type이 group인 경우만 허용, instruction이면 이동하지 않음
+            target_item_obj = self._viewmodel.get_item(target_id)
+            if target_item_obj is None:
                 event.ignore()
-                print("dragged_item_obj is None")
+                print("target_item_obj is None")
                 return
-            dragged_item_type = dragged_item_obj.get_property("node_type")
-            print("dragged_item_type : ", dragged_item_type)
-            if dragged_item_type == MTNodeType.GROUP:
+            target_node_type = target_item_obj.get_property("node_type")
+            print("target_node_type : ", target_node_type)
+            if target_node_type == MTNodeType.GROUP:
                 self._viewmodel.move_item(dragged_id, target_id)
+            else:
+                event.ignore()
+                print("target의 node_type이 group이 아님: 이동 불가")
+                return
         elif drop_indicator == QTreeWidget.DropIndicatorPosition.AboveItem or drop_indicator == QTreeWidget.DropIndicatorPosition.BelowItem:
             # 항목 위나 아래에 드롭: 같은 레벨로 이동
             target_item_obj = self._viewmodel.get_item(target_id)

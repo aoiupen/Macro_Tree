@@ -29,23 +29,37 @@ class MainWindow(QMainWindow):
         group1 = MTTreeItem("group1", {"name": "Group 1", "node_type": MTNodeType.GROUP})
         self.tree.add_item(group1, "root")
         
+        # group1에 INSTRUCTION 3개 추가
+        for i in range(3):
+            instr = MTTreeItem(f"item-g1-{i}", {"name": f"Item {i} in Group 1", "node_type": MTNodeType.INSTRUCTION})
+            self.tree.add_item(instr, "group1")
+        
         # 두 번째 그룹
         group2 = MTTreeItem("group2", {"name": "Group 2", "node_type": MTNodeType.GROUP})
         self.tree.add_item(group2, "root")
-        
-        # 그룹 1의 하위 항목
-        for i in range(3):
-            item = MTTreeItem(f"item-g1-{i}", {"name": f"Item {i} in Group 1", "node_type": MTNodeType.INSTRUCTION})
-            self.tree.add_item(item, "group1")
-        
-        # 그룹 2의 하위 항목
-        for i in range(2):
+
+        # group2의 하위 폴더(subgroup2) 추가
+        subgroup2 = MTTreeItem("subgroup2", {"name": "Sub Group 2", "node_type": MTNodeType.GROUP})
+        self.tree.add_item(subgroup2, "group2")
+
+        # 그룹 2의 하위 항목 (INSTRUCTION 아래에는 자식 추가 X)
+        group2_items = []
+        for i in range(4):
             item = MTTreeItem(f"item-g2-{i}", {"name": f"Item {i} in Group 2", "node_type": MTNodeType.INSTRUCTION})
-            self.tree.add_item(item, "group2")
-            
-            # 서브 아이템 추가
+            group2_items.append(item)
+        # 절반은 group2에, 절반은 subgroup2에 추가
+        for i, item in enumerate(group2_items):
+            if i < len(group2_items) // 2:
+                self.tree.add_item(item, "group2")
+            else:
+                self.tree.add_item(item, "subgroup2")
+        # 서브 아이템은 group2와 subgroup2에 각각 추가 (INSTRUCTION 아래 X)
+        for i in range(2):
             sub_item = MTTreeItem(f"item-g2-{i}-sub", {"name": f"Sub-item of {i}", "node_type": MTNodeType.INSTRUCTION})
-            self.tree.add_item(sub_item, f"item-g2-{i}")
+            self.tree.add_item(sub_item, "group2")
+        for i in range(2, 4):
+            sub_item = MTTreeItem(f"item-g2-{i}-sub", {"name": f"Sub-item of {i}", "node_type": MTNodeType.INSTRUCTION})
+            self.tree.add_item(sub_item, "subgroup2")
         
         # 루트 항목 확장 상태로 설정
         root_item.set_property("expanded", True)

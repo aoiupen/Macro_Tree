@@ -41,6 +41,7 @@ class MTTreeViewModel:
             elif event_type == 'ITEM_MODIFIED' or (hasattr(event_type, 'name') and event_type.name == 'ITEM_MODIFIED'):
                 self._ui_view.on_viewmodel_signal('item_modified', data)
 
+    # RF : 만들었으나 pyqtboundsignal이 이미 있으므로 사용하지는 않음. 추후 크로스플랫폼 확장 시 사용 고려
     def on_tree_ui_event(self, event_type, data):
         if self._ui_view:
             if event_type == 'ITEM_SELECTED' or (hasattr(event_type, 'name') and event_type.name == 'ITEM_SELECTED'):

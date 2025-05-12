@@ -36,11 +36,10 @@ class MTTreeItem(IMTTreeItem):
         return copy.deepcopy(self._data)
     
     def get_property(self, key: str, default: Any = None) -> Any:
-        """
-        아이템 속성을 가져옵니다.
-        dataclass는 dict처럼 get을 지원하지 않으므로, getattr 사용
-        """
-        return getattr(self._data, key, default)
+        value = getattr(self._data, key, default)
+        if key == "children_ids" and (value is None):
+            return []
+        return value
     
     def set_property(self, key: str, value: Any) -> None:
         """아이템 속성을 설정합니다."""
