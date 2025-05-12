@@ -105,7 +105,7 @@ class _MTTreeModifiable:
 
         self._tree._notify(MTTreeEvent.ITEM_MOVED, {
             "item_id": item_id,
-            "new_parent_id": new_parent_id
+            "new_parent_id": new_parent_id,
             "old_parent_id": old_parent_id,
         })
 
