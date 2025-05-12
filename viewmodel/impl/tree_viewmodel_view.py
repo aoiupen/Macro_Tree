@@ -54,11 +54,9 @@ class MTTreeViewModelView(IMTTreeViewModelView):
         tree = self.get_current_tree()
         if not tree or not tree.get_item(item_id):
             return False
-        
         # 다중 선택이 아니면 기존 선택 초기화
         if not multi_select:
             self._selected_items.clear()
-        
         # 선택 토글
         if item_id in self._selected_items:
             self._selected_items.remove(item_id)

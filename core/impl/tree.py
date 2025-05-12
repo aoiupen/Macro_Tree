@@ -109,8 +109,6 @@ class _MTTreeModifiable:
             "old_parent_id": old_parent_id,
         })
 
-        for item_id, item in self._tree.items.items():
-            print(item_id, "/",item.get_property("parent_id"), "/", item.get_property("children_ids"))
         return True
 
     def modify_item(self, item_id: str, changes: Dict[str, Any]) -> bool:

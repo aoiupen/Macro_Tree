@@ -19,28 +19,12 @@ class MTTreeWidget(QTreeWidget):
         self.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
         self.update_tree_items()
 
-    def set_viewmodel(self, viewmodel):
-        self._viewmodel = viewmodel
-        self.update_tree_items()
-
     def update_tree_items(self):
         selected_ids = self._viewmodel.get_selected_items()
         self.clear()
         self._id_to_widget_map = {}
         self._build_tree_items()
         self._apply_tree_state()
-        self.print_ui_tree()
-
-    def print_ui_tree(self):
-        for i in range(self.topLevelItemCount()):
-            item = self.topLevelItem(i)
-            self._print_ui_tree_children(item, level=0)
-
-    def _print_ui_tree_children(self, item, level):
-        print("  " * level + item.text(0))
-        for i in range(item.childCount()):
-            child = item.child(i)
-            self._print_ui_tree_children(child, level+1)
 
     def _build_tree_items(self):
         all_items = self._viewmodel.get_tree_items()
@@ -80,7 +64,6 @@ class MTTreeWidget(QTreeWidget):
     def item_clicked(self, item, column):
         item_id = item.data(0, Qt.ItemDataRole.UserRole)
         self._viewmodel.select_item(item_id)
-        self.update_tree_items()
 
     def _on_item_expanded(self, item):
         item_id = item.data(0, Qt.ItemDataRole.UserRole)
@@ -109,7 +92,6 @@ class MTTreeWidget(QTreeWidget):
                 print("target_item_obj is None")
                 return
             target_node_type = target_item_obj.get_property("node_type")
-            print("target_node_type : ", target_node_type)
             if target_node_type == MTNodeType.GROUP:
                 self._viewmodel.move_item(dragged_id, target_id)
             else:
@@ -127,4 +109,17 @@ class MTTreeWidget(QTreeWidget):
             self._viewmodel.move_item(dragged_id, None)
         self.update_tree_items()
         event.accept()
-        # 필요시 추가 분기 및 UI 갱신 로직 작성 
+
+    def mousePressEvent(self, event):
+        item = self.itemAt(event.position().toPoint())
+        if item is not None:
+            item_id = item.data(0, Qt.ItemDataRole.UserRole)
+            # 항상 단일 선택 모드로 ViewModel에 반영
+            self._viewmodel.select_item(item_id, multi_select=False)
+        super().mousePressEvent(event)
+
+    def startDrag(self, supportedActions):
+        # 드래그 시작 시 선택 상태를 클리어
+        self._viewmodel._view._selected_items.clear()
+        self._viewmodel._view._notify_change()
+        super().startDrag(supportedActions)
