@@ -48,6 +48,15 @@ class _MTTreeModifiable:
             self._tree._root_id = item_id
         item.set_property("parent_id", parent_id)
         self._tree._items[item_id] = item
+
+        # 부모의 children_ids에 자식 추가
+        if parent_id is not None:
+            parent = self._tree._items[parent_id]
+            children_ids = parent.get_property("children_ids", [])
+            if item_id not in children_ids:
+                children_ids.append(item_id)
+            parent.set_property("children_ids", children_ids)
+
         self._tree._notify(MTTreeEvent.ITEM_ADDED, {"item_id": item_id, "parent_id": parent_id})
         return True
 
@@ -63,7 +72,7 @@ class _MTTreeModifiable:
         self._tree._notify(MTTreeEvent.ITEM_REMOVED, {"item_id": item_id})
         return True
 
-    def move_item(self, item_id: str, new_parent_id: Optional[str]) -> bool:
+    def move_item(self, item_id: str, new_parent_id: str | None) -> bool:
         if item_id not in self._tree.items:
             raise exc.MTTreeItemNotFoundError(f"존재하지 않는 아이템 ID: {item_id}")
         if new_parent_id is not None and new_parent_id not in self._tree.items:
@@ -74,12 +83,34 @@ class _MTTreeModifiable:
         old_parent_id = item.get_property("parent_id")
         if old_parent_id == new_parent_id:
             return False
+
+        # 기존 부모의 children_ids에서 제거
+        if old_parent_id is not None and old_parent_id in self._tree.items:
+            old_parent = self._tree.items[old_parent_id]
+            old_children = old_parent.get_property("children_ids", [])
+            if item_id in old_children:
+                old_children.remove(item_id)
+            old_parent.set_property("children_ids", old_children)
+
+        # 새 부모의 children_ids에 추가 (None이 아닐 때만)
+        if new_parent_id is not None:
+            new_parent = self._tree.items[new_parent_id]
+            children_ids = new_parent.get_property("children_ids", [])
+            if item_id not in children_ids:
+                children_ids.append(item_id)
+            new_parent.set_property("children_ids", children_ids)
+
+        # parent_id 갱신
         item.set_property("parent_id", new_parent_id)
+
         self._tree._notify(MTTreeEvent.ITEM_MOVED, {
             "item_id": item_id,
-            "old_parent_id": old_parent_id,
             "new_parent_id": new_parent_id
+            "old_parent_id": old_parent_id,
         })
+
+        for item_id, item in self._tree.items.items():
+            print(item_id, "/",item.get_property("parent_id"), "/", item.get_property("children_ids"))
         return True
 
     def modify_item(self, item_id: str, changes: Dict[str, Any]) -> bool:
