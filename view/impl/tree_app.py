@@ -1,6 +1,6 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 
 from core.impl.tree import MTTree
 from core.impl.item import MTTreeItem
@@ -21,48 +21,13 @@ class MainWindow(QMainWindow):
         # RF : 하지만, 최상위(MainWindow/앱/엔트리포인트/main.py)에서는 구현체를 선택해서 인스턴스를 만들기 때문에 구현체 import가 허용됨 
         self.tree = MTTree(tree_id="root", name="Root Tree")
         
-        # 샘플 데이터 추가
-        root_item = MTTreeItem("root", {"name": "Root Item", "node_type": MTNodeType.GROUP})
-        self.tree.add_item(root_item, None)
-        
-        # 첫 번째 그룹
-        group1 = MTTreeItem("group1", {"name": "Group 1", "node_type": MTNodeType.GROUP})
-        self.tree.add_item(group1, "root")
-        
-        # group1에 INSTRUCTION 3개 추가
-        for i in range(3):
-            instr = MTTreeItem(f"item-g1-{i}", {"name": f"Item {i} in Group 1", "node_type": MTNodeType.INSTRUCTION})
-            self.tree.add_item(instr, "group1")
-        
-        # 두 번째 그룹
-        group2 = MTTreeItem("group2", {"name": "Group 2", "node_type": MTNodeType.GROUP})
-        self.tree.add_item(group2, "root")
+        # 샘플 데이터: 그룹 1개와 그 하위에 INSTRUCTION 1개만 추가
+        group = MTTreeItem("group-1", {"name": "Group 1", "node_type": MTNodeType.GROUP})
+        self.tree.add_item(group, None)
+        instr = MTTreeItem("item-1", {"name": "Instruction 1", "node_type": MTNodeType.INSTRUCTION})
+        self.tree.add_item(instr, "group-1")
 
-        # group2의 하위 폴더(subgroup2) 추가
-        subgroup2 = MTTreeItem("subgroup2", {"name": "Sub Group 2", "node_type": MTNodeType.GROUP})
-        self.tree.add_item(subgroup2, "group2")
-
-        # 그룹 2의 하위 항목 (INSTRUCTION 아래에는 자식 추가 X)
-        group2_items = []
-        for i in range(4):
-            item = MTTreeItem(f"item-g2-{i}", {"name": f"Item {i} in Group 2", "node_type": MTNodeType.INSTRUCTION})
-            group2_items.append(item)
-        # 절반은 group2에, 절반은 subgroup2에 추가
-        for i, item in enumerate(group2_items):
-            if i < len(group2_items) // 2:
-                self.tree.add_item(item, "group2")
-            else:
-                self.tree.add_item(item, "subgroup2")
-        # 서브 아이템은 group2와 subgroup2에 각각 추가 (INSTRUCTION 아래 X)
-        for i in range(2):
-            sub_item = MTTreeItem(f"item-g2-{i}-sub", {"name": f"Sub-item of {i}", "node_type": MTNodeType.INSTRUCTION})
-            self.tree.add_item(sub_item, "group2")
-        for i in range(2, 4):
-            sub_item = MTTreeItem(f"item-g2-{i}-sub", {"name": f"Sub-item of {i}", "node_type": MTNodeType.INSTRUCTION})
-            self.tree.add_item(sub_item, "subgroup2")
-        
-        # 루트 항목 확장 상태로 설정
-        root_item.set_property("expanded", True)
+        # 그 외 노드는 추가하지 않음
         
         # ViewModel 생성
         self.state_manager = MTTreeStateManager()
@@ -89,6 +54,8 @@ class MainWindow(QMainWindow):
         self.event_manager.subscribe(MTTreeEvent.ITEM_ADDED, self.viewmodel.on_tree_mod_event)
         self.event_manager.subscribe(MTTreeEvent.ITEM_REMOVED, self.viewmodel.on_tree_mod_event)
         self.event_manager.subscribe(MTTreeEvent.ITEM_MOVED, self.viewmodel.on_tree_mod_event)
+
+        # 트리 위젯 상태를 UI가 완전히 그려진 뒤 한 번만 출력
 
 def main():
     app = QApplication(sys.argv)

@@ -41,20 +41,9 @@ class MTTreeViewModel:
             elif event_type == 'ITEM_MODIFIED' or (hasattr(event_type, 'name') and event_type.name == 'ITEM_MODIFIED'):
                 self._ui_view.on_viewmodel_signal('item_modified', data)
 
-    # RF : 만들었으나 pyqtboundsignal이 이미 있으므로 사용하지는 않음. 추후 크로스플랫폼 확장 시 사용 고려
-    def on_tree_ui_event(self, event_type, data):
-        if self._ui_view:
-            if event_type == 'ITEM_SELECTED' or (hasattr(event_type, 'name') and event_type.name == 'ITEM_SELECTED'):
-                self._ui_view.on_viewmodel_signal('item_selected', data)
-            elif event_type == 'ITEM_EXPANDED' or (hasattr(event_type, 'name') and event_type.name == 'ITEM_EXPANDED'):
-                self._ui_view.on_viewmodel_signal('item_expanded', data)
-            elif event_type == 'ITEM_COLLAPSED' or (hasattr(event_type, 'name') and event_type.name == 'ITEM_COLLAPSED'):
-                self._ui_view.on_viewmodel_signal('item_collapsed', data)
-            # 기타 이벤트 분기 추가 가능
-
     # 1. Core wrapper (비즈니스 로직/데이터 접근)
-    def add_item(self, name: str, parent_id: str | None = None) -> str | None:
-        result = self._core.add_item(name, parent_id)
+    def add_item(self, name: str, parent_id: str | None = None, node_type: str = "INSTRUCTION") -> str | None:
+        result = self._core.add_item(name, parent_id, node_type)
         if result and self._event_manager:
             self._event_manager.notify(MTTreeEvent.ITEM_ADDED, {"item_id": result, "name": name, "parent_id": parent_id})
         return result
