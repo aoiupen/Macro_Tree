@@ -19,7 +19,7 @@ class MTTreeViewModel(QObject): # QObject 상속
         super().__init__(parent) # QObject 생성자 호출
         self._tree = tree
         self._core: MTTreeViewModelCore = MTTreeViewModelCore(self._tree)
-        self._model: MTTreeViewModelModel = MTTreeViewModelModel()
+        self._model: MTTreeViewModelModel = MTTreeViewModelModel(self._tree)
         self._view: MTTreeViewModelView = MTTreeViewModelView(self._tree)
         self._event_manager = event_manager
         self._ui_view = None

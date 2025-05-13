@@ -7,7 +7,7 @@ from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
 from viewmodel.interfaces.base_tree_viewmodel_model import IMTTreeViewModelModel
 
 class MTTreeViewModelModel(IMTTreeViewModelModel):
-    def __init__(self) -> None:
+    def __init__(self, tree) -> None:
         self._state_mgr: IMTTreeStateManager = MTTreeStateManager()
         self._repository: IMTTreeRepository = PostgreSQLTreeRepository()
         self._subscribers: Set[Callable[[], None]] = set()  # 변경 알림을 받을 콜백

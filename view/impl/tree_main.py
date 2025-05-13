@@ -2,6 +2,7 @@ import sys
 import os
 from dotenv import load_dotenv
 from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QSplitter
+from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtCore import Qt
 
 from core.impl.tree import MTTree
@@ -79,7 +80,35 @@ class MainWindow(QMainWindow):
             layout.addWidget(self.tree_view)
             self.setCentralWidget(central_widget)
 
+        self._setup_undo_redo_actions() # Undo/Redo 액션 설정 메서드 호출
+
         self.viewmodel.item_modified.connect(self.on_viewmodel_item_changed)
+
+    def _setup_undo_redo_actions(self):
+        undo_action = QAction("Undo", self)
+        undo_action.setShortcut(QKeySequence("Ctrl+Z"))
+        # ViewModel에 undo 메서드가 있다고 가정, 없다면 ViewModel에 추가 필요
+        if hasattr(self.viewmodel, 'undo') and callable(self.viewmodel.undo):
+            undo_action.triggered.connect(self.viewmodel.undo)
+        else:
+            print("Warning: MTTreeViewModel does not have an 'undo' method or it is not callable.")
+            undo_action.setEnabled(False)
+        self.addAction(undo_action)
+
+        redo_action = QAction("Redo", self)
+        redo_action.setShortcut(QKeySequence("Ctrl+Y"))
+        # ViewModel에 redo 메서드가 있다고 가정, 없다면 ViewModel에 추가 필요
+        if hasattr(self.viewmodel, 'redo') and callable(self.viewmodel.redo):
+            redo_action.triggered.connect(self.viewmodel.redo)
+        else:
+            print("Warning: MTTreeViewModel does not have a 'redo' method or it is not callable.")
+            redo_action.setEnabled(False)
+        self.addAction(redo_action)
+
+        # 선택: 메뉴에도 추가 (예시)
+        # edit_menu = self.menuBar().addMenu("&Edit")
+        # edit_menu.addAction(undo_action)
+        # edit_menu.addAction(redo_action)
 
     def on_viewmodel_item_changed(self, data: dict):
         item_id = data.get("id")
