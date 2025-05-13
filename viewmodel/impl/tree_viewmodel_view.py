@@ -62,8 +62,6 @@ class MTTreeViewModelView(IMTTreeViewModelView):
             self._selected_items.remove(item_id)
         else:
             self._selected_items.add(item_id)
-        
-        self._notify_change()
         return True
 
     def get_current_tree(self) -> IMTTree | None:
@@ -103,7 +101,6 @@ class MTTreeViewModelView(IMTTreeViewModelView):
         current = item.get_property("expanded", False)
         new_state = not current if expanded is None else expanded
         item.set_property("expanded", new_state)
-        self._notify_change()
         return True
 
     def clear_selection_state(self):
@@ -113,10 +110,3 @@ class MTTreeViewModelView(IMTTreeViewModelView):
 
         self._selected_items.clear()
         print("ViewModelView: Selection cleared.")
-        # 선택 상태 변경을 View나 다른 곳에 알려야 한다면 여기서 알림 로직 추가
-        self._notify_change() # 예시: 내부 변경 알림 메서드 호출
-
-    def _notify_change(self):
-         # ViewModel이나 외부 구독자에게 변경을 알리는 로직 (현재 구현 방식에 맞게)
-         # 예를 들어, ViewModel을 통해 signal을 emit 하거나 콜백 호출
-         pass

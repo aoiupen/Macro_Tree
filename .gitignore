@@ -199,3 +199,6 @@ node_modules/
 
 # node.js 패키지 관리
 package-lock.json
+
+# 디버그 뷰어 파일
+debug/
