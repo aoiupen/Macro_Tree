@@ -4,7 +4,6 @@ from PyQt6.QtGui import QIcon
 from core.interfaces.base_item_data import MTNodeType
 import os
 from viewmodel.impl.tree_viewmodel import MTTreeViewModel
-from PyQt6.QtCore import pyqtSlot
 import logging
 
 logger = logging.getLogger(__name__)
@@ -24,23 +23,32 @@ class MTTreeWidget(QTreeWidget):
         self.update_tree_items()
 
     def update_tree_items(self):
-        selected_ids = self._viewmodel.get_selected_items()
         self.clear()
         self._id_to_widget_map = {}
         self._build_tree_items()
         self._apply_tree_state()
 
     def _build_tree_items(self):
+        dummy_root_id = self._viewmodel.get_dummy_root_id()
         all_items = self._viewmodel.get_tree_items()
-        def add_children(parent_id, parent_widget):
-            for item_id, item in all_items.items():
-                if item.get_property("parent_id") == parent_id:
-                    self._add_tree_item(item, parent_widget)
-                    add_children(item.id, self._id_to_widget_map[item.id])
-        for item_id, item in all_items.items():
-            if not item.get_property("parent_id"):
-                self._add_tree_item(item, self)
-                add_children(item.id, self._id_to_widget_map[item.id])
+
+        def add_children_to_widget(parent_item_id_in_model, parent_qwidget_item):
+            for item_id, item_model in all_items.items():
+                if item_model.get_property("parent_id") == parent_item_id_in_model:
+                    self._add_tree_item(item_model, parent_qwidget_item)
+                    new_qwidget_item = self._id_to_widget_map.get(item_id)
+                    if new_qwidget_item:
+                        add_children_to_widget(item_id, new_qwidget_item)
+
+        if dummy_root_id:
+            for item_id, item_model in all_items.items():
+                if item_model.get_property("parent_id") == dummy_root_id:
+                    self._add_tree_item(item_model, self)
+                    top_level_qwidget_item = self._id_to_widget_map.get(item_id)
+                    if top_level_qwidget_item:
+                        add_children_to_widget(item_id, top_level_qwidget_item)
+        else:
+            logger.warning("Dummy root ID not found. Tree might not be built correctly.")
 
     def _apply_tree_state(self):
         for item_id, widget_item in self._id_to_widget_map.items():
@@ -57,26 +65,18 @@ class MTTreeWidget(QTreeWidget):
         node_type = item.get_property("node_type", None)
         icon_path = None
 
-        # 프로젝트 루트 경로 계산 (TreeView와 유사하게)
-        # 이 파일 위치(view/impl)에서 두 단계 위로 이동
         project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
         if node_type is not None:
-            # Enum 타입 직접 비교로 변경
             if node_type == MTNodeType.GROUP:
-                # 프로젝트 루트 기준 절대 경로 사용
                 icon_path = os.path.join(project_root, "images", "icons", "group.png")
             elif node_type == MTNodeType.INSTRUCTION:
-                # 프로젝트 루트 기준 절대 경로 사용
                 icon_path = os.path.join(project_root, "images", "icons", "inst.png")
 
-        # os.path.exists 호출은 디스크 접근을 유발함.
-        # 만약 아이콘 경로가 항상 유효하다면 (예: 리소스 시스템 사용 또는 빌드 시 검증)
-        # 이 부분을 제거하여 성능을 약간 향상시킬 수 있음.
         if icon_path and os.path.exists(icon_path):
             widget_item.setIcon(0, QIcon(icon_path))
         elif icon_path:
-            print(f"Warning: Icon file not found at {icon_path}") # 경로가 생성되었으나 파일이 없을 때 경고
+            print(f"Warning: Icon file not found at {icon_path}")
 
         self._id_to_widget_map[item.id] = widget_item
 
@@ -129,40 +129,22 @@ class MTTreeWidget(QTreeWidget):
         else:
             print(f"DropEvent: Requesting move {dragged_id} to root (None)")
             self._viewmodel.move_item(dragged_id, None)
-        event.accept()
-
-    def mousePressEvent(self, event):
-        item = self.itemAt(event.position().toPoint())
-        if item is not None:
-            item_id = item.data(0, Qt.ItemDataRole.UserRole)
-            # 항상 단일 선택 모드로 ViewModel에 반영
-            self._viewmodel.select_item(item_id, multi_select=False)
-        super().mousePressEvent(event)
-
-    def startDrag(self, supportedActions):
-        # 드래그 시작 시 ViewModel을 통해 선택 상태 클리어 요청 (캡슐화)
-        print("Requesting clear selection before drag...")
-        self._viewmodel.clear_selection_state()
-        super().startDrag(supportedActions)
+        event.ignore()
 
     def handle_item_added(self, item_data, parent_id):
         """새 아이템 추가를 처리합니다."""
         parent_widget = None
-        if parent_id:
+        if parent_id == self._viewmodel.get_dummy_root_id() or parent_id is None:
+            parent_widget = self.invisibleRootItem()
+        elif parent_id:
             parent_widget = self._id_to_widget_map.get(parent_id)
             if parent_widget is None:
                 print(f"Warning: Parent widget not found for {parent_id}, cannot add {item_data.id}. Triggering full update.")
                 self.update_tree_items()
                 return
-        else:
-            # parent_id가 None이면 최상위 아이템으로 추가
-            parent_widget = self.invisibleRootItem() # QTreeWidget 자체 또는 가상 루트 사용
 
-        # 새 QTreeWidgetItem 생성 및 추가 (기존 _add_tree_item 로직 재활용)
-        # 주의: _add_tree_item은 이미 _id_to_widget_map에 추가하므로 여기서 직접 추가 불필요
         self._add_tree_item(item_data, parent_widget)
         print(f"Widget: Item {item_data.id} added under parent {parent_id}")
-        # 필요시 새로 추가된 아이템 확장/선택 상태 적용
         new_widget_item = self._id_to_widget_map.get(item_data.id)
         if new_widget_item and item_data.get_property("expanded", False):
             self.expandItem(new_widget_item)
@@ -178,14 +160,12 @@ class MTTreeWidget(QTreeWidget):
                 parent_widget.removeChild(widget_item)
                 print(f"Widget: Item {item_id} removed from parent {parent_widget.data(0, Qt.ItemDataRole.UserRole)}")
             else:
-                # 최상위 아이템 제거
                 index = self.indexOfTopLevelItem(widget_item)
                 if index != -1:
                     self.takeTopLevelItem(index)
                     print(f"Widget: Top level item {item_id} removed")
         else:
              print(f"Warning: Widget item not found for {item_id} during removal.")
-             # 필요시 전체 업데이트 self.update_tree_items()
 
     def handle_item_modified(self, item_id, changes):
         """아이템 수정을 처리합니다."""
@@ -195,7 +175,6 @@ class MTTreeWidget(QTreeWidget):
             if 'name' in changes:
                 widget_item.setText(0, changes['name'])
             if 'node_type' in changes:
-                # 아이콘 업데이트 로직 (기존 _add_tree_item의 아이콘 설정 부분 참고)
                 node_type = changes['node_type']
                 icon_path = None
                 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -207,133 +186,103 @@ class MTTreeWidget(QTreeWidget):
                      widget_item.setIcon(0, QIcon(icon_path))
                 elif icon_path:
                      print(f"Warning: Icon file not found for modified item {item_id} at {icon_path}")
-                     widget_item.setIcon(0, QIcon()) # 아이콘 제거 또는 기본 아이콘
+                     widget_item.setIcon(0, QIcon())
                 else:
                      widget_item.setIcon(0, QIcon())
-            # 필요시 다른 속성(툴팁 등) 업데이트 로직 추가
         else:
             print(f"Warning: Widget item not found for {item_id} during modification.")
-            # 필요시 전체 업데이트 self.update_tree_items()
 
     def handle_item_moved(self, item_id, new_parent_id, old_parent_id):
         """아이템 이동을 처리합니다."""
-        widget_item = self._id_to_widget_map.get(item_id)
-        if not widget_item:
-            print(f"Warning: Widget item not found for {item_id} during move.")
-            self.update_tree_items() # 이동할 아이템 없으면 전체 업데이트
+        print(f"[HANDLE_MOVED_DEBUG] Called for item_id: {item_id}, new_parent_id: {new_parent_id}, old_parent_id: {old_parent_id}")
+
+        widget_item_popped = self._id_to_widget_map.pop(item_id, None) 
+
+        if not widget_item_popped:
+            print(f"[HANDLE_MOVED_DEBUG] Warning: Widget item not found for {item_id} in _id_to_widget_map. Triggering full update.")
+            self.update_tree_items()
             return
+        print(f"[HANDLE_MOVED_DEBUG] Popped {item_id} from map. Object: {widget_item_popped}, Text: {widget_item_popped.text(0) if widget_item_popped else 'N/A'}")
 
-        # 1. 기존 부모에서 제거 (UI 상에서만)
-        old_parent_widget = widget_item.parent()
-        taken_item = None
-        if old_parent_widget:
-            print(f"Widget: Taking item {item_id} from old parent {old_parent_widget.data(0, Qt.ItemDataRole.UserRole)}")
-            taken_item = old_parent_widget.takeChild(old_parent_widget.indexOfChild(widget_item))
+        old_q_parent_widget = widget_item_popped.parent()
+        taken_item_from_ui = None
+        if old_q_parent_widget:
+            index_in_old_parent = old_q_parent_widget.indexOfChild(widget_item_popped)
+            if index_in_old_parent != -1:
+                taken_item_from_ui = old_q_parent_widget.takeChild(index_in_old_parent)
+                print(f"[HANDLE_MOVED_DEBUG] Took item {item_id} from old parent QWidget: {old_q_parent_widget} (Text: {old_q_parent_widget.text(0) if old_q_parent_widget != self.invisibleRootItem() else 'InvisibleRoot'}). taken_item_from_ui: {taken_item_from_ui}")
+            else:
+                print(f"[HANDLE_MOVED_DEBUG] Error: Could not find widget_item_popped in its supposed old_q_parent_widget: {old_q_parent_widget}")
         else:
-            index = self.indexOfTopLevelItem(widget_item)
-            if index != -1:
-                print(f"Widget: Taking top level item {item_id}")
-                taken_item = self.takeTopLevelItem(index)
+            index_in_toplevel = self.indexOfTopLevelItem(widget_item_popped)
+            if index_in_toplevel != -1:
+                taken_item_from_ui = self.takeTopLevelItem(index_in_toplevel)
+                print(f"[HANDLE_MOVED_DEBUG] Took top level item {item_id}. taken_item_from_ui: {taken_item_from_ui}")
+            else:
+                print(f"[HANDLE_MOVED_DEBUG] Error: Could not find top level item {item_id}.")
 
-        if taken_item is None:
-             print(f"Error: Failed to take item {item_id} from its old position.")
-             # 원래 위치로 돌려놓거나 전체 업데이트 등 복구 로직 필요할 수 있음
+        if taken_item_from_ui is None:
+             print(f"[HANDLE_MOVED_DEBUG] Error: Failed to take item {item_id} from its old UI position. Triggering full update.")
              self.update_tree_items()
              return
+        
+        if taken_item_from_ui is not widget_item_popped:
+             print(f"[HANDLE_MOVED_DEBUG] CRITICAL WARNING: taken_item_from_ui is NOT the same instance as widget_item_popped! This should not happen.")
 
-        # 2. 새 부모에 추가
-        new_parent_widget = None
-        if new_parent_id:
-            new_parent_widget = self._id_to_widget_map.get(new_parent_id)
-            if new_parent_widget is None:
-                print(f"Warning: New parent widget not found for {new_parent_id}, cannot move {item_id}. Triggering full update.")
-                # 아이템을 원래 위치로 돌려놓는 로직 추가 필요할 수 있음
-                self.update_tree_items()
-                return
-            print(f"Widget: Adding item {item_id} to new parent {new_parent_id}")
-            new_parent_widget.addChild(taken_item)
-        else:
-            # 최상위로 이동
-            print(f"Widget: Adding item {item_id} as top level item")
-            self.addTopLevelItem(taken_item)
-
-        # 이동 후 상태 업데이트 (필요시 확장 등)
-        if item_data := self._viewmodel.get_item(item_id):
-            if item_data.get_property("expanded", False):
-                self.expandItem(widget_item)
-
-    @pyqtSlot(str, int, str, MTNodeType)
-    def update_ui_for_added_item(self, parent_id: str, index: int, new_id: str, new_type: MTNodeType):
-        """ViewModel의 item_added 시그널을 처리하여 트리에 아이템을 추가합니다."""
-        parent_item = self._find_item_by_id(parent_id)
-        if parent_item is None:
-            # 부모가 루트이거나 찾을 수 없는 경우 (오류 또는 초기 상태)
-            parent_item = self.invisibleRootItem()
-            if parent_id != "root": # 루트가 아닌데 못찾으면 경고
-                 logger.warning(f"Parent item '{parent_id}' not found for adding '{new_id}'. Adding to root.")
-
-        # 모델에서 새 아이템 정보 가져오기 (이름 등)
-        item_data = self._viewmodel.get_item_data(new_id)
-        if not item_data:
-             logger.error(f"Could not retrieve data for newly added item '{new_id}'. Cannot add to tree.")
-             return
-
-        new_widget_item = QTreeWidgetItem([item_data.get('name', 'Unnamed')])
-        new_widget_item.setData(0, Qt.ItemDataRole.UserRole, new_id) # UserRole에 ID 저장
-        # 아이콘 설정 등 추가 속성 설정 가능
-        self._set_icon_based_on_type(new_widget_item, new_type)
-
-        parent_item.insertChild(index, new_widget_item)
-        self._item_map[new_id] = new_widget_item
-        logger.debug(f"UI: Added item '{new_id}' under '{parent_id}' at index {index}")
-
-    @pyqtSlot(str, str, int)
-    def update_ui_for_moved_item(self, source_id: str, target_parent_id: str, target_index: int):
-        """ViewModel의 item_moved 시그널을 처리하여 트리에서 아이템을 이동합니다."""
-        source_item = self._find_item_by_id(source_id)
-        if not source_item:
-            logger.error(f"Source item '{source_id}' not found for move.")
+        new_q_parent_widget_target = None
+        is_new_parent_invisible_root = False
+        if new_parent_id == self._viewmodel.get_dummy_root_id() or new_parent_id is None:
+            new_q_parent_widget_target = self.invisibleRootItem()
+            is_new_parent_invisible_root = True
+            print(f"[HANDLE_MOVED_DEBUG] New parent is invisibleRootItem.")
+        elif new_parent_id:
+            new_q_parent_widget_target = self._id_to_widget_map.get(new_parent_id)
+            if new_q_parent_widget_target:
+                 print(f"[HANDLE_MOVED_DEBUG] Found new parent QWidget {new_parent_id} in map. Object: {new_q_parent_widget_target}, Text: {new_q_parent_widget_target.text(0)}")
+            else:
+                 print(f"[HANDLE_MOVED_DEBUG] New parent QWidget {new_parent_id} NOT FOUND in map.")
+        
+        if new_q_parent_widget_target is None and not is_new_parent_invisible_root:
+            print(f"[HANDLE_MOVED_DEBUG] Warning: New parent QWidget for {new_parent_id} could not be determined. Triggering full update.")
+            self.update_tree_items() 
             return
 
-        # 현재 부모로부터 제거
-        current_parent = source_item.parent() or self.invisibleRootItem()
-        taken_item = current_parent.takeChild(current_parent.indexOfChild(source_item))
-
-        if taken_item: # takeChild가 성공적으로 아이템을 반환했을 때만 진행
-            # 새 부모 찾기
-            new_parent_item = self._find_item_by_id(target_parent_id)
-            if new_parent_item is None:
-                 new_parent_item = self.invisibleRootItem()
-                 if target_parent_id != "root":
-                     logger.warning(f"Target parent item '{target_parent_id}' not found for moving '{source_id}'. Moving to root.")
-
-            # 새 부모에 삽입
-            new_parent_item.insertChild(target_index, taken_item)
-            logger.debug(f"UI: Moved item '{source_id}' to parent '{target_parent_id}' at index {target_index}")
+        if is_new_parent_invisible_root:
+            print(f"[HANDLE_MOVED_DEBUG] Adding item {item_id} as top level to invisibleRootItem. Item object: {taken_item_from_ui}")
+            self.addTopLevelItem(taken_item_from_ui)
+        elif new_q_parent_widget_target:
+            print(f"[HANDLE_MOVED_DEBUG] Adding item {item_id} to new parent QWidget {new_parent_id}. Parent Object: {new_q_parent_widget_target}, Item object: {taken_item_from_ui}")
+            new_q_parent_widget_target.addChild(taken_item_from_ui)
         else:
-             logger.error(f"Failed to take item '{source_id}' from its parent during move.")
-
-
-    @pyqtSlot(str)
-    def update_ui_for_removed_item(self, item_id: str):
-        """ViewModel의 item_removed 시그널을 처리하여 트리에서 아이템을 제거합니다."""
-        item_to_remove = self._find_item_by_id(item_id)
-        if item_to_remove:
-            parent = item_to_remove.parent() or self.invisibleRootItem()
-            parent.removeChild(item_to_remove)
-            if item_id in self._item_map: # Check if key exists before deleting
-                del self._item_map[item_id] # 맵에서도 제거
-            logger.debug(f"UI: Removed item '{item_id}'")
+            print(f"[HANDLE_MOVED_DEBUG] Error: Logical error, new_q_parent_widget_target is None but not invisibleRoot. Should have been caught. Triggering full update.")
+            self.update_tree_items()
+            return
+        
+        current_ui_parent = taken_item_from_ui.parent()
+        if is_new_parent_invisible_root:
+            if self.indexOfTopLevelItem(taken_item_from_ui) != -1:
+                print(f"[HANDLE_MOVED_DEBUG] Item {item_id} successfully added as a top-level item.")
+            else:
+                print(f"[HANDLE_MOVED_DEBUG] CRITICAL ERROR: Item {item_id} NOT found as top-level after addTopLevelItem!")
+        elif new_q_parent_widget_target and current_ui_parent is new_q_parent_widget_target:
+            print(f"[HANDLE_MOVED_DEBUG] Item {item_id} successfully added to parent {new_parent_id}. UI parent matches target.")
         else:
-            logger.warning(f"Attempted to remove item '{item_id}', but it was not found in the tree.")
+            print(f"[HANDLE_MOVED_DEBUG] CRITICAL ERROR: Item {item_id} UI parent does NOT match target! Actual UI parent: {current_ui_parent}, Target: {new_q_parent_widget_target}")
 
+        self._id_to_widget_map[item_id] = taken_item_from_ui 
+        print(f"[HANDLE_MOVED_DEBUG] Updated map for {item_id} with object: {taken_item_from_ui}")
 
-    @pyqtSlot(str, str)
-    def update_ui_for_renamed_item(self, item_id: str, new_name: str):
-        """ViewModel의 item_renamed 시그널을 처리하여 트리 아이템의 이름을 변경합니다."""
-        item_to_rename = self._find_item_by_id(item_id)
-        if item_to_rename:
-            item_to_rename.setText(0, new_name)
-            logger.debug(f"UI: Renamed item '{item_id}' to '{new_name}'")
-        else:
-            logger.warning(f"Attempted to rename item '{item_id}', but it was not found in the tree.")
+        if item_data_from_model := self._viewmodel.get_item(item_id):
+            print(f"[HANDLE_MOVED_DEBUG] Applying model state for {item_id}: Expanded={item_data_from_model.get_property('expanded', False)}, Selected={item_id in self._viewmodel.get_selected_items()}")
+            if item_data_from_model.get_property("expanded", False):
+                self.expandItem(taken_item_from_ui)
+            else:
+                self.collapseItem(taken_item_from_ui)
+            
+            if item_id in self._viewmodel.get_selected_items():
+                taken_item_from_ui.setSelected(True)
+            else:
+                taken_item_from_ui.setSelected(False)
+        print(f"[HANDLE_MOVED_DEBUG] Finished for item_id: {item_id}")
+
+    

@@ -7,105 +7,158 @@ from core.interfaces.base_tree import IMTTree
 from core.impl.item import MTTreeItem
 from model.events.interfaces.base_tree_event_mgr import MTTreeEvent, IMTTreeEventManager
 import core.exceptions as exc
+from core.interfaces.base_item_data import MTNodeType
+
 # 역할별 내부 구현 클래스 분리
 class _MTTreeReadable:
-    def __init__(self, tree: IMTTree):
+    def __init__(self, tree: "MTTree"):
         self._tree = tree
 
     @property
     def id(self) -> str:
-        return self._tree.id
+        return self._tree._id
 
     @property
     def name(self) -> str:
-        return self._tree.name
+        return self._tree._name
 
     @property
     def root_id(self) -> str | None:
-        return self._tree.root_id
+        return self._tree._root_id
 
     @property
     def items(self) -> dict[str, IMTTreeItem]:
-        return cast("MTTree", self._tree)._items
+        return self._tree._items
     
     def get_item(self, item_id: str) -> IMTTreeItem | None:
-        return self._tree.items.get(item_id)
+        return self._tree._items.get(item_id)
 
     def get_children(self, parent_id: str | None) -> List[IMTTreeItem]:
-        return self._tree.get_children(parent_id)
+        id_to_query_children_for = parent_id
+        if parent_id is None:
+            id_to_query_children_for = self._tree._root_id
+
+        if id_to_query_children_for is None or id_to_query_children_for not in self._tree._items:
+            return []
+
+        parent_item = self._tree._items[id_to_query_children_for]
+        children_ids = parent_item.get_property("children_ids", [])
+        
+        children_items: List[IMTTreeItem] = []
+        for child_id in children_ids:
+            child = self._tree._items.get(child_id)
+            if child:
+                children_items.append(child)
+        return children_items
 
 class _MTTreeModifiable:
-    def __init__(self, tree: IMTTree):
+    def __init__(self, tree: "MTTree"):
         self._tree = tree
 
     def add_item(self, item: IMTTreeItem, parent_id: str | None) -> bool:
         item_id = item.id
-        if item_id in self._tree.items:
+        if item_id in self._tree._items:
             raise exc.MTTreeItemAlreadyExistsError(f"중복된 아이템 ID: {item_id}")
-        if parent_id is not None and parent_id not in self._tree._items:
-            raise exc.MTTreeItemNotFoundError(f"존재하지 않는 부모 아이템 ID: {parent_id}")
-        if self._tree._root_id is None and parent_id is None:
-            self._tree._root_id = item_id
-        item.set_property("parent_id", parent_id)
+
+        actual_parent_id = parent_id
+        if parent_id is None:
+            actual_parent_id = self._tree._root_id
+
+        if actual_parent_id is not None and actual_parent_id not in self._tree._items:
+            raise exc.MTTreeItemNotFoundError(f"존재하지 않는 부모 아이템 ID: {actual_parent_id}")
+        
+        item.set_property("parent_id", actual_parent_id)
         self._tree._items[item_id] = item
 
-        # 부모의 children_ids에 자식 추가
-        if parent_id is not None:
-            parent = self._tree._items[parent_id]
+        if actual_parent_id is not None:
+            parent = self._tree._items[actual_parent_id]
             children_ids = parent.get_property("children_ids", [])
             if item_id not in children_ids:
                 children_ids.append(item_id)
             parent.set_property("children_ids", children_ids)
 
-        self._tree._notify(MTTreeEvent.ITEM_ADDED, {"item_id": item_id, "parent_id": parent_id})
+        self._tree._notify(MTTreeEvent.ITEM_ADDED, {"item_id": item_id, "parent_id": actual_parent_id})
         return True
 
     def remove_item(self, item_id: str) -> bool:
+        if item_id == self._tree._root_id:
+            raise exc.MTTreeError("더미 루트 아이템은 삭제할 수 없습니다.")
         if item_id not in self._tree._items:
             raise exc.MTTreeItemNotFoundError(f"존재하지 않는 아이템 ID: {item_id}")
-        if item_id == self._tree._root_id:
-            self._tree._root_id = None
-        children_to_remove = [child.id for child in self._tree.get_children(item_id)]
+        
+        item_to_remove = self._tree._items[item_id]
+        parent_id = item_to_remove.get_property("parent_id")
+
+        if parent_id is not None and parent_id in self._tree._items:
+            parent = self._tree._items[parent_id]
+            parent_children_ids = parent.get_property("children_ids", [])
+            if item_id in parent_children_ids:
+                parent_children_ids.remove(item_id)
+                parent.set_property("children_ids", parent_children_ids)
+        
+        children_to_remove_recursively = [child.id for child in self.get_children_for_modification(item_id)]
+        
         self._tree._items.pop(item_id)
-        for child_id in children_to_remove:
-            self.remove_item(child_id)
-        self._tree._notify(MTTreeEvent.ITEM_REMOVED, {"item_id": item_id})
+        
+        for child_id in children_to_remove_recursively:
+            if child_id in self._tree._items:
+                self.remove_item(child_id)
+                
+        self._tree._notify(MTTreeEvent.ITEM_REMOVED, {"item_id": item_id, "parent_id": parent_id})
         return True
 
-    def move_item(self, item_id: str, new_parent_id: str | None) -> bool:
-        if item_id not in self._tree.items:
+    def get_children_for_modification(self, parent_id: str | None) -> List[IMTTreeItem]:
+        if parent_id is None or parent_id not in self._tree._items:
+            return []
+        parent_item = self._tree._items[parent_id]
+        children_ids = parent_item.get_property("children_ids", [])
+        children_items: List[IMTTreeItem] = []
+        for child_id in children_ids:
+            child = self._tree._items.get(child_id)
+            if child:
+                children_items.append(child)
+        return children_items
+
+    def move_item(self, item_id: str, new_parent_id_request: str | None) -> bool:
+        if item_id == self._tree._root_id:
+            raise exc.MTTreeError("더미 루트 아이템은 이동할 수 없습니다.")
+        if item_id not in self._tree._items:
             raise exc.MTTreeItemNotFoundError(f"존재하지 않는 아이템 ID: {item_id}")
-        if new_parent_id is not None and new_parent_id not in self._tree.items:
-            raise exc.MTTreeItemNotFoundError(f"존재하지 않는 부모 아이템 ID: {new_parent_id}")
-        if new_parent_id is not None and self._tree._is_descendant(item_id, new_parent_id):
-            raise exc.MTTreeError(f"순환 참조 발생: {item_id}는 {new_parent_id}의 조상입니다.")
-        item = self._tree.items[item_id]
+
+        actual_new_parent_id = new_parent_id_request
+        if new_parent_id_request is None:
+            actual_new_parent_id = self._tree._root_id
+
+        if actual_new_parent_id is not None and actual_new_parent_id not in self._tree._items:
+            raise exc.MTTreeItemNotFoundError(f"존재하지 않는 새 부모 아이템 ID: {actual_new_parent_id}")
+        if actual_new_parent_id is not None and self._tree._is_descendant(item_id, actual_new_parent_id):
+            raise exc.MTTreeError(f"순환 참조 발생: {item_id}는 {actual_new_parent_id}의 조상입니다.")
+        
+        item = self._tree._items[item_id]
         old_parent_id = item.get_property("parent_id")
-        if old_parent_id == new_parent_id:
+
+        if old_parent_id == actual_new_parent_id:
             return False
 
-        # 기존 부모의 children_ids에서 제거
-        if old_parent_id is not None and old_parent_id in self._tree.items:
-            old_parent = self._tree.items[old_parent_id]
+        if old_parent_id is not None and old_parent_id in self._tree._items:
+            old_parent = self._tree._items[old_parent_id]
             old_children = old_parent.get_property("children_ids", [])
             if item_id in old_children:
                 old_children.remove(item_id)
             old_parent.set_property("children_ids", old_children)
 
-        # 새 부모의 children_ids에 추가 (None이 아닐 때만)
-        if new_parent_id is not None:
-            new_parent = self._tree.items[new_parent_id]
+        if actual_new_parent_id is not None:
+            new_parent = self._tree._items[actual_new_parent_id]
             children_ids = new_parent.get_property("children_ids", [])
             if item_id not in children_ids:
                 children_ids.append(item_id)
             new_parent.set_property("children_ids", children_ids)
 
-        # parent_id 갱신
-        item.set_property("parent_id", new_parent_id)
+        item.set_property("parent_id", actual_new_parent_id)
 
         self._tree._notify(MTTreeEvent.ITEM_MOVED, {
             "item_id": item_id,
-            "new_parent_id": new_parent_id,
+            "new_parent_id": actual_new_parent_id,
             "old_parent_id": old_parent_id,
         })
 
@@ -205,6 +258,7 @@ class MTTree:
     
     매크로 트리를 관리하고 조작하는 기능을 제공합니다.
     """
+    DUMMY_ROOT_ID = "__MTTREE_DUMMY_ROOT__"
     
     def __init__(self, tree_id: str, name: str, event_manager: IMTTreeEventManager | None = None):
         """트리 초기화
@@ -217,16 +271,19 @@ class MTTree:
         self._id = tree_id
         self._name = name
         self._items: Dict[str, IMTTreeItem] = {}
-        self._root_id: Optional[str] = None
+        
+        dummy_root_data = {"name": "Dummy Root", "parent_id": None, "children_ids": [], "node_type": MTNodeType.GROUP}
+        dummy_root_item = MTTreeItem(MTTree.DUMMY_ROOT_ID, dummy_root_data)
+        self._items[MTTree.DUMMY_ROOT_ID] = dummy_root_item
+        self._root_id: Optional[str] = MTTree.DUMMY_ROOT_ID
+        
         self._event_manager = event_manager
-        # RF : 인터페이스 (내부) 위임 : 내부에서 큰 덩어리로 생성하여 변수로 할당 
         self._common = _MTTreeCommon(self)
         self._readable = _MTTreeReadable(self)
         self._modifiable = _MTTreeModifiable(self)
         self._traversable = _MTTreeTraversable(self)
         self._serializable = _MTTreeSerializable(self)
     
-    # 읽기 인터페이스 위임
     @property
     def id(self) -> str:
         """트리 ID를 반환합니다."""
@@ -261,7 +318,6 @@ class MTTree:
         """
         return self._readable.get_children(parent_id)
     
-    # 수정 인터페이스 위임
     def add_item(self, item: IMTTreeItem, parent_id: str | None = None) -> bool:
         """아이템을 트리에 추가합니다.
         
@@ -325,7 +381,6 @@ class MTTree:
         """트리를 초기 상태로 리셋합니다."""
         self._modifiable.reset_tree()
     
-    # 순회 인터페이스 위임
     def traverse(self, visitor: Callable[[IMTTreeItem], None], 
                 node_id: Optional[str] = None) -> None:
         """트리를 BFS로 순회하면서 각 아이템에 방문자 함수를 적용합니다.
@@ -354,14 +409,11 @@ class MTTree:
         else:
             return False
     
-    # 직렬화 인터페이스 위임
-    # RF : MTTree는 공개 클래스이므로 내부 클래스의 메서드만 노출하고, 구현은 비공개로
     def to_dict(self) -> Dict[str, Any]:
         """트리를 딕셔너리로 변환합니다."""
         return self._serializable.to_dict()
     
     @classmethod
-    # RF : MTTree구체 반환이어도 IMTTree인터페이스 반환으로 처리 가능
     def from_dict(cls, data: Dict[str, Any]) -> IMTTree:
         """딕셔너리에서 트리를 생성합니다."""
         return _MTTreeSerializable.from_dict(data)
@@ -381,4 +433,5 @@ class MTTree:
 
     def _notify(self, event_type, data):
         if self._event_manager:
+            print(f"[CORE DEBUG] MTTree._notify: Publishing event {event_type} with data {data}")
             self._event_manager.notify(event_type, data)

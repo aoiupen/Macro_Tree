@@ -144,3 +144,10 @@ class IMTTreeAdvancedTraversable(Protocol, Generic[T]):
 - [ ] 주요 로직에 docstring/주석이 있는가?
 - [ ] 인터페이스/추상화가 잘 지켜지는가?
 - [ ] 테스트가 "실제 사용 시나리오"를 충분히 커버하는가?
+
+# 드래그 앤 드롭 개선
+- [ ] MTTreeWidget의 드래그 앤 드롭 로직 개선:
+  - [ ] setDragDropMode(QAbstractItemView.DragDropMode.DragDrop)으로 변경 검토
+  - [ ] mimeData() 오버라이드하여 아이템 ID 전달 구현
+  - [ ] dropEvent()에서 mimeData() 파싱하여 아이템 이동 처리
+  - [ ] 관련 Qt 문서 및 예제 학습 (QMimeData, QDrag, QDropEvent 등)
