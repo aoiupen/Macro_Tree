@@ -20,8 +20,8 @@ class MTTreeWidget(QTreeWidget):
         self.setAcceptDrops(True)
         self.setDropIndicatorShown(True)
         self.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
-        self.update_tree_items()
 
+        self.update_tree_items()
     def update_tree_items(self):
         self.clear()
         self._id_to_widget_map = {}
@@ -31,7 +31,6 @@ class MTTreeWidget(QTreeWidget):
     def _build_tree_items(self):
         dummy_root_id = self._viewmodel.get_dummy_root_id()
         all_items = self._viewmodel.get_tree_items()
-
         def add_children_to_widget(parent_item_id_in_model, parent_qwidget_item):
             for item_id, item_model in all_items.items():
                 if item_model.get_property("parent_id") == parent_item_id_in_model:

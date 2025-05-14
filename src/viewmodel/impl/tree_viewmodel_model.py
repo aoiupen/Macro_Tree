@@ -6,6 +6,7 @@ from model.store.db.impl.postgres_repo import PostgreSQLTreeRepository
 from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
 from viewmodel.interfaces.base_tree_viewmodel_model import IMTTreeViewModelModel
 from core.interfaces.base_tree import IMTTree
+from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 class MTTreeViewModelModel(IMTTreeViewModelModel):
     def __init__(self, tree: IMTTree) -> None:
         self._tree = tree
@@ -15,16 +16,12 @@ class MTTreeViewModelModel(IMTTreeViewModelModel):
         self._selected_items: Set[str] = set() # RF : 각 인스턴스마다 독립적인 선택 상태를 가져야 하므로 변수 할당, 초기화
 
     # ===== 인터페이스 메서드 =====
-    def undo(self) -> bool:
-        result = self._state_mgr.undo() is not None
-        if result:
-            self._notify_change()
+    def undo(self, tree: IMTTree) -> bool:
+        result = self._state_mgr.undo(self._tree) is not None
         return result
 
-    def redo(self) -> bool:
-        result = self._state_mgr.redo() is not None
-        if result:
-            self._notify_change()
+    def redo(self, tree: IMTTree) -> bool:
+        result = self._state_mgr.redo(self._tree) is not None
         return result
 
     def save_tree(self, tree_id: str | None = None) -> str | None:

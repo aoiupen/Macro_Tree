@@ -4,8 +4,11 @@ from PyQt6.QtCore import Qt, QSize
 from viewmodel.impl.tree_viewmodel import MTTreeViewModel
 from view.impl.tree_widget import MTTreeWidget
 from core.interfaces.base_item_data import MTNodeType
+from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
+from typing import Any
 import os
 import random
+from model.state.impl.tree_state_mgr import _format_tree_for_comprehension
 
 class TreeView(QWidget):
     def __init__(self, viewmodel: MTTreeViewModel, parent=None):
@@ -156,8 +159,13 @@ class TreeView(QWidget):
         self._viewmodel = viewmodel
         self.tree_widget.set_viewmodel(viewmodel)
 
+    def on_tree_undoredo_signal(self, event_type: MTTreeEvent, data: dict[str, Any]):
+        if event_type == MTTreeEvent.TREE_UNDO:
+            self.tree_widget.update_tree_items()
+        elif event_type == MTTreeEvent.TREE_REDO:
+            self.tree_widget.update_tree_items()
+
     def on_viewmodel_signal(self, signal_type, data):
-        # ViewModel로부터 받은 신호에 따라 TreeWidget의 특정 업데이트 메서드 호출
         if signal_type == 'item_added':
             item_id = data.get('item_id')
             parent_id = data.get('parent_id')

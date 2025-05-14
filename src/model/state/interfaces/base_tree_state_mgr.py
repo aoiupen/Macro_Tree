@@ -1,7 +1,7 @@
 from typing import Callable, Protocol, Dict, Any
 
 from core.interfaces.base_tree import IMTTree
-
+from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 
 class IMTTreeStateManager(Protocol):
     """매크로 트리 상태 관리자 인터페이스
@@ -43,10 +43,10 @@ class IMTTreeStateManager(Protocol):
         """다음 상태로 복원합니다."""
         ...
     
-    def subscribe(self, callback: Callable) -> None:
+    def subscribe(self, event_type: MTTreeEvent, TreeEventCallback = Callable[[MTTreeEvent, Dict[str, Any]], None]) -> None:
         """상태 변경 이벤트를 구독합니다."""
         ...
     
-    def unsubscribe(self, callback: Callable) -> None:
+    def unsubscribe(self, event_type: MTTreeEvent, TreeEventCallback = Callable[[MTTreeEvent, Dict[str, Any]], None]) -> None:
         """상태 변경 이벤트 구독을 해제합니다."""
         ...

@@ -218,7 +218,7 @@ class _MTTreeModifiable:
         self._tree._items = {}
         self._tree._root_id = None
         self._tree._notify(MTTreeEvent.TREE_RESET, {})
-        
+
         new_stage = self._tree.to_dict() # MTTree 인스턴스에서 전체 데이터를 가져옴
         self._tree._notify(MTTreeEvent.TREE_CRUD, {"tree_data": new_stage}) 
 

@@ -122,5 +122,3 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         else:
             # 이 경우는 발생하면 안 되지만, 방어적으로 처리
             print("Error: Tree object does not have a restore_state method.")
-            # 또는 예외 발생
-            # raise AttributeError("Tree object does not have a restore_state method.")
