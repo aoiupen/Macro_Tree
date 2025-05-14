@@ -1,5 +1,6 @@
-from typing import Any, Callable, Dict, List, Protocol
+from typing import Any, Callable, Dict, List, Protocol, Optional
 from core.interfaces.base_item import IMTTreeItem
+from abc import ABC, abstractmethod
 
 class IMTTreeReadable (Protocol):
     """트리 데이터 액세스 인터페이스"""
@@ -24,7 +25,7 @@ class IMTTreeReadable (Protocol):
 class IMTTreeModifiable(Protocol):
     """트리 수정 작업 인터페이스"""
     
-    def add_item(self, item: IMTTreeItem, parent_id: str | None = None) -> bool:
+    def add_item(self, item: IMTTreeItem, parent_id: str | None = None, index: int = -1) -> bool:
         """아이템을 트리에 추가합니다. Raises: ValueError-아이템 ID 중복 시"""
         ...
     
@@ -53,38 +54,29 @@ class IMTTreeTraversable(Protocol):
         """트리를 BFS로 순회하면서 각 아이템에 방문자 함수를 적용합니다."""
         ...
 
-# RF : 직렬/역직렬은 Tree의 핵심 기능은 아닌데, Tree 내부 기능이므로 core에 놓음
-class IMTTreeDictSerializable(Protocol):
-    """트리 딕셔너리 직렬화 인터페이스"""
-    
+class IMTTreeSerializable(Protocol):
+    """
+    트리 직렬화/역직렬화 인터페이스.
+    구현 클래스는 from_dict, from_json 클래스 메서드도 제공해야 함 (규약 사항).
+    """
     def to_dict(self) -> Dict[str, Any]:
         """트리를 딕셔너리로 변환합니다."""
         ...
     
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "IMTTree":
-        """딕셔너리에서 트리를 생성합니다."""
-        ...
-
-class IMTTreeJSONSerializable(Protocol):
-    """트리 JSON 직렬화 인터페이스"""
-    
     def to_json(self) -> str:
-        """트리를 JSON 문자열로 변환합니다."""
+        """트리 구조를 JSON 문자열로 직렬화합니다."""
         ...
-    # RF :클래스 메서드는 cls(인스턴스화 되지 않은 클래스 자체를 받음)
-    # RF : Forward Reference(문자열 타입 힌트) 사용 -> 정의되지 않은 타입을 문자열로 감싸서 참조 ("IMTTree")
-    @classmethod
-    def from_json(cls, json_str: str) -> "IMTTree":
-        """JSON 문자열에서 트리를 생성합니다. 
-        
-        Raises:
-            ValueError: 잘못된 JSON 형식
+    
+    @abstractmethod
+    def restore_state(self, data: Dict[str, Any]) -> None:
+        """
+        주어진 딕셔너리 데이터로부터 현재 트리 인스턴스의 상태를 복원합니다.
+        이 메서드는 기존 인스턴스의 내용을 변경합니다.
         """
         ...
 
-class IMTTreeCommon(Protocol):
-    """트리 객체의 공통/필수 기능 인터페이스"""
+class IMTTreeClonable(Protocol):
+    """트리 복제 인터페이스"""
     def clone(self) -> "IMTTree":
         """트리의 복제본을 생성합니다."""
         ...
@@ -94,13 +86,28 @@ class IMTTree(
     IMTTreeReadable,
     IMTTreeModifiable,
     IMTTreeTraversable,
-    IMTTreeDictSerializable,
-    IMTTreeJSONSerializable,
-    IMTTreeCommon,
+    IMTTreeSerializable,
+    IMTTreeClonable,
     Protocol
 ):
     """
-    트리의 모든 핵심 기능(읽기, 수정, 순회, 직렬화, 공통 기능)을 통합한 인터페이스
-    실무/협업/확장성을 고려할 때, 이 통합 인터페이스를 사용하는 것이 가장 표준적이고 유지보수에 유리함
+    트리의 모든 핵심 기능(읽기, 수정, 순회, 직렬화, 복제)을 통합한 인터페이스.
+    실무/협업/확장성을 고려할 때, 이 통합 인터페이스를 사용하는 것이 가장 표준적이고 유지보수에 유리함.
+    구현 클래스는 from_dict, from_json 클래스 메서드도 제공해야 함 (규약 사항).
     """
     pass
+
+class IMTTreeCommon(ABC):
+    """트리 객체의 공통/필수 기능 인터페이스"""
+    @abstractmethod
+    def clone(self) -> "IMTTree":
+        """트리의 복제본을 생성합니다."""
+        ...
+
+    @abstractmethod
+    def restore_state(self, data: Dict[str, Any]) -> None:
+        """
+        주어진 딕셔너리 데이터로부터 트리 인스턴스의 상태를 복원합니다.
+        이 메서드는 기존 인스턴스의 내용을 변경합니다.
+        """
+        ...

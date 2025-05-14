@@ -12,10 +12,12 @@ from view.impl.tree_view import TreeView
 from model.state.impl.tree_state_mgr import MTTreeStateManager
 from model.events.impl.tree_event_mgr import MTTreeEventManager
 from core.interfaces.base_item_data import MTNodeType
+from model.events.interfaces.base_tree_event_mgr import MTTreeUIEvent   
 
 # MACRO_TREE_DEBUG 환경 변수 확인
 load_dotenv() # .env 파일 로드, os.environ 접근 전에 호출
 IS_DEBUG_MODE = os.environ.get('MACRO_TREE_DEBUG') == 'True'
+print(f"IS_DEBUG_MODE: {IS_DEBUG_MODE}")
 DEBUG_IMPORTS_SUCCESSFUL = False # 초기값
 DebugManager = None # 초기값
 

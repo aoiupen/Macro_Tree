@@ -8,7 +8,7 @@ import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import Json
 
-from core.interfaces.base_tree import IMTTree, IMTTreeJSONSerializable
+from core.interfaces.base_tree import IMTTree, IMTTreeSerializable
 from core.impl.tree import MTTree
 from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
 import core.exceptions as exc
@@ -23,7 +23,7 @@ class TreeNotFoundError(Exception):
     """트리를 찾을 수 없음"""
     pass
 
-class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
+class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeSerializable):
     """PostgreSQL 기반 매크로 트리 저장소 구현
     
     PostgreSQL 데이터베이스를 사용해 트리 데이터를 저장하고 불러옵니다.
@@ -442,4 +442,18 @@ class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
             raise
         finally:
             if conn:
-                conn.close() 
+                conn.close()
+
+    # IMTTreeSerializable 인터페이스의 restore_state 메서드 구현
+    def restore_state(self, data: Dict[str, Any]) -> None:
+        """
+        주어진 딕셔너리 데이터로부터 현재 트리 인스턴스의 상태를 복원합니다.
+        이 메서드는 저장소 레벨에서는 직접적인 의미가 없을 수 있으므로,
+        현재는 인터페이스 만족을 위해 비워둡니다.
+        실제 상태 복원은 트리 객체 자체에서 담당해야 합니다.
+        """
+        # logger.warning("restore_state called on PostgreSQLTreeRepository, but it's a repository-level operation.")
+        # 이 메서드는 인터페이스 요구사항을 충족시키기 위해 존재합니다.
+        # 저장소 객체 자체가 특정 '상태'를 복원하는 것은 적합하지 않을 수 있습니다.
+        # 실제 트리 데이터의 복원은 load 메서드 등을 통해 이루어집니다.
+        pass 

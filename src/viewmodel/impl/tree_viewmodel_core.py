@@ -32,13 +32,13 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         return tree.items
 
     # 2. CRUD/비즈니스 로직
-    def add_item(self, name: str, parent_id: str | None = None, node_type_to_add: MTNodeType | None = None) -> str | None:
+    def add_item(self, name: str, parent_id: str | None = None, index: int = -1, node_type: MTNodeType | None = None) -> str | None:
         tree = self._get_tree()
         item_id = str(uuid4())
-        item_data = MTTreeItemData(name=name, node_type=node_type_to_add)
+        item_data = MTTreeItemData(name=name, node_type=node_type)
         new_item = MTTreeItem(item_id, item_data)
         try:
-            tree.add_item(new_item, parent_id)
+            tree.add_item(new_item, parent_id, index)
             return item_id
         except exc.MTTreeItemAlreadyExistsError:
             return None
@@ -75,12 +75,12 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         except exc.MTTreeItemNotFoundError:
             return False
 
-    def move_item(self, item_id: str, new_parent_id: str | None = None) -> bool:
+    def move_item(self, item_id: str, new_parent_id: str | None = None, new_index: int = -1) -> bool:
         tree = self._get_tree()
 
         try:
-            tree.move_item(item_id, new_parent_id)
-            return True
+            result = tree.move_item(item_id, new_parent_id, new_index)
+            return result
         except exc.MTTreeItemNotFoundError:
             return False
         except exc.MTTreeError:
@@ -113,3 +113,14 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
                 if item_value.get_property("parent_id") == parent_id:
                     children_ids.append(item_id_key)
             return children_ids if children_ids else None
+
+    def restore_tree_from_snapshot(self, snapshot_dict: dict) -> None:
+        """주어진 스냅샷 딕셔너리로부터 트리 상태를 복원합니다."""
+        tree = self._get_tree()
+        if hasattr(tree, 'restore_state'):
+            tree.restore_state(snapshot_dict)
+        else:
+            # 이 경우는 발생하면 안 되지만, 방어적으로 처리
+            print("Error: Tree object does not have a restore_state method.")
+            # 또는 예외 발생
+            # raise AttributeError("Tree object does not have a restore_state method.")
