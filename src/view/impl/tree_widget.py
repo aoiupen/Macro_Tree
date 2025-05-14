@@ -144,7 +144,6 @@ class MTTreeWidget(QTreeWidget):
                 return
 
         self._add_tree_item(item_data, parent_widget)
-        print(f"Widget: Item {item_data.id} added under parent {parent_id}")
         new_widget_item = self._id_to_widget_map.get(item_data.id)
         if new_widget_item and item_data.get_property("expanded", False):
             self.expandItem(new_widget_item)
@@ -158,20 +157,15 @@ class MTTreeWidget(QTreeWidget):
             parent_widget = widget_item.parent()
             if parent_widget:
                 parent_widget.removeChild(widget_item)
-                print(f"Widget: Item {item_id} removed from parent {parent_widget.data(0, Qt.ItemDataRole.UserRole)}")
             else:
                 index = self.indexOfTopLevelItem(widget_item)
                 if index != -1:
                     self.takeTopLevelItem(index)
-                    print(f"Widget: Top level item {item_id} removed")
-        else:
-             print(f"Warning: Widget item not found for {item_id} during removal.")
 
     def handle_item_modified(self, item_id, changes):
         """아이템 수정을 처리합니다."""
         widget_item = self._id_to_widget_map.get(item_id)
         if widget_item:
-            print(f"Widget: Modifying item {item_id} with changes: {changes}")
             if 'name' in changes:
                 widget_item.setText(0, changes['name'])
             if 'node_type' in changes:
@@ -185,24 +179,17 @@ class MTTreeWidget(QTreeWidget):
                 if icon_path and os.path.exists(icon_path):
                      widget_item.setIcon(0, QIcon(icon_path))
                 elif icon_path:
-                     print(f"Warning: Icon file not found for modified item {item_id} at {icon_path}")
                      widget_item.setIcon(0, QIcon())
                 else:
                      widget_item.setIcon(0, QIcon())
-        else:
-            print(f"Warning: Widget item not found for {item_id} during modification.")
 
     def handle_item_moved(self, item_id, new_parent_id, old_parent_id):
         """아이템 이동을 처리합니다."""
-        print(f"[HANDLE_MOVED_DEBUG] Called for item_id: {item_id}, new_parent_id: {new_parent_id}, old_parent_id: {old_parent_id}")
-
         widget_item_popped = self._id_to_widget_map.pop(item_id, None) 
 
         if not widget_item_popped:
-            print(f"[HANDLE_MOVED_DEBUG] Warning: Widget item not found for {item_id} in _id_to_widget_map. Triggering full update.")
             self.update_tree_items()
             return
-        print(f"[HANDLE_MOVED_DEBUG] Popped {item_id} from map. Object: {widget_item_popped}, Text: {widget_item_popped.text(0) if widget_item_popped else 'N/A'}")
 
         old_q_parent_widget = widget_item_popped.parent()
         taken_item_from_ui = None
@@ -210,70 +197,40 @@ class MTTreeWidget(QTreeWidget):
             index_in_old_parent = old_q_parent_widget.indexOfChild(widget_item_popped)
             if index_in_old_parent != -1:
                 taken_item_from_ui = old_q_parent_widget.takeChild(index_in_old_parent)
-                print(f"[HANDLE_MOVED_DEBUG] Took item {item_id} from old parent QWidget: {old_q_parent_widget} (Text: {old_q_parent_widget.text(0) if old_q_parent_widget != self.invisibleRootItem() else 'InvisibleRoot'}). taken_item_from_ui: {taken_item_from_ui}")
-            else:
-                print(f"[HANDLE_MOVED_DEBUG] Error: Could not find widget_item_popped in its supposed old_q_parent_widget: {old_q_parent_widget}")
         else:
             index_in_toplevel = self.indexOfTopLevelItem(widget_item_popped)
             if index_in_toplevel != -1:
                 taken_item_from_ui = self.takeTopLevelItem(index_in_toplevel)
-                print(f"[HANDLE_MOVED_DEBUG] Took top level item {item_id}. taken_item_from_ui: {taken_item_from_ui}")
-            else:
-                print(f"[HANDLE_MOVED_DEBUG] Error: Could not find top level item {item_id}.")
 
         if taken_item_from_ui is None:
-             print(f"[HANDLE_MOVED_DEBUG] Error: Failed to take item {item_id} from its old UI position. Triggering full update.")
              self.update_tree_items()
              return
         
-        if taken_item_from_ui is not widget_item_popped:
-             print(f"[HANDLE_MOVED_DEBUG] CRITICAL WARNING: taken_item_from_ui is NOT the same instance as widget_item_popped! This should not happen.")
-
         new_q_parent_widget_target = None
         is_new_parent_invisible_root = False
         if new_parent_id == self._viewmodel.get_dummy_root_id() or new_parent_id is None:
             new_q_parent_widget_target = self.invisibleRootItem()
             is_new_parent_invisible_root = True
-            print(f"[HANDLE_MOVED_DEBUG] New parent is invisibleRootItem.")
         elif new_parent_id:
             new_q_parent_widget_target = self._id_to_widget_map.get(new_parent_id)
-            if new_q_parent_widget_target:
-                 print(f"[HANDLE_MOVED_DEBUG] Found new parent QWidget {new_parent_id} in map. Object: {new_q_parent_widget_target}, Text: {new_q_parent_widget_target.text(0)}")
-            else:
-                 print(f"[HANDLE_MOVED_DEBUG] New parent QWidget {new_parent_id} NOT FOUND in map.")
         
         if new_q_parent_widget_target is None and not is_new_parent_invisible_root:
-            print(f"[HANDLE_MOVED_DEBUG] Warning: New parent QWidget for {new_parent_id} could not be determined. Triggering full update.")
             self.update_tree_items() 
             return
 
         if is_new_parent_invisible_root:
-            print(f"[HANDLE_MOVED_DEBUG] Adding item {item_id} as top level to invisibleRootItem. Item object: {taken_item_from_ui}")
             self.addTopLevelItem(taken_item_from_ui)
         elif new_q_parent_widget_target:
-            print(f"[HANDLE_MOVED_DEBUG] Adding item {item_id} to new parent QWidget {new_parent_id}. Parent Object: {new_q_parent_widget_target}, Item object: {taken_item_from_ui}")
             new_q_parent_widget_target.addChild(taken_item_from_ui)
         else:
-            print(f"[HANDLE_MOVED_DEBUG] Error: Logical error, new_q_parent_widget_target is None but not invisibleRoot. Should have been caught. Triggering full update.")
             self.update_tree_items()
             return
         
         current_ui_parent = taken_item_from_ui.parent()
-        if is_new_parent_invisible_root:
-            if self.indexOfTopLevelItem(taken_item_from_ui) != -1:
-                print(f"[HANDLE_MOVED_DEBUG] Item {item_id} successfully added as a top-level item.")
-            else:
-                print(f"[HANDLE_MOVED_DEBUG] CRITICAL ERROR: Item {item_id} NOT found as top-level after addTopLevelItem!")
-        elif new_q_parent_widget_target and current_ui_parent is new_q_parent_widget_target:
-            print(f"[HANDLE_MOVED_DEBUG] Item {item_id} successfully added to parent {new_parent_id}. UI parent matches target.")
-        else:
-            print(f"[HANDLE_MOVED_DEBUG] CRITICAL ERROR: Item {item_id} UI parent does NOT match target! Actual UI parent: {current_ui_parent}, Target: {new_q_parent_widget_target}")
 
         self._id_to_widget_map[item_id] = taken_item_from_ui 
-        print(f"[HANDLE_MOVED_DEBUG] Updated map for {item_id} with object: {taken_item_from_ui}")
 
         if item_data_from_model := self._viewmodel.get_item(item_id):
-            print(f"[HANDLE_MOVED_DEBUG] Applying model state for {item_id}: Expanded={item_data_from_model.get_property('expanded', False)}, Selected={item_id in self._viewmodel.get_selected_items()}")
             if item_data_from_model.get_property("expanded", False):
                 self.expandItem(taken_item_from_ui)
             else:
@@ -283,6 +240,4 @@ class MTTreeWidget(QTreeWidget):
                 taken_item_from_ui.setSelected(True)
             else:
                 taken_item_from_ui.setSelected(False)
-        print(f"[HANDLE_MOVED_DEBUG] Finished for item_id: {item_id}")
-
     

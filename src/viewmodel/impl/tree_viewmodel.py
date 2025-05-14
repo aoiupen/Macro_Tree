@@ -7,33 +7,25 @@ from model.events.interfaces.base_tree_event_mgr import IMTTreeEventManager
 from core.interfaces.base_item_data import MTNodeType
 from core.impl.tree import MTTree # MTTree 클래스 임포트
 from PyQt6.QtCore import pyqtSignal, QObject # pyqtSignal 임포트, QObject 임포트
-import copy # deepcopy를 위해 추가
+from typing import Any
 
 """
 이 ViewModel은 Adapter 계층을 통해
 프레임워크별 UI 이벤트를 공통 이벤트 Enum(MTTreeUIEvent)으로 전달받아 처리합니다.
 """
 class MTTreeViewModel(QObject): # QObject 상속
-    # ViewModel to View signals
-    tree_structure_changed = pyqtSignal() # 전체 트리 구조 변경 시 (아이템 추가, 삭제, 이동)
-    item_modified = pyqtSignal(dict) # 특정 아이템 내용 변경 시 (예: 이름 변경)
-    item_properties_updated_signal = pyqtSignal(str, dict) # 특정 아이템 내용 변경 시 (아이템 ID, 변경된 속성 dict)
-    selection_changed_signal = pyqtSignal(list) # 선택된 아이템 변경 시 (선택된 아이템 ID 목록)
-    error_occurred = pyqtSignal(str) # 오류 발생 시
-    view_changed = pyqtSignal() # 전체 뷰 업데이트가 필요할 때 사용할 시그널
+    item_modified = pyqtSignal(dict) # item_modified 시그널 정의 (데이터는 dict 형태로 전달 가정)
 
     def __init__(self, tree: IMTTree, repository=None, state_manager=None, event_manager:IMTTreeEventManager | None=None, parent=None): # parent 인자 추가
         super().__init__(parent) # QObject 생성자 호출
         self._tree = tree
-        self._state_mgr = state_manager # StateManager 인스턴스 저장
-        self._event_manager = event_manager
         self._core: MTTreeViewModelCore = MTTreeViewModelCore(self._tree)
         self._model: MTTreeViewModelModel = MTTreeViewModelModel(self._tree)
         self._view: MTTreeViewModelView = MTTreeViewModelView(self._tree)
+        self._event_manager = event_manager
         self._ui_view = None
 
         if self._event_manager:
-            print("[VM INIT DEBUG] ViewModel subscribing to core tree events.")
             events_to_subscribe = [
                 MTTreeEvent.ITEM_ADDED,
                 MTTreeEvent.ITEM_REMOVED,
@@ -43,6 +35,7 @@ class MTTreeViewModel(QObject): # QObject 상속
             ]
             for event_type in events_to_subscribe:
                 self._event_manager.subscribe(event_type, self.on_tree_mod_event)
+            self._event_manager.subscribe(MTTreeEvent.TREE_CRUD, self.on_tree_crud_event)
         else:
             print("[VM INIT WARNING] Event manager not provided to ViewModel. Core events will not be handled.")
 
@@ -50,16 +43,14 @@ class MTTreeViewModel(QObject): # QObject 상속
     def set_view(self, ui_view):
         self._ui_view = ui_view
 
-    def on_tree_mod_event(self, event_type, data):
-        print(f"[VM EVENT DEBUG] on_tree_mod_event received: EventType={event_type}, Data={data}")
+    def on_tree_mod_event(self, event_type: MTTreeEvent, data: dict[str, Any]):
         # 트리 이벤트에 따라 내부 상태 갱신 및 View에 신호 전달
         if event_type == MTTreeEvent.ITEM_MODIFIED:
-            self.item_properties_updated_signal.emit(data['item_id'], data) # ITEM_MODIFIED 이벤트 시 item_properties_updated_signal 시그널 발생
+            self.item_modified.emit(data) # ITEM_MODIFIED 이벤트 시 item_modified 시그널 발생
             # 기존 _ui_view 호출 로직은 유지하거나, 시그널 방식으로 통일할지 결정 필요
             # 여기서는 우선 시그널 발생만 추가하고, _ui_view.on_viewmodel_signal 호출은 그대로 둠
 
         if self._ui_view:
-            print(f"[VM EVENT DEBUG] Forwarding event to _ui_view.on_viewmodel_signal: EventType={event_type}")
             if event_type == MTTreeEvent.ITEM_ADDED:
                 self._ui_view.on_viewmodel_signal('item_added', data)
             elif event_type == MTTreeEvent.ITEM_REMOVED:
@@ -70,6 +61,13 @@ class MTTreeViewModel(QObject): # QObject 상속
                 self._ui_view.on_viewmodel_signal('tree_reset', data)
             elif event_type == MTTreeEvent.ITEM_MODIFIED: # 이 부분은 위에서 시그널로 처리했으므로 중복될 수 있음
                 self._ui_view.on_viewmodel_signal('item_modified', data)
+
+    def on_tree_crud_event(self, event_type: MTTreeEvent, data: dict[str, Any]):
+        if event_type == MTTreeEvent.TREE_CRUD:
+            if hasattr(self, '_state_manager') and self._state_manager:
+                    new_stage = data.get("tree_data") # Core에서 전달한 전체 트리 데이터
+                    if new_stage:
+                        self._state_manager.new_undo(new_stage)
 
     # 1. Core wrapper (비즈니스 로직/데이터 접근)
     def get_node_type(self, item_id: str) -> MTNodeType | None:
@@ -84,40 +82,93 @@ class MTTreeViewModel(QObject): # QObject 상속
     def add_item(self, name: str, 
                  new_item_node_type: MTNodeType, # 새로 추가될 아이템의 타입
                  selected_potential_parent_id: str | None = None) -> str | None: # 선택된 아이템 ID
-        if self._state_mgr and hasattr(self._tree, 'to_dict'): # MTTree에 to_dict() 메서드가 있다고 가정
-            current_snapshot = copy.deepcopy(self._tree.to_dict()) # 상태 저장 전 스냅샷
-            self._state_mgr.save_state(current_snapshot)
+        actual_parent_id_for_core = None
+        insert_index = -1 # -1은 보통 맨 뒤를 의미
+        
+        # print(f"[VM DEBUG] add_item called with: name='{name}', new_type='{new_item_node_type}', selected_id='{selected_potential_parent_id}'")
+
+        if not selected_potential_parent_id:
+            # 선택된 아이템이 없으면 최상위에 추가 (더미 루트의 자식으로)
+            actual_parent_id_for_core = self.get_dummy_root_id() # Core의 더미 루트 ID를 사용해야 함
+            # print(f"[VM DEBUG] No selected item. Adding to dummy root: {actual_parent_id_for_core}")
+        else:
+            # 선택된 아이템이 있으면, 해당 아이템의 타입을 가져온다.
+            selected_item_node_type = self.get_node_type(selected_potential_parent_id)
+            # print(f"[VM DEBUG] Selected item ID: {selected_potential_parent_id}, its type: {selected_item_node_type}")
+
+            if selected_item_node_type == MTNodeType.GROUP:
+                # 선택된 아이템이 그룹이면, 그 그룹의 자식으로 추가 (맨 뒤)
+                actual_parent_id_for_core = selected_potential_parent_id
+                # print(f"[VM DEBUG] Selected is GROUP. Adding as child to: {actual_parent_id_for_core}")
+            elif selected_item_node_type == MTNodeType.INSTRUCTION:
+                # 선택된 아이템이 인스트럭션이면, 그 아이템과 같은 레벨(형제)로, 바로 다음에 추가
+                if self._core and hasattr(self._core, 'get_item_parent_id'):
+                    grandparent_id = self._core.get_item_parent_id(selected_potential_parent_id)
+                    actual_parent_id_for_core = grandparent_id # 실제 부모는 선택된 아이템의 부모
+                    # print(f"[VM DEBUG] Selected is INSTRUCTION. Grandparent ID: {grandparent_id}")
+                    
+                    if actual_parent_id_for_core is not None and hasattr(self._core, 'get_children_ids'):
+                        siblings = self._core.get_children_ids(actual_parent_id_for_core)
+                        if selected_potential_parent_id in siblings:
+                            try:
+                                current_index = siblings.index(selected_potential_parent_id)
+                                insert_index = current_index + 1
+                                # print(f"[VM DEBUG] Found sibling at index {current_index}, inserting at {insert_index}")
+                            except ValueError:
+                                # print(f"[VM DEBUG] Warning: Could not find {selected_potential_parent_id} in siblings of {actual_parent_id_for_core}. Adding to end.")
+                                insert_index = -1 
+                        else:
+                            # print(f"[VM DEBUG] Error: {selected_potential_parent_id} not found among siblings of {actual_parent_id_for_core}. Adding to end.")
+                            insert_index = -1 
+                    else:
+                        # print(f"[VM DEBUG] Could not get siblings for {selected_potential_parent_id}. Adding to end of parent {actual_parent_id_for_core}.")
+                        insert_index = -1
+                else:
+                    # print(f"[VM DEBUG] Warning: Necessary methods in MTTreeViewModelCore not found for sibling insertion. Adding as child to selected item.")
+                    actual_parent_id_for_core = selected_potential_parent_id # 폴백: 선택된 아이템의 자식으로
+            else:
+                # print(f"[VM DEBUG] Warning: selected_item_node_type ('{selected_item_node_type}') is unexpected or None. Adding as child to {selected_potential_parent_id}.")
+                # 알 수 없는 타입이거나, 타입 조회를 실패한 경우, 일단 선택된 아이템의 자식으로 추가 시도
+                actual_parent_id_for_core = selected_potential_parent_id
+
+        # Core 모델에 아이템 추가 요청
+        # Core의 add_item은 (id, name, data, parent_id, index) 등을 받을 수 있어야 함.
+        # 현재 MTTree.add_item은 MTTreeItem 객체와 parent_id, index를 받음.
+        # 따라서 ViewModel에서 MTTreeItem 객체를 생성해야 함.
+        new_item_data = {"name": name, "node_type": new_item_node_type} # Core에 전달할 데이터
+        # print(f"[VM DEBUG] Preparing to call core.add_item with name='{name}', data='{new_item_data}', parent='{actual_parent_id_for_core}', index='{insert_index}'")
+
+        if hasattr(self._core, 'add_item'): 
+            # Core의 add_item이 (item_name, item_data, parent_id, index) 형태로 호출된다고 가정
+            # 또는 (MTTreeItem 객체, parent_id, index)
+            # 현재 self._core는 MTTreeViewModelCore의 인스턴스임.
+            # MTTreeViewModelCore.add_item을 호출해야 함.
+            # 이 메서드는 내부적으로 MTTreeItem을 생성하고 self._tree.add_item을 호출할 것.
             
-        actual_parent_id_for_core, insert_index = self._determine_parent_and_index_for_add(selected_potential_parent_id, new_item_node_type)
+            # MTTreeViewModelCore.add_item 실제 시그니처: (name: str, parent_id: str | None = None, node_type_to_add: MTNodeType | None = None)
+            # index 파라미터는 현재 MTTreeViewModelCore.add_item에 없음.
+            # MTTree.add_item은 index를 지원하므로, MTTreeViewModelCore를 수정하여 index를 전달할 수 있음.
+            # 우선은 index 없이 호출 (맨 뒤에 추가됨)
+            result_id = self._core.add_item(name=name, 
+                                            parent_id=actual_parent_id_for_core, 
+                                            index=insert_index,
+                                            node_type=new_item_node_type)
+        else:
+            # print(f"[VM DEBUG] Error: MTTreeViewModelCore does not have a suitable add_item method.")
+            result_id = None
 
-        result_id = self._core.add_item(name=name,
-                                        parent_id=actual_parent_id_for_core,
-                                        node_type=new_item_node_type,
-                                        index=insert_index) # MTTreeViewModelCore.add_item에 index 파라미터 추가 필요 가정
+        # print(f"[VM DEBUG] core.add_item returned: {result_id}")
         return result_id
-
+        
     def update_item(self, item_id: str, name: str | None = None, parent_id: str | None = None) -> bool:
-        if self._state_mgr and hasattr(self._tree, 'to_dict'):
-            current_snapshot = copy.deepcopy(self._tree.to_dict())
-            self._state_mgr.save_state(current_snapshot)
         result = self._core.update_item(item_id, name, parent_id)
         return result
-
     def remove_item(self, item_id: str) -> bool:
-        if self._state_mgr and hasattr(self._tree, 'to_dict'):
-            current_snapshot = copy.deepcopy(self._tree.to_dict())
-            self._state_mgr.save_state(current_snapshot)
         result = self._core.remove_item(item_id)
         return result
-
-    def move_item(self, item_id: str, new_parent_id: str | None = None, new_index: int = -1) -> bool: # index 추가
-        if self._state_mgr and hasattr(self._tree, 'to_dict'):
-            current_snapshot = copy.deepcopy(self._tree.to_dict())
-            self._state_mgr.save_state(current_snapshot)
-        # MTTreeViewModelCore.move_item에 index 파라미터 추가 필요 가정
-        result = self._core.move_item(item_id, new_parent_id, new_index)
+    def move_item(self, item_id: str, new_parent_id: str | None = None) -> bool:
+        result = self._core.move_item(item_id, new_parent_id)
         return result
-
     def reset_tree(self):
         self._core.reset_tree()
             
@@ -130,47 +181,17 @@ class MTTreeViewModel(QObject): # QObject 상속
     def unsubscribe(self, callback):
         return self._model.unsubscribe(callback)
     def undo(self) -> bool:
-        if self._state_mgr and self._state_mgr.can_undo():
-            # 현재 상태를 Redo 스택에 저장하기 위해 현재 상태를 가져와야 함 (StateManager가 내부적으로 처리할 수도 있음)
-            # 여기서는 StateManager가 undo 호출 시 현재 상태를 내부 Redo 스택에 넣는다고 가정.
-            # 또는, undo 직전에 현재 상태를 save_state_for_redo 등으로 StateManager에 전달할 수도 있음.
-            # 가장 간단하게는, StateManager.undo()가 (이전상태, 현재상태)를 반환하거나,
-            # 이전 상태만 반환하고 StateManager가 알아서 현재 상태를 redo 스택에 넣는 것.
-
-            # MTTreeStateManager.undo()가 복원할 스냅샷(딕셔너리)을 반환한다고 가정
-            previous_snapshot = self._state_mgr.undo()
-            if previous_snapshot:
-                if hasattr(self._core, 'restore_tree_from_snapshot'): # MTTreeViewModelCore에 복원 메서드 필요
-                    self._core.restore_tree_from_snapshot(previous_snapshot)
-                    self.view_changed.emit() # View에 전체 변경 알림
-                    # 또는 self._event_manager.publish(MTTreeEvent.TREE_RESET, previous_snapshot) 등
-                    return True
-                else:
-                    print("Error: MTTreeViewModelCore.restore_tree_from_snapshot method not found.")
-                    # 스냅샷은 가져왔으나 복원 실패 시, undo를 다시 취소해야 할 수도 있음 (복잡)
-                    # 여기서는 일단 실패로 간주하고 False 반환
-                    return False
-        return False
-
+        return self._model.undo()
     def redo(self) -> bool:
-        if self._state_mgr and self._state_mgr.can_redo():
-            # MTTreeStateManager.redo()가 복원할 스냅샷(딕셔너리)을 반환한다고 가정
-            next_snapshot = self._state_mgr.redo()
-            if next_snapshot:
-                if hasattr(self._core, 'restore_tree_from_snapshot'): # MTTreeViewModelCore에 복원 메서드 필요
-                    self._core.restore_tree_from_snapshot(next_snapshot)
-                    self.view_changed.emit() # View에 전체 변경 알림
-                    return True
-                else:
-                    print("Error: MTTreeViewModelCore.restore_tree_from_snapshot method not found.")
-                    return False
-        return False
-
+        return self._model.redo()
+    def save_tree(self, tree_id: str | None = None) -> str | None:
+        return self._model.save_tree(tree_id)
+    def load_tree(self, tree_id: str) -> bool:
+        return self._model.load_tree(tree_id)
     def can_undo(self) -> bool:
-        return self._state_mgr.can_undo() if self._state_mgr else False
-
+        return self._model.can_undo()
     def can_redo(self) -> bool:
-        return self._state_mgr.can_redo() if self._state_mgr else False
+        return self._model.can_redo()
 
     # 3. View wrapper (UI/조회/상태)
     def get_items(self) -> list:
@@ -198,36 +219,3 @@ class MTTreeViewModel(QObject): # QObject 상속
         # 또는 직접 MTTree.DUMMY_ROOT_ID를 반환 (덜 유연한 방식)
         # return MTTree.DUMMY_ROOT_ID
         return None # 적절한 방법으로 ID를 가져와야 함
-
-    # _determine_parent_and_index_for_add와 같은 헬퍼 메서드는 내부적으로 사용되므로 여기에 정의
-    def _determine_parent_and_index_for_add(self, selected_potential_parent_id: str | None, new_item_node_type: MTNodeType):
-        actual_parent_id_for_core = None
-        insert_index = -1 
-
-        if not selected_potential_parent_id:
-            actual_parent_id_for_core = self.get_dummy_root_id()
-        else:
-            selected_item_node_type = self.get_node_type(selected_potential_parent_id)
-            if selected_item_node_type == MTNodeType.GROUP:
-                actual_parent_id_for_core = selected_potential_parent_id
-            elif selected_item_node_type == MTNodeType.INSTRUCTION:
-                if self._core and hasattr(self._core, 'get_item_parent_id'):
-                    grandparent_id = self._core.get_item_parent_id(selected_potential_parent_id)
-                    actual_parent_id_for_core = grandparent_id
-                    if actual_parent_id_for_core is not None and hasattr(self._core, 'get_children_ids'):
-                        siblings = self._core.get_children_ids(actual_parent_id_for_core)
-                        if selected_potential_parent_id in siblings:
-                            try:
-                                current_index = siblings.index(selected_potential_parent_id)
-                                insert_index = current_index + 1
-                            except ValueError:
-                                insert_index = -1 
-                        else:
-                            insert_index = -1 
-                    else:
-                        insert_index = -1
-                else:
-                    actual_parent_id_for_core = selected_potential_parent_id # Fallback
-            else:
-                actual_parent_id_for_core = selected_potential_parent_id # Fallback
-        return actual_parent_id_for_core, insert_index

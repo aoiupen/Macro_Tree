@@ -74,7 +74,7 @@ el.replaceWith(d);
         &#34;&#34;&#34;현재 상태의 트리를 반환합니다.&#34;&#34;&#34;
         ...
     
-    def save_state(self, tree: IMTTree) -&gt; None:
+    def new_undo(self, tree: IMTTree) -&gt; None:
         &#34;&#34;&#34;현재 상태를 저장합니다.&#34;&#34;&#34;
         ...
     
@@ -191,15 +191,15 @@ def current_state(self) -&gt; IMTTree | None:
 </details>
 <div class="desc"><p>다음 상태로 복원합니다.</p></div>
 </dd>
-<dt id="model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.save_state"><code class="name flex">
-<span>def <span class="ident">save_state</span></span>(<span>self,<br>tree: <a title="core.interfaces.base_tree.IMTTree" href="../../../../core/interfaces/base_tree.html#core.interfaces.base_tree.IMTTree">IMTTree</a>) ‑> None</span>
+<dt id="model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.new_undo"><code class="name flex">
+<span>def <span class="ident">new_undo</span></span>(<span>self,<br>tree: <a title="core.interfaces.base_tree.IMTTree" href="../../../../core/interfaces/base_tree.html#core.interfaces.base_tree.IMTTree">IMTTree</a>) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def save_state(self, tree: IMTTree) -&gt; None:
+<pre><code class="python">def new_undo(self, tree: IMTTree) -&gt; None:
     &#34;&#34;&#34;현재 상태를 저장합니다.&#34;&#34;&#34;
     ...</code></pre>
 </details>
@@ -286,7 +286,7 @@ def current_state(self) -&gt; IMTTree | None:
 <li><code><a title="model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.clear" href="#model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.clear">clear</a></code></li>
 <li><code><a title="model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.current_state" href="#model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.current_state">current_state</a></code></li>
 <li><code><a title="model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.redo" href="#model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.redo">redo</a></code></li>
-<li><code><a title="model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.save_state" href="#model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.save_state">save_state</a></code></li>
+<li><code><a title="model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.new_undo" href="#model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.new_undo">new_undo</a></code></li>
 <li><code><a title="model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.set_initial_state" href="#model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.set_initial_state">set_initial_state</a></code></li>
 <li><code><a title="model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.subscribe" href="#model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.subscribe">subscribe</a></code></li>
 <li><code><a title="model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.undo" href="#model.services.state.interfaces.base_tree_state_mgr.IMTTreeStateManager.undo">undo</a></code></li>

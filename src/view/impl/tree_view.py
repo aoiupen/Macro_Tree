@@ -104,8 +104,8 @@ class TreeView(QWidget):
         self.layout.addWidget(self.tree_widget)
         self.setLayout(self.layout)
 
-    def get_selected_item_id(self):
         """MTTreeWidget에서 현재 선택된 아이템의 ID를 반환합니다."""
+    def get_selected_item_id(self):
         selected_items = self.tree_widget.selectedItems()
         if selected_items:
             # UserRole에 저장된 ID를 가져옵니다.
@@ -132,7 +132,6 @@ class TreeView(QWidget):
     def on_add_item(self):
         # 현재 선택된 아이템 가져오기
         selected_item_id = self.get_selected_item_id()
-        # print(f"[DEBUG] TreeView.on_add_item: selected_item_id = {selected_item_id}")
         # RF: Add 버튼 클릭 시 무조건 "New Item [랜덤숫자3자리]" 로 생성되도록 변경 (기존)
         # RF: node_type은 기본적으로 INSTRUCTION으로 하되, GROUP 밑에 추가할 때는 GROUP도 가능하게? (일단 INSTRUCTION)
         # RF: 현재는 selected_item_id를 parent_id로 사용하는데, 이게 GROUP이면 그 밑에, INSTRUCTION이면 형제로 추가해야 함.
@@ -141,8 +140,6 @@ class TreeView(QWidget):
         item_name = f"New Item {random.randint(100, 999)}"
         item_type = MTNodeType.INSTRUCTION # 기본값을 INSTRUCTION으로 설정
 
-        print(f"[DEBUG] TreeView.on_add_item: Attempting to add '{item_name}' (type: {item_type}) with selected_item_id as potential parent: {selected_item_id}")
-
         # ViewModel을 통해 아이템 추가 요청
         # selected_item_id는 부모가 될 수도 있고, 형제 관계를 결정하는 기준이 될 수도 있음.
         # ViewModel의 add_item에서 이를 해석하여 core 모델에 적절히 요청.
@@ -150,21 +147,10 @@ class TreeView(QWidget):
                                                new_item_node_type=item_type,
                                                selected_potential_parent_id=selected_item_id)
 
-        if new_item_id:
-            print(f"[DEBUG] TreeView.on_add_item: ViewModel reported new_item_id = {new_item_id}")
-            # self.select_item(new_item_id) # 추가 후 새 아이템 선택 (선택적)
-        else:
-            print(f"[DEBUG] TreeView.on_add_item: ViewModel reported new_item_id as None (add failed or no ID returned)")
-            QMessageBox.warning(self, "Add Item Failed", "Failed to add the new item. Check logs.")
-
     def on_del_item(self):
-        print("Delete button clicked")
         selected_item_id = self.get_selected_item_id() # 새로 추가한 메서드 사용
         if selected_item_id:
-            print(f"Attempting to delete item with ID: {selected_item_id}")
             self._viewmodel.remove_item(selected_item_id) # 뷰모델에 삭제 요청
-        else:
-            print("No item selected to delete.")
 
     def set_viewmodel(self, viewmodel):
         self._viewmodel = viewmodel
@@ -179,10 +165,8 @@ class TreeView(QWidget):
                 # ViewModel을 통해 추가된 아이템의 상세 정보 가져오기
                 item_data = self._viewmodel.get_item(item_id)
                 if item_data:
-                    print(f"View: Received item_added signal for {item_id}, calling handle_item_added...")
                     self.tree_widget.handle_item_added(item_data, parent_id)
                 else:
-                    print(f"Warning: Could not get item data for added item {item_id}")
                     self.tree_widget.update_tree_items() # 예외 처리: 정보 없으면 전체 업데이트
             else:
                  self.tree_widget.update_tree_items() # 예외 처리: ID 없으면 전체 업데이트
@@ -190,7 +174,6 @@ class TreeView(QWidget):
         elif signal_type == 'item_removed':
             item_id = data.get('item_id')
             if item_id:
-                print(f"View: Received item_removed signal for {item_id}, calling handle_item_removed...")
                 self.tree_widget.handle_item_removed(item_id)
             else:
                 self.tree_widget.update_tree_items() # 예외 처리

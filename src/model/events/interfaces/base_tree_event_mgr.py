@@ -9,6 +9,7 @@ class MTTreeEvent(Enum):
     ITEM_MODIFIED = "item_modified"
     ITEM_MOVED = "item_moved"
     TREE_RESET = "tree_reset"
+    TREE_CRUD = "tree_crud"
 
 class MTTreeUIEvent(Enum):
     """트리 UI 이벤트 유형"""

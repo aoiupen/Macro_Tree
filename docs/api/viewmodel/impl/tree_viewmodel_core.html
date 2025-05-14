@@ -88,7 +88,7 @@ el.replaceWith(d);
         tree = self._tree
         if not tree:
             return None
-        self._state_mgr.save_state(tree)
+        self._state_mgr.new_undo(tree)
         item_id = str(uuid4())
         item_data = MTTreeItemData(name=name)
         new_item = MTTreeItem(item_id, item_data)
@@ -105,7 +105,7 @@ el.replaceWith(d);
         tree = self._tree
         if not tree:
             return False
-        self._state_mgr.save_state(tree)
+        self._state_mgr.new_undo(tree)
         item = tree.get_item(item_id)
         if not item:
             return False
@@ -125,7 +125,7 @@ el.replaceWith(d);
         tree = self._tree
         if not tree:
             return False
-        self._state_mgr.save_state(tree)
+        self._state_mgr.new_undo(tree)
         if item_id in self._selected_items:
             self._selected_items.remove(item_id)
         try:
@@ -139,7 +139,7 @@ el.replaceWith(d);
         tree = self._tree
         if not tree:
             return False
-        self._state_mgr.save_state(tree)
+        self._state_mgr.new_undo(tree)
         try:
             tree.move_item(item_id, new_parent_id)
             self._notify_change()
@@ -184,7 +184,7 @@ el.replaceWith(d);
     tree = self._tree
     if not tree:
         return None
-    self._state_mgr.save_state(tree)
+    self._state_mgr.new_undo(tree)
     item_id = str(uuid4())
     item_data = MTTreeItemData(name=name)
     new_item = MTTreeItem(item_id, item_data)
@@ -228,7 +228,7 @@ el.replaceWith(d);
     tree = self._tree
     if not tree:
         return False
-    self._state_mgr.save_state(tree)
+    self._state_mgr.new_undo(tree)
     try:
         tree.move_item(item_id, new_parent_id)
         self._notify_change()
@@ -252,7 +252,7 @@ el.replaceWith(d);
     tree = self._tree
     if not tree:
         return False
-    self._state_mgr.save_state(tree)
+    self._state_mgr.new_undo(tree)
     if item_id in self._selected_items:
         self._selected_items.remove(item_id)
     try:
@@ -276,7 +276,7 @@ el.replaceWith(d);
     tree = self._tree
     if not tree:
         return False
-    self._state_mgr.save_state(tree)
+    self._state_mgr.new_undo(tree)
     item = tree.get_item(item_id)
     if not item:
         return False

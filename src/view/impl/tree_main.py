@@ -33,12 +33,9 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Tree Application with Debug Viewers")
-        
-        # 모델 생성
-        self.state_manager = MTTreeStateManager()
         self.event_manager = MTTreeEventManager()
         self.tree = MTTree(tree_id="root", name="Root Tree", event_manager=self.event_manager)
-        
+                
         # 샘플 데이터: 그룹 1개와 그 하위에 INSTRUCTION 1개만 추가
         group = MTTreeItem("group-1", {"name": "Group 1", "node_type": MTNodeType.GROUP})
         self.tree.add_item(group, None)
@@ -46,7 +43,15 @@ class MainWindow(QMainWindow):
         self.tree.add_item(instr, "group-1")
 
         # ViewModel 생성 (parent=self 추가)
-        self.viewmodel = MTTreeViewModel(self.tree, None, self.state_manager, self.event_manager, parent=self)
+        self.state_manager = MTTreeStateManager(tree=self.tree) 
+
+        self.viewmodel = MTTreeViewModel(
+            tree=self.tree, 
+            repository=None, # 필요에 따라 
+            state_manager=self.state_manager, 
+            event_manager=self.event_manager, 
+            parent=self
+        )
         
         # ==== UI 구성 변경 시작 ====
         # 메인 트리 뷰 생성
