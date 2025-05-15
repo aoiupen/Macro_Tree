@@ -273,6 +273,14 @@ class _MTTreeSerializable:
 
     def restore_instance_state_from_dict(self, data: Dict[str, Any]) -> None:
         """주어진 데이터로 참조된 MTTree 인스턴스의 상태를 복원합니다."""
+        # data가 dict가 아니면 dict로 변환 시도
+        if not isinstance(data, dict):
+            # MTTree 객체라면 to_dict()로 변환
+            if hasattr(data, 'to_dict') and callable(data.to_dict):
+                data = data.to_dict()
+            else:
+                raise TypeError(f"restore_instance_state_from_dict: Expected dict, got {type(data)}")
+        
         self._tree_ref._items.clear() # MTTree의 내부 아이템 직접 클리어
         # MTTree의 내부 이름 직접 업데이트, ID는 변경하지 않음
         self._tree_ref._name = data.get("name", self._tree_ref._name) 

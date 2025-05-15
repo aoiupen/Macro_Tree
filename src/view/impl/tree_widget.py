@@ -78,9 +78,9 @@ class MTTreeWidget(QTreeWidget):
 
         if node_type is not None:
             if node_type == MTNodeType.GROUP:
-                icon_path = os.path.join(project_root, "src", "images", "icons", "group.png")
+                icon_path = resource_path("src/images/icons/group.png")
             elif node_type == MTNodeType.INSTRUCTION:
-                icon_path = os.path.join(project_root, "src", "images", "icons", "inst.png")
+                icon_path = resource_path("src/images/icons/inst.png")
 
         if icon_path and os.path.exists(icon_path):
             widget_item.setIcon(0, QIcon(icon_path))

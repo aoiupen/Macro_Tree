@@ -37,70 +37,47 @@ class TreeView(QWidget):
         # 버튼 사이 간격 설정 (예: 5px)
         button_layout.setSpacing(5)
 
-        # 아이콘 경로 - 프로젝트 루트 기준
-        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")) 
-        icon_path = os.path.join(project_root, "src", "images", "icons", "add.png")
+        # 아이콘 경로를 resource_path로 처리
+        add_icon_path = resource_path("src/images/icons/add.png")
+        del_icon_path = resource_path("src/images/icons/del.png")
 
-        if not os.path.exists(icon_path):
-            print(f"Warning: Icon file not found at {icon_path}.")
-            icon = QIcon() # 최종적으로 못 찾으면 빈 아이콘
-        else:
-            icon = QIcon(icon_path)
+        add_icon = QIcon(add_icon_path)
+        del_icon = QIcon(del_icon_path)
 
         # 버튼 생성 및 설정
         self.add_button = QPushButton("Add")
-        self.add_button.setIcon(icon)
-        if icon.isNull():
-             self.add_button.setIconSize(self.add_button.iconSize()) # 기본 아이콘 크기 유지
+        self.add_button.setIcon(add_icon)
+        if add_icon.isNull():
+            self.add_button.setIconSize(self.add_button.iconSize())
         else:
-             # 아이콘 크기를 버튼 텍스트 높이에 맞춤
-             font = self.add_button.font()
-             fm = QFontMetrics(font)
-             text_height = fm.height()
-             # 아이콘이 텍스트 높이에 적절히 보이도록 크기 조정 (예: 텍스트 높이보다 2px 작게)
-             icon_dimension = max(8, text_height - 2)  # 최소 크기 8px 보장
-             self.add_button.setIconSize(QSize(icon_dimension, icon_dimension))
-
-        # 아이콘 왼쪽에 약간의 여백 추가 (버튼 내용 전체가 오른쪽으로 이동)
+            font = self.add_button.font()
+            fm = QFontMetrics(font)
+            text_height = fm.height()
+            icon_dimension = max(8, text_height - 2)
+            self.add_button.setIconSize(QSize(icon_dimension, icon_dimension))
         self.add_button.setStyleSheet("QPushButton { padding-left: 8px; padding-right: 5px; padding-top: 1px; padding-bottom: 1px; }")
-
-        # 버튼의 최소 높이를 현재 sizeHint보다 10% 크게 설정
         current_add_button_hint_height = self.add_button.sizeHint().height()
         target_min_button_height = int(current_add_button_hint_height * 1.1)
         self.add_button.setMinimumHeight(target_min_button_height)
-
         self.add_button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
-        # 버튼의 최대 너비를 기존보다 10% 크게 설정
         base_width_percentage = 0.25
         increased_width_percentage = base_width_percentage * 1.1
         base_fallback_width = 200
         increased_fallback_width = int(base_fallback_width * 1.1)
-
         self.add_button.setMaximumWidth(int(self.width() * increased_width_percentage) if self.width() > 0 else increased_fallback_width)
         self.add_button.clicked.connect(self.on_add_item)
 
-        # --- Del 버튼 아이콘 경로 및 설정 --- #
-        del_icon_path = os.path.join(project_root, "src", "images", "icons", "del.png")
-        if not os.path.exists(del_icon_path):
-            print(f"Warning: Icon file not found at {del_icon_path}.")
-            del_icon = QIcon()
-        else:
-            del_icon = QIcon(del_icon_path)
-
-        # "Del" 버튼 생성
+        # Del 버튼
         self.del_button = QPushButton("Del")
-        self.del_button.setIcon(del_icon) # 아이콘 설정
+        self.del_button.setIcon(del_icon)
         if del_icon.isNull():
             self.del_button.setIconSize(self.del_button.iconSize())
         else:
-            # Del 버튼 아이콘 크기도 텍스트 높이에 맞춤
             del_font = self.del_button.font()
             del_fm = QFontMetrics(del_font)
             del_text_height = del_fm.height()
             del_icon_dimension = max(8, del_text_height - 2)
             self.del_button.setIconSize(QSize(del_icon_dimension, del_icon_dimension))
-
-        # Del 버튼 스타일 및 크기 정책 (Add 버튼과 동일하게)
         self.del_button.setStyleSheet("QPushButton { padding-left: 8px; padding-right: 5px; padding-top: 1px; padding-bottom: 1px; }")
         self.del_button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         self.del_button.setMinimumHeight(target_min_button_height) # Add 버튼 기준으로 계산된 최소 높이 적용

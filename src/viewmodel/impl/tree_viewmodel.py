@@ -59,14 +59,7 @@ class MTTreeViewModel(QObject): # QObject 상속
         if data:
             # MTTreeViewModelCore 인스턴스 (self._core)를 통해 restore_tree_from_snapshot 호출
             if hasattr(self, '_core') and self._core: # self._core가 MTTreeViewModelCore 인스턴스라고 가정
-                print(f"ViewModel: Attempting to restore core tree from snapshot via _core.")
                 self._core.restore_tree_from_snapshot(data) # data를 트리로 복원
-                print(f"ViewModel: Core tree restoration attempt finished.")
-                
-            else:
-                print("ViewModel Error: self._core (MTTreeViewModelCore) not found.")
-        else:
-            print("ViewModel Warning: No data received from StateManager for tree restoration.")
 
     def on_tree_crud_event(self, event_type: MTTreeEvent, data: dict[str, Any]):
         if event_type == MTTreeEvent.TREE_CRUD:
