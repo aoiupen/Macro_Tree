@@ -1,3 +1,4 @@
+import sys # resource_path를 위해 추가
 from PyQt6.QtWidgets import QVBoxLayout, QWidget, QPushButton, QHBoxLayout, QSizePolicy, QMessageBox
 from PyQt6.QtGui import QIcon, QFontMetrics
 from PyQt6.QtCore import Qt, QSize
@@ -9,6 +10,19 @@ from typing import Any
 import os
 import random
 from model.state.impl.tree_state_mgr import _format_tree_for_comprehension
+import logging
+
+logger = logging.getLogger(__name__)
+
+# resource_path 함수 정의 시작
+def resource_path(relative_path: str) -> str:
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+# resource_path 함수 정의 끝
 
 class TreeView(QWidget):
     def __init__(self, viewmodel: MTTreeViewModel, parent=None):
@@ -23,15 +37,15 @@ class TreeView(QWidget):
         # 버튼 사이 간격 설정 (예: 5px)
         button_layout.setSpacing(5)
 
-        # 아이콘 경로 - 프로젝트 루트 아래 images 폴더 기준
-        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")) # view/impl 에서 두 단계 위
-        icon_path = os.path.join(project_root, "images/icons", "add.png") # images 폴더 안의 add.png
+        # 아이콘 경로 - 프로젝트 루트 기준
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")) 
+        icon_path = os.path.join(project_root, "src", "images", "icons", "add.png")
 
         if not os.path.exists(icon_path):
             print(f"Warning: Icon file not found at {icon_path}.")
             icon = QIcon() # 최종적으로 못 찾으면 빈 아이콘
         else:
-            icon = QIcon(icon_path) # images 폴더 기준 경로 사용
+            icon = QIcon(icon_path)
 
         # 버튼 생성 및 설정
         self.add_button = QPushButton("Add")
@@ -66,7 +80,7 @@ class TreeView(QWidget):
         self.add_button.clicked.connect(self.on_add_item)
 
         # --- Del 버튼 아이콘 경로 및 설정 --- #
-        del_icon_path = os.path.join(project_root, "images/icons", "del.png")
+        del_icon_path = os.path.join(project_root, "src", "images", "icons", "del.png")
         if not os.path.exists(del_icon_path):
             print(f"Warning: Icon file not found at {del_icon_path}.")
             del_icon = QIcon()

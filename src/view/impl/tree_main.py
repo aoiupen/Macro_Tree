@@ -1,8 +1,8 @@
 import sys
 import os
 from dotenv import load_dotenv
-from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QSplitter
-from PyQt6.QtGui import QAction, QKeySequence
+from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QSplitter, QPushButton, QTreeWidget, QTreeWidgetItem
+from PyQt6.QtGui import QAction, QKeySequence, QIcon
 from PyQt6.QtCore import Qt
 
 from core.impl.tree import MTTree
@@ -16,7 +16,7 @@ from model.events.interfaces.base_tree_event_mgr import MTTreeUIEvent
 
 # MACRO_TREE_DEBUG 환경 변수 확인
 load_dotenv() # .env 파일 로드, os.environ 접근 전에 호출
-IS_DEBUG_MODE = os.environ.get('MACRO_TREE_DEBUG') == 'True'
+IS_DEBUG_MODE = os.environ.get('MACRO_TREE_DEBUG') == 'False'
 print(f"IS_DEBUG_MODE: {IS_DEBUG_MODE}")
 DEBUG_IMPORTS_SUCCESSFUL = False # 초기값
 DebugManager = None # 초기값
@@ -24,7 +24,7 @@ DebugManager = None # 초기값
 if IS_DEBUG_MODE:
     try:
         from debug.debug_manager import DebugManager # 새로운 매니저 클래스
-        DEBUG_IMPORTS_SUCCESSFUL = True
+        DEBUG_IMPORTS_SUCCESSFUL = False
     except ImportError:
         print("디버그 매니저 로드 실패. 디버그 기능이 비활성화됩니다.")
         # DebugManager가 None으로 유지되므로, 이후 로직에서 이를 확인하여 처리합니다.
