@@ -1,3 +1,4 @@
+import sys
 from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QAbstractItemView
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
@@ -7,6 +8,14 @@ from viewmodel.impl.tree_viewmodel import MTTreeViewModel
 import logging
 
 logger = logging.getLogger(__name__)
+
+def resource_path(relative_path: str) -> str:
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 class MTTreeWidget(QTreeWidget):
     def __init__(self, viewmodel: MTTreeViewModel, parent=None):
@@ -64,13 +73,14 @@ class MTTreeWidget(QTreeWidget):
         node_type = item.get_property("node_type", None)
         icon_path = None
 
-        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        # Define project_root relative to this file's location
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
         if node_type is not None:
             if node_type == MTNodeType.GROUP:
-                icon_path = os.path.join(project_root, "images", "icons", "group.png")
+                icon_path = os.path.join(project_root, "src", "images", "icons", "group.png")
             elif node_type == MTNodeType.INSTRUCTION:
-                icon_path = os.path.join(project_root, "images", "icons", "inst.png")
+                icon_path = os.path.join(project_root, "src", "images", "icons", "inst.png")
 
         if icon_path and os.path.exists(icon_path):
             widget_item.setIcon(0, QIcon(icon_path))
@@ -170,17 +180,19 @@ class MTTreeWidget(QTreeWidget):
             if 'node_type' in changes:
                 node_type = changes['node_type']
                 icon_path = None
-                project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+                project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
                 if node_type == MTNodeType.GROUP:
-                    icon_path = os.path.join(project_root, "images", "icons", "group.png")
+                    icon_path = os.path.join(project_root, "src", "images", "icons", "group.png")
                 elif node_type == MTNodeType.INSTRUCTION:
-                    icon_path = os.path.join(project_root, "images", "icons", "inst.png")
+                    icon_path = os.path.join(project_root, "src", "images", "icons", "inst.png")
+
                 if icon_path and os.path.exists(icon_path):
                      widget_item.setIcon(0, QIcon(icon_path))
                 elif icon_path:
-                     widget_item.setIcon(0, QIcon())
+                     print(f"Warning: Icon file not found at (handle_item_modified) {icon_path}")
+                     widget_item.setIcon(0, QIcon()) # Fallback to no icon
                 else:
-                     widget_item.setIcon(0, QIcon())
+                     widget_item.setIcon(0, QIcon()) # Fallback to no icon
 
     def handle_item_moved(self, item_id, new_parent_id, old_parent_id):
         """아이템 이동을 처리합니다."""
