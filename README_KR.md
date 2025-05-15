@@ -61,7 +61,7 @@
 
 ## 아키텍처 다이어그램
 
-![Architecture Diagram](images/architecture.png)
+![Architecture Diagram](src/images/architecture.png)
 
 ### 계층 구조
 
