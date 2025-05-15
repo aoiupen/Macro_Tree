@@ -283,7 +283,7 @@ class _MTTreeSerializable:
         
         self._tree_ref._items.clear() # MTTree의 내부 아이템 직접 클리어
         # MTTree의 내부 이름 직접 업데이트, ID는 변경하지 않음
-        self._tree_ref._name = data.get("name", self._tree_ref._name) 
+        self._tree_ref = data.get("name", self._tree_ref._name) 
         
         items_data = data.get("items", {})
         for item_id, item_snapshot_value in items_data.items():
