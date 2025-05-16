@@ -1,0 +1,1 @@
+- Updated `undo`/`redo` stack in `tree_state_mgr.py` to add `stage` as a dictionary. 

@@ -128,9 +128,10 @@ class MTTreeStateManager(IMTTreeStateManager):
         """Undo를 Stage로, Stage를 Redo로"""
         if not self.can_undo():
             return None
-        self._redo_stack.append(stage)
+        self._redo_stack.append(stage.to_dict())
         self._limit_stack(self._redo_stack)
         self._new_stage = self._undo_stack.pop() # 가장 최근 상태 (Redo 스택으로 갈 것)
+
         self._notify_subscribers(MTTreeEvent.TREE_UNDO, self._new_stage)
         return self._new_stage
     
@@ -138,11 +139,10 @@ class MTTreeStateManager(IMTTreeStateManager):
         """Redo를 Stage로, Stage를 Undo로"""
         if not self.can_redo():
             return None
-        
-        self._undo_stack.append(stage)
+        self._undo_stack.append(stage.to_dict())
         self._limit_stack(self._undo_stack)
         self._new_stage = self._redo_stack.pop()
-        
+
         self._notify_subscribers(MTTreeEvent.TREE_REDO, self._new_stage)
         return self._new_stage
     
