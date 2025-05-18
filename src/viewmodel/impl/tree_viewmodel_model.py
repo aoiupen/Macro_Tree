@@ -8,9 +8,12 @@ from viewmodel.interfaces.base_tree_viewmodel_model import IMTTreeViewModelModel
 from core.interfaces.base_tree import IMTTree
 from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 class MTTreeViewModelModel(IMTTreeViewModelModel):
-    def __init__(self, tree: IMTTree) -> None:
+    def __init__(self, tree: IMTTree, state_manager: IMTTreeStateManager) -> None:
         self._tree = tree
-        self._state_mgr: IMTTreeStateManager = MTTreeStateManager(self._tree)
+        if not state_manager:
+            raise ValueError("MTTreeViewModelModel 생성 시 state_manager는 반드시 제공되어야 합니다.")
+        self._state_mgr: IMTTreeStateManager = state_manager
+
         self._repository: IMTTreeRepository = PostgreSQLTreeRepository()
         self._subscribers: Set[Callable[[], None]] = set()  # 변경 알림을 받을 콜백
         self._selected_items: Set[str] = set() # RF : 각 인스턴스마다 독립적인 선택 상태를 가져야 하므로 변수 할당, 초기화

@@ -157,7 +157,7 @@ class TreeView(QWidget):
             self.tree_widget.update_tree_items()
 
     def on_viewmodel_signal(self, signal_type, data):
-        if signal_type == 'item_added':
+        if signal_type == MTTreeEvent.ITEM_ADDED:
             item_id = data.get('item_id')
             parent_id = data.get('parent_id')
             if item_id:
@@ -170,33 +170,30 @@ class TreeView(QWidget):
             else:
                  self.tree_widget.update_tree_items() # 예외 처리: ID 없으면 전체 업데이트
 
-        elif signal_type == 'item_removed':
+        elif signal_type == MTTreeEvent.ITEM_REMOVED:
             item_id = data.get('item_id')
             if item_id:
                 self.tree_widget.handle_item_removed(item_id)
             else:
                 self.tree_widget.update_tree_items() # 예외 처리
 
-        elif signal_type == 'item_moved':
+        elif signal_type == MTTreeEvent.ITEM_MOVED:
             item_id = data.get('item_id')
             new_parent_id = data.get('new_parent_id')
             old_parent_id = data.get('old_parent_id') # 이동 전 부모 정보도 필요할 수 있음
             if item_id:
-                 print(f"View: Received item_moved signal for {item_id}, calling handle_item_moved...")
                  self.tree_widget.handle_item_moved(item_id, new_parent_id, old_parent_id)
             else:
                  self.tree_widget.update_tree_items() # 예외 처리
 
-        elif signal_type == 'item_modified':
+        elif signal_type == MTTreeEvent.ITEM_MODIFIED:
             item_id = data.get('item_id')
             changes = data.get('changes')
             if item_id and changes:
-                 print(f"View: Received item_modified signal for {item_id}, calling handle_item_modified...")
                  self.tree_widget.handle_item_modified(item_id, changes)
             else:
                  self.tree_widget.update_tree_items() # 예외 처리
 
-        elif signal_type == 'tree_reset':
-            print("View: Received tree_reset signal, calling update_tree_items...")
+        elif signal_type == MTTreeEvent.TREE_RESET:
             self.tree_widget.update_tree_items() # 트리가 리셋되면 전체 업데이트 필요
         # 필요시 추가 분기

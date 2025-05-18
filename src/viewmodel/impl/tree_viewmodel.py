@@ -16,45 +16,47 @@ from model.state.impl.tree_state_mgr import _format_tree_for_comprehension
 프레임워크별 UI 이벤트를 공통 이벤트 Enum(MTTreeUIEvent)으로 전달받아 처리합니다.
 """
 class MTTreeViewModel(QObject): # QObject 상속
-    item_modified = pyqtSignal(dict) # item_modified 시그널 정의 (데이터는 dict 형태로 전달 가정)
+    # (멤버 변수) pyqtsignal은 항상 클래스 변수(속성)으로 선언한다
+    item_added = pyqtSignal(MTTreeEvent, dict)
+    item_moved = pyqtSignal(MTTreeEvent, dict)
+    item_removed = pyqtSignal(MTTreeEvent, dict)
+    tree_reset = pyqtSignal(MTTreeEvent, dict)
+    item_modified = pyqtSignal(MTTreeEvent, dict)
+    tree_undo = pyqtSignal(MTTreeEvent, dict)
+    tree_redo = pyqtSignal(MTTreeEvent, dict)
 
-    def __init__(self, tree: IMTTree, repository=None, state_manager: IMTTreeStateManager | None=None, event_manager:IMTTreeEventManager | None=None, parent=None): # parent 인자 추가
+    def __init__(self, tree: IMTTree, state_manager: IMTTreeStateManager, event_manager: IMTTreeEventManager, repository=None, parent=None):
+        # (멤버 변수) 인스턴스 변수 선언
         super().__init__(parent) # QObject 생성자 호출
         self._tree = tree
         self._core: MTTreeViewModelCore = MTTreeViewModelCore(self._tree)
-        self._model: MTTreeViewModelModel = MTTreeViewModelModel(self._tree)
+        self._model: MTTreeViewModelModel = MTTreeViewModelModel(self._tree, state_manager=state_manager)
         self._view: MTTreeViewModelView = MTTreeViewModelView(self._tree)
-        self._model._state_mgr = state_manager
         self._event_manager = event_manager
-        self._ui_view = None
 
-        if self._event_manager:
-            events_to_subscribe = [
-                MTTreeEvent.ITEM_ADDED,
-                MTTreeEvent.ITEM_REMOVED,
-                MTTreeEvent.ITEM_MOVED,
-                MTTreeEvent.ITEM_MODIFIED,
-                MTTreeEvent.TREE_RESET
-            ]
-            for event_type in events_to_subscribe:
-                self._event_manager.subscribe(event_type, self.on_tree_mod_event)
-            self._event_manager.subscribe(MTTreeEvent.TREE_CRUD, self.on_tree_crud_event)
-        else:
-            print("[VM INIT WARNING] Event manager not provided to ViewModel. Core events will not be handled.")
+        events_to_subscribe = [
+            MTTreeEvent.ITEM_ADDED,
+            MTTreeEvent.ITEM_REMOVED,
+            MTTreeEvent.ITEM_MOVED,
+            MTTreeEvent.ITEM_MODIFIED,
+            MTTreeEvent.TREE_RESET
+        ]
+
+        for event_type in events_to_subscribe:
+            self._event_manager.subscribe(event_type, self.on_tree_mod_event)
+            
+        self._event_manager.subscribe(MTTreeEvent.TREE_CRUD, self.on_tree_crud_event)
 
         if self._model._state_mgr:
             self._model._state_mgr.subscribe(MTTreeEvent.TREE_UNDO, self.on_tree_undoredo_event)
             self._model._state_mgr.subscribe(MTTreeEvent.TREE_REDO, self.on_tree_undoredo_event)
-    # RF : 느슨하게 결합
-    def set_view(self, ui_view):
-        self._ui_view = ui_view
 
     def on_tree_undoredo_event(self, event_type: MTTreeEvent, data: dict[str, Any]):
         if event_type == MTTreeEvent.TREE_UNDO:
-            self._ui_view.on_tree_undoredo_signal(MTTreeEvent.TREE_UNDO, data)
+            self.tree_undo.emit(event_type,data) # TREE_UNDO 이벤트 시 tree_undo 시그널 발생
         elif event_type == MTTreeEvent.TREE_REDO:
-            self._ui_view.on_tree_undoredo_signal(MTTreeEvent.TREE_REDO, data)
-
+            self.tree_redo.emit(event_type,data) # TREE_REDO 이벤트 시 tree_redo 시그널 발생
+            
         # data_from_state_manager는 StateManager로부터 받은 복원된 트리 스냅샷 (dict)
         if data:
             # MTTreeViewModelCore 인스턴스 (self._core)를 통해 restore_tree_from_snapshot 호출
@@ -70,22 +72,16 @@ class MTTreeViewModel(QObject): # QObject 상속
 
     def on_tree_mod_event(self, event_type: MTTreeEvent, data: dict[str, Any]):
         # 트리 이벤트에 따라 내부 상태 갱신 및 View에 신호 전달
-        if event_type == MTTreeEvent.ITEM_MODIFIED:
-            self.item_modified.emit(data) # ITEM_MODIFIED 이벤트 시 item_modified 시그널 발생
-            # 기존 _ui_view 호출 로직은 유지하거나, 시그널 방식으로 통일할지 결정 필요
-            # 여기서는 우선 시그널 발생만 추가하고, _ui_view.on_viewmodel_signal 호출은 그대로 둠
-
-        if self._ui_view:
-            if event_type == MTTreeEvent.ITEM_ADDED:
-                self._ui_view.on_viewmodel_signal('item_added', data)
-            elif event_type == MTTreeEvent.ITEM_REMOVED:
-                self._ui_view.on_viewmodel_signal('item_removed', data)
-            elif event_type == MTTreeEvent.ITEM_MOVED:
-                self._ui_view.on_viewmodel_signal('item_moved', data)
-            elif event_type == MTTreeEvent.TREE_RESET:
-                self._ui_view.on_viewmodel_signal('tree_reset', data)
-            elif event_type == MTTreeEvent.ITEM_MODIFIED: # 이 부분은 위에서 시그널로 처리했으므로 중복될 수 있음
-                self._ui_view.on_viewmodel_signal('item_modified', data)
+        if event_type == MTTreeEvent.ITEM_ADDED:
+            self.item_added.emit(event_type,data) # ITEM_ADDED 이벤트 시 item_added 시그널 발생
+        elif event_type == MTTreeEvent.ITEM_REMOVED:
+            self.item_removed.emit(event_type,data) # ITEM_REMOVED 이벤트 시 item_removed 시그널 발생
+        elif event_type == MTTreeEvent.ITEM_MOVED:
+            self.item_moved.emit(event_type,data) # ITEM_MOVED 이벤트 시 item_moved 시그널 발생
+        elif event_type == MTTreeEvent.TREE_RESET:
+            self.tree_reset.emit(event_type,data) # TREE_RESET 이벤트 시 tree_reset 시그널 발생
+        elif event_type == MTTreeEvent.ITEM_MODIFIED:
+            self.item_modified.emit(event_type,data) # ITEM_MODIFIED 이벤트 시 item_modified 시그널 발생
 
     # 1. Core wrapper (비즈니스 로직/데이터 접근)
     def get_node_type(self, item_id: str) -> MTNodeType | None:
