@@ -1,3 +1,6 @@
+"""
+이 모듈은 매크로 트리의 트리 인터페이스(읽기, 수정, 순회, 직렬화, 복제 등)를 정의합니다.
+"""
 from typing import Any, Callable, Dict, List, Protocol, Optional
 from core.interfaces.base_item import IMTTreeItem
 from abc import ABC, abstractmethod

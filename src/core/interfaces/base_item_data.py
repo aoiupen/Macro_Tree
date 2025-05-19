@@ -4,9 +4,7 @@ from core.interfaces.base_types import IMTPoint
 from dataclasses import dataclass, field
 
 """
-core/interfaces/base_item_data.py
-- MacroTree의 도메인 Enum/타입/프로토콜/TypedDict/상수 정의
-- 실제 구현체는 core/impl/ 또는 model/action/impl/에 위치
+이 모듈은 매크로 트리의 도메인 Enum, 타입, 프로토콜, 데이터 구조를 정의합니다.
 """
 
 # -------------------

@@ -2,6 +2,10 @@ from typing import Protocol, Dict, Any, List, Type, Optional
 from platforms.interfaces.ui_element import IMTUIElement
 from view.interfaces.base_tree_view import IMTTreeView
 
+"""
+이 모듈은 플랫폼 특화 UI 어댑터 인터페이스를 정의합니다.
+"""
+
 class IMTPlatformAdapter(Protocol):
     """플랫폼 특화 UI 생성 어댑터"""
     

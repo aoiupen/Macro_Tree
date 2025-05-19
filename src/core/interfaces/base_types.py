@@ -1,4 +1,6 @@
-# 공통 기본 데이터 타입 인터페이스
+"""
+이 모듈은 매크로 트리에서 사용하는 공통 데이터 타입 인터페이스를 정의합니다.
+"""
 from typing import Protocol, TypeVar, Optional
 
 # 좌표 인터페이스

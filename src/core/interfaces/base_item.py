@@ -7,6 +7,9 @@ from .base_item_data import MTTreeItemData
 # - UI/확장/부가 키: core/interfaces/base_item.py
 # -------------------
 
+"""
+이 모듈은 매크로 트리의 아이템 인터페이스(Protocol)를 정의합니다.
+"""
 
 # 타입 변수 정의
 # RF : 호출 시점에 타입이 결정

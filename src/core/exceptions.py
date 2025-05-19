@@ -1,3 +1,7 @@
+"""
+이 모듈은 매크로 트리(MTTree)에서 사용하는 예외 클래스를 정의합니다.
+"""
+
 class MTTreeError(Exception):
     """MTTree 관련 기본 예외 클래스입니다."""
     pass
