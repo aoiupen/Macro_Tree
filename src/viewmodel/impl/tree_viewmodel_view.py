@@ -103,7 +103,7 @@ class MTTreeViewModelView(IMTTreeViewModelView):
         item.set_property("expanded", new_state)
         return True
 
-    def clear_selection_state(self):
+    def clear_selection_state(self) -> None:
         """선택 상태를 초기화합니다."""
         if not self._selected_items:
             return # 변경 없으면 아무것도 안 함

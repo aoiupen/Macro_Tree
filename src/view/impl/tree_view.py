@@ -16,9 +16,8 @@ logger = logging.getLogger(__name__)
 # resource_path 함수 정의 시작
 def resource_path(relative_path: str) -> str:
     """ Get absolute path to resource, works for dev and for PyInstaller """
-    try:
-        base_path = sys._MEIPASS
-    except Exception:
+    base_path = getattr(sys, '_MEIPASS', None)
+    if base_path is None:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 # resource_path 함수 정의 끝
@@ -28,7 +27,7 @@ class TreeView(QWidget):
         super().__init__(parent)
         self._viewmodel = viewmodel
 
-        self.layout = QVBoxLayout(self)
+        self._layout = QVBoxLayout(self)
 
         # 버튼을 위한 수평 레이아웃 (왼쪽 정렬)
         button_layout = QHBoxLayout()
@@ -91,13 +90,12 @@ class TreeView(QWidget):
         button_layout.addStretch(1) # 버튼들을 왼쪽으로 밀어주는 신축성 공간 추가
 
         # 버튼 레이아웃을 메인 레이아웃에 추가
-        self.layout.addLayout(button_layout)
+        self._layout.addLayout(button_layout)
 
         self.tree_widget = MTTreeWidget(self._viewmodel)
-        self.layout.addWidget(self.tree_widget)
-        self.setLayout(self.layout)
+        self._layout.addWidget(self.tree_widget)
 
-        """MTTreeWidget에서 현재 선택된 아이템의 ID를 반환합니다."""
+    """MTTreeWidget에서 현재 선택된 아이템의 ID를 반환합니다."""
     def get_selected_item_id(self):
         selected_items = self.tree_widget.selectedItems()
         if selected_items:

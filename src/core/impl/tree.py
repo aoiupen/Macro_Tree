@@ -92,29 +92,33 @@ class _MTTreeModifiable:
             raise exc.MTTreeError("더미 루트 아이템은 삭제할 수 없습니다.")
         if item_id not in self._tree._items:
             raise exc.MTTreeItemNotFoundError(f"존재하지 않는 아이템 ID: {item_id}")
-        
-        item_to_remove = self._tree._items[item_id]
-        parent_id = item_to_remove.get_property("parent_id")
 
-        if parent_id is not None and parent_id in self._tree._items:
-            parent = self._tree._items[parent_id]
-            parent_children_ids = parent.get_property("children_ids", [])
-            if item_id in parent_children_ids:
-                parent_children_ids.remove(item_id)
-                parent.set_property("children_ids", parent_children_ids)
-        
-        children_to_remove_recursively = [child.id for child in self.get_children_for_modification(item_id)]
-        
-        self._tree._items.pop(item_id)
-        
-        for child_id in children_to_remove_recursively:
-            if child_id in self._tree._items:
-                self.remove_item(child_id)
-                
-        self._tree._notify(MTTreeEvent.ITEM_REMOVED, {"item_id": item_id, "parent_id": parent_id})
+        removed_ids = []
+        parent_id = self._tree._items[item_id].get_property("parent_id")
 
-        new_stage = self._tree.to_dict() # MTTree 인스턴스에서 전체 데이터를 가져옴
-        self._tree._notify(MTTreeEvent.TREE_CRUD, {"tree_data": new_stage}) 
+        def _remove_recursive(current_id):
+            item = self._tree._items[current_id]
+            # 자식 먼저 재귀 삭제
+            children = [child.id for child in self.get_children_for_modification(current_id)]
+            for child_id in children:
+                _remove_recursive(child_id)
+            # 부모의 children_ids에서 제거
+            parent_id_inner = item.get_property("parent_id")
+            if parent_id_inner and parent_id_inner in self._tree._items:
+                parent = self._tree._items[parent_id_inner]
+                children_ids = parent.get_property("children_ids", [])
+                if current_id in children_ids:
+                    children_ids.remove(current_id)
+                    parent.set_property("children_ids", children_ids)
+            # 실제 삭제
+            self._tree._items.pop(current_id)
+            removed_ids.append(current_id)
+
+        _remove_recursive(item_id)
+
+        self._tree._notify(MTTreeEvent.ITEM_REMOVED, {"removed_ids": removed_ids, "parent_id": parent_id})
+        new_stage = self._tree.to_dict()
+        self._tree._notify(MTTreeEvent.TREE_CRUD, {"tree_data": new_stage})
         return True
 
     def get_children_for_modification(self, parent_id: str | None) -> List[IMTTreeItem]:
@@ -298,7 +302,7 @@ class _MTTreeSerializable:
         self._tree_ref._root_id = data.get("root_id") # MTTree의 내부 루트 ID 직접 업데이트
 
     @classmethod
-    def create_new_tree_from_dict(cls, data: Dict[str, Any], event_manager: IMTTreeEventManager | None = None) -> IMTTree:
+    def create_new_tree_from_dict(cls, data: Dict[str, Any], event_manager: IMTTreeEventManager | None = None) -> 'MTTree':
         """딕셔셔리 데이터로부터 새로운 MTTree 인스턴스를 생성합니다."""
         tree_id = data.get("id", "")
         tree_name = data.get("name", "")
@@ -341,7 +345,7 @@ class _MTTreeSerializable:
         return json.dumps(self.to_dict(), ensure_ascii=False, indent=2)
 
     @classmethod
-    def create_new_tree_from_json_string(cls, json_str: str, event_manager: IMTTreeEventManager | None = None) -> IMTTree:
+    def create_new_tree_from_json_string(cls, json_str: str, event_manager: IMTTreeEventManager | None = None) -> 'MTTree':
         """JSON 문자열로부터 새로운 MTTree 인스턴스를 생성합니다."""
         try:
             data = json.loads(json_str)
@@ -491,7 +495,7 @@ class MTTree:
         return self._serializable.to_dict()
     
     @classmethod
-    def from_dict(cls, data: Dict[str, Any], event_manager: IMTTreeEventManager | None = None) -> IMTTree:
+    def from_dict(cls, data: Dict[str, Any], event_manager: IMTTreeEventManager | None = None) -> 'MTTree':
         """딕셔너리에서 새로운 MTTree 인스턴스를 생성하여 반환합니다."""
         return _MTTreeSerializable.create_new_tree_from_dict(data, event_manager)
     
@@ -500,7 +504,7 @@ class MTTree:
         return self._serializable.to_json_string()
     
     @classmethod
-    def from_json(cls, json_str: str, event_manager: IMTTreeEventManager | None = None) -> IMTTree:
+    def from_json(cls, json_str: str, event_manager: IMTTreeEventManager | None = None) -> 'MTTree':
         """JSON 문자열에서 새로운 MTTree 인스턴스를 생성하여 반환합니다."""
         return _MTTreeSerializable.create_new_tree_from_json_string(json_str, event_manager)
 

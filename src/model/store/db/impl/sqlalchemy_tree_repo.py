@@ -57,7 +57,7 @@ class SQLAlchemyTreeRepo(IMTTreeRepository):
                 # raise exc.RepositoryError(f"Failed to get item '{item_id}': {e}") # 예외 발생시 None 반환
                 return None
 
-    def get_children(self, parent_id: Optional[str]) -> List[MTItem]:
+    def get_children(self, parent_id: Optional[str]) -> list[MTItem]:
         target_parent_id = parent_id if parent_id is not None else DUMMY_ROOT_ID
         with get_db_session() as db:
             try:
@@ -67,12 +67,12 @@ class SQLAlchemyTreeRepo(IMTTreeRepository):
                     .order_by(MTItem.item_order)
                     .all()
                 )
-                return children
+                return list(children)
             except SQLAlchemyError as e:
                 logger.error(f"Error getting children for parent '{target_parent_id}': {e}")
                 return []
 
-    def get_all_items_in_tree(self) -> List[MTItem]:
+    def get_all_items_in_tree(self) -> list[MTItem]:
         """더미 루트를 제외한 모든 아이템을 반환합니다."""
         with get_db_session() as db:
             try:
@@ -82,7 +82,7 @@ class SQLAlchemyTreeRepo(IMTTreeRepository):
                     .order_by(MTItem.parent_id, MTItem.item_order) # 부모, 순서대로 정렬 (옵션)
                     .all()
                 )
-                return items
+                return list(items)
             except SQLAlchemyError as e:
                 logger.error(f"Error getting all items in tree: {e}")
                 return []

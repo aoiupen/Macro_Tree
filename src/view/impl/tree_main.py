@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QSplitter, QPushButton, QTreeWidget, QTreeWidgetItem
 from PyQt6.QtGui import QAction, QKeySequence, QIcon
 from PyQt6.QtCore import Qt
+from typing import TYPE_CHECKING, Any
 
 from core.impl.tree import MTTree
 from core.impl.item import MTTreeItem
@@ -13,6 +14,9 @@ from model.state.impl.tree_state_mgr import MTTreeStateManager
 from model.events.impl.tree_event_mgr import MTTreeEventManager
 from core.interfaces.base_item_data import MTNodeType
 from model.events.interfaces.base_tree_event_mgr import MTTreeUIEvent   
+
+if TYPE_CHECKING:
+    from debug.debug_manager import DebugManager
 
 # MACRO_TREE_DEBUG 환경 변수 확인
 load_dotenv() # .env 파일 로드, os.environ 접근 전에 호출
@@ -27,7 +31,7 @@ if IS_DEBUG_MODE:
         DEBUG_IMPORTS_SUCCESSFUL = False
     except ImportError:
         print("디버그 매니저 로드 실패. 디버그 기능이 비활성화됩니다.")
-        # DebugManager가 None으로 유지되므로, 이후 로직에서 이를 확인하여 처리합니다.
+        DebugManager = None # except 블록에서만 선언
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -57,7 +61,7 @@ class MainWindow(QMainWindow):
         # 메인 트리 뷰 생성
         self.tree_view = TreeView(self.viewmodel)
 
-        self.debug_manager_instance: 'DebugManager' | None = None # 타입 힌트
+        self.debug_manager_instance: 'DebugManager' | None = None # 타입 힌트 문자열로만 사용
 
         if IS_DEBUG_MODE and DEBUG_IMPORTS_SUCCESSFUL and DebugManager is not None:
             self.debug_manager_instance = DebugManager(
