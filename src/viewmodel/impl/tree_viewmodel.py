@@ -2,13 +2,14 @@ from viewmodel.impl.tree_viewmodel_core import MTTreeViewModelCore
 from viewmodel.impl.tree_viewmodel_model import MTTreeViewModelModel
 from viewmodel.impl.tree_viewmodel_view import MTTreeViewModelView
 from core.interfaces.base_tree import IMTTree
+from core.interfaces.base_item import IMTTreeItem
+from core.interfaces.base_item_data import MTTreeItemData
 from model.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
 from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 from model.events.interfaces.base_tree_event_mgr import IMTTreeEventManager
 from core.interfaces.base_item_data import MTNodeType
-from core.impl.tree import MTTree # MTTree 클래스 임포트
 from PyQt6.QtCore import pyqtSignal, QObject # pyqtSignal 임포트, QObject 임포트
-from typing import Any
+from typing import Any, cast
 
 """
 이 ViewModel은 Adapter 계층을 통해
@@ -104,25 +105,25 @@ class MTTreeViewModel(QObject): # QObject 상속
             return selected_id, -1
 
         parent_id, insert_index = get_parent_and_index(selected_potential_parent_id)
-        return self._core.add_item(name=name, parent_id=parent_id, index=insert_index, node_type=new_item_node_type)
+        result = self._core.add_item(name=name, parent_id=parent_id, index=insert_index, node_type=new_item_node_type)
+        if result is None or isinstance(result, str):
+            return result
+        return str(result)
 
     def update_item(self, item_id: str, name: str | None = None, parent_id: str | None = None) -> bool:
-        result = self._core.update_item(item_id, name, parent_id)
-        return result
+        return bool(self._core.update_item(item_id, name, parent_id))
 
     def remove_item(self, item_id: str) -> bool:
-        result = self._core.remove_item(item_id)
-        return result
+        return bool(self._core.remove_item(item_id))
 
     def move_item(self, item_id: str, new_parent_id: str | None = None) -> bool:
-        result = self._core.move_item(item_id, new_parent_id)
-        return result
+        return bool(self._core.move_item(item_id, new_parent_id))
 
     def reset_tree(self):
         self._core.reset_tree()
 
-    def get_tree_items(self):
-        return self._core.get_tree_items()
+    def get_tree_items(self) -> dict[str, IMTTreeItem]:
+        return dict(self._core.get_tree_items())
 
     # --- StateManager 위임 (상태/이벤트/저장/복원) ---
     def subscribe(self, event_type, callback, source='state'):
@@ -141,36 +142,70 @@ class MTTreeViewModel(QObject): # QObject 상속
         else:
             raise ValueError(f"Unknown event source: {source}")
 
-    def new_undo(self, tree: IMTTree) -> bool:
-        return self._state_manager.new_undo(tree)
-    def undo(self, tree: IMTTree) -> bool:
-        return self._state_manager.undo()
-    def redo(self, tree: IMTTree) -> bool:
-        return self._state_manager.redo()
+    def new_undo(self, tree: IMTTree) -> dict[str, Any]:
+        result = self._state_manager.new_undo(tree)
+        if result is None:
+            return {}
+        return cast(dict[str, Any], result)
+
+    def undo(self, tree: IMTTree) -> dict[str, Any] | None:
+        result = self._state_manager.undo()
+        if result is None:
+            return None
+        return cast(dict[str, Any], result)
+
+    def redo(self, tree: IMTTree) -> dict[str, Any] | None:
+        result = self._state_manager.redo()
+        if result is None:
+            return None
+        return cast(dict[str, Any], result)
+
     def can_undo(self) -> bool:
-        return self._state_manager.can_undo()
+        return bool(self._state_manager.can_undo())
+
     def can_redo(self) -> bool:
-        return self._state_manager.can_redo()
+        return bool(self._state_manager.can_redo())
 
     # --- View 위임 (UI/조회/상태) ---
-    def get_items(self) -> list:
-        return self._view.get_items()
-    def select_item(self, item_id: str, multi_select: bool = False) -> bool:
-        return self._view.select_item(item_id, multi_select)
-    def get_current_tree(self):
-        return self._view.get_current_tree()
-    def get_item(self, item_id: str):
-        return self._view.get_item(item_id)
+    def get_current_tree(self) -> IMTTree | None:
+        tree = self._view.get_current_tree()
+        if tree is not None and isinstance(tree, IMTTree):
+            return tree
+        return None
+    def get_item(self, item_id: str) -> IMTTreeItem | None:
+        item = self._view.get_item(item_id)
+        if item is not None and isinstance(item, IMTTreeItem):
+            return item
+        return None
     def get_selected_items(self) -> list[str]:
-        return self._view.get_selected_items()
-    def get_item_children(self, parent_id: str | None = None):
-        return self._view.get_item_children(parent_id)
+        selected = self._view.get_selected_items()
+        if isinstance(selected, list):
+            return selected
+        return list(selected)
+    def get_items(self) -> list[MTTreeItemData]:
+        items = self._view.get_items()
+        if isinstance(items, list):
+            return items
+        return list(items)
+    def get_item_children(self, parent_id: str | None = None) -> list[MTTreeItemData]:
+        children = self._view.get_item_children(parent_id)
+        if isinstance(children, list):
+            return children
+        return list(children)
     def toggle_expanded(self, item_id: str, expanded: bool | None = None) -> bool:
-        return self._view.toggle_expanded(item_id, expanded)
-    def clear_selection_state(self):
+        result = self._view.toggle_expanded(item_id, expanded)
+        return bool(result)
+    def clear_selection_state(self) -> None:
         self._view.clear_selection_state()
 
     def get_dummy_root_id(self) -> str | None:
+        dummy_id = None
         if self._core and hasattr(self._core, '_tree') and hasattr(self._core._tree, 'DUMMY_ROOT_ID'):
-             return self._core._tree.DUMMY_ROOT_ID
-        return None
+            dummy_id = self._core._tree.DUMMY_ROOT_ID
+        if dummy_id is None or isinstance(dummy_id, str):
+            return dummy_id
+        return str(dummy_id)
+
+    def select_item(self, item_id: str, multi_select: bool = False) -> bool:
+        result: bool = self._view.select_item(item_id, multi_select)
+        return result

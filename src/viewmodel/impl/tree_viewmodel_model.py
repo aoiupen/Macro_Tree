@@ -1,4 +1,4 @@
-from typing import Callable, Set
+from typing import Callable, Set, Dict, Any
 
 from model.state.impl.tree_state_mgr import MTTreeStateManager
 from model.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
@@ -17,21 +17,15 @@ class MTTreeViewModelModel(IMTTreeViewModelModel):
         self._selected_items: Set[str] = set() # RF : 각 인스턴스마다 독립적인 선택 상태를 가져야 하므로 변수 할당, 초기화
 
     # ===== 인터페이스 메서드 =====
-    def undo(self, tree: IMTTree) -> bool:
-        result = self._state_mgr.undo(self._tree) is not None
-        return result
-
-    def redo(self, tree: IMTTree) -> bool:
-        result = self._state_mgr.redo(self._tree) is not None
-        return result
-
     def save_tree(self, tree_id: str | None = None) -> str | None:
         tree = self._view.get_current_tree()
         if not tree:
             return None
         try:
             saved_id = self._repository.save(tree, tree_id)
-            return saved_id
+            if isinstance(saved_id, str) or saved_id is None:
+                return saved_id
+            return str(saved_id)
         except Exception:
             return None
 
@@ -52,12 +46,3 @@ class MTTreeViewModelModel(IMTTreeViewModelModel):
 
     def unsubscribe(self, event_type: MTTreeEvent, callback: Callable) -> None:
         self._state_mgr.unsubscribe(event_type, callback)
-
-    # ===== 추가 메서드 (인터페이스에 없는 것) =====
-    def can_undo(self) -> bool:
-        """실행 취소 가능 여부를 반환합니다."""
-        return self._state_mgr.can_undo()
-    
-    def can_redo(self) -> bool:
-        """다시 실행 가능 여부를 반환합니다."""
-        return self._state_mgr.can_redo()

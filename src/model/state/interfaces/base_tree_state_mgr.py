@@ -19,8 +19,8 @@ class IMTTreeStateManager(Protocol):
         ...
     
     @property
-    def current_state(self) -> IMTTree | None:
-        """현재 상태의 트리를 반환합니다."""
+    def current_state(self) -> Dict[str, Any] | None:
+        """현재 상태의 트리(스냅샷 dict)를 반환합니다."""
         ...
     
     
@@ -32,16 +32,16 @@ class IMTTreeStateManager(Protocol):
         """다시 실행 가능 여부를 반환합니다."""
         ...
     
-    def new_undo(self, stage: Dict[str, Any]) -> None:
-        """레코드를 시작합니다."""
+    def new_undo(self, stage: Dict[str, Any]) -> Dict[str, Any] | None:
+        """새 상태를 기록하고, 현재 상태를 반환합니다."""
         ...
 
-    def undo(self, stage: Dict[str, Any]) -> IMTTree | None:
-        """이전 상태로 되돌립니다."""
+    def undo(self) -> Dict[str, Any] | None:
+        """이전 상태(스냅샷 dict)로 되돌립니다."""
         ...
     
-    def redo(self, stage: Dict[str, Any]) -> IMTTree | None:
-        """다음 상태로 복원합니다."""
+    def redo(self) -> Dict[str, Any] | None:
+        """다음 상태(스냅샷 dict)로 복원합니다."""
         ...
     
     def subscribe(self, event_type: MTTreeEvent, TreeEventCallback = Callable[[MTTreeEvent, Dict[str, Any]], None]) -> None:

@@ -16,8 +16,18 @@ class History:
         self._max_history = max_history
         self._undo_stack: List[Dict[str, Any]] = []
         self._redo_stack: List[Dict[str, Any]] = []
-        self._stage = {}
+        self._stage: Dict[str, Any] = {}
         self.set_initial_state(tree)
+
+    @property
+    def stage(self) -> Dict[str, Any]:
+        return self._stage
+    @property
+    def undo_stack(self) -> list[Dict[str, Any]]:
+        return self._undo_stack
+    @property
+    def redo_stack(self) -> list[Dict[str, Any]]:
+        return self._redo_stack
 
     def set_initial_state(self, tree: IMTTree) -> None:
         self._undo_stack = []
@@ -36,7 +46,7 @@ class History:
 
     def new_undo(self, new_stage: Dict[str, Any]) -> Dict[str, Any] | None:
         if not new_stage:
-            return
+            return None
         self._undo_stack.append(self._stage)
         self._stage = new_stage
         self._limit_stack(self._undo_stack)
@@ -65,6 +75,10 @@ class MTTreeStateManager(EventManagerBase, IMTTreeStateManager):
         super().__init__()
         self._history = History(tree, max_history)
 
+    @property
+    def current_state(self) -> Dict[str, Any]:
+        return self._history.stage
+
     def set_initial_state(self, tree: IMTTree) -> None:
         self._history.set_initial_state(tree)
 
@@ -75,16 +89,20 @@ class MTTreeStateManager(EventManagerBase, IMTTreeStateManager):
         return self._history.can_redo()
 
     def new_undo(self, new_stage: Dict[str, Any]) -> Dict[str, Any] | None:
-        result = self._history.new_undo(new_stage)
-        self.notify(MTTreeEvent.TREE_CRUD, self._history._stage)
-        return result
+        if not new_stage:
+            return None
+        self._history._undo_stack.append(self._history._stage)
+        self._history._stage = new_stage
+        self._history._limit_stack(self._history._undo_stack)
+        self._history._redo_stack.clear()
+        return self._history._stage
 
     def undo(self) -> Dict[str, Any] | None:
         result = self._history.undo()
-        self.notify(MTTreeEvent.TREE_UNDO, self._history._stage)
+        self.notify(MTTreeEvent.TREE_UNDO, self._history.stage)
         return result
 
     def redo(self) -> Dict[str, Any] | None:
         result = self._history.redo()
-        self.notify(MTTreeEvent.TREE_REDO, self._history._stage)
+        self.notify(MTTreeEvent.TREE_REDO, self._history.stage)
         return result 

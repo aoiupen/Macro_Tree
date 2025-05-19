@@ -1,7 +1,9 @@
 from sqlalchemy import Column, String, ForeignKey, JSON, Integer, Index
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
+from typing import TYPE_CHECKING
 
+# Base를 타입 힌트로 사용하지 않음 (mypy 오류 방지)
 Base = declarative_base()
 
 DUMMY_ROOT_ID = "__DUMMY_ROOT_ID__"
@@ -9,7 +11,7 @@ DUMMY_ROOT_ID = "__DUMMY_ROOT_ID__"
 # 하지만 기존 ID가 문자열일 수 있으므로, String ID를 유지하되, 순서를 위한 필드를 추가할 수 있습니다.
 # 여기서는 ID 자체를 문자열 기본키로 유지하고, 순서는 관계 또는 별도 필드로 관리한다고 가정합니다.
 
-class MTItem(Base):
+class MTItem(Base):  # type: ignore
     __tablename__ = 'mt_items'
 
     id = Column(String, primary_key=True, index=True)
