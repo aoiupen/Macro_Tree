@@ -727,9 +727,9 @@ class MTTree:
         current_id = descendant_id
         while current_id is not None:
             if current_id == ancestor_id:
-            return True
+                return True
             item = self._items.get(current_id)
-        if item is None:
+            if item is None:
                 break
             current_id = item.get_property("parent_id")
             return False

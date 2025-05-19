@@ -75,7 +75,7 @@ class IMTTreeAdvancedTraversable(Protocol, Generic[T]):
 # Persistence(DB) : DB 접속 정보 외부 설정 관리 강화 (config.json 또는 환경 변수 일관 적용 확인)
 # Persistence(DB) : ID/이름 기반 조회/삭제 메서드 명확화 (메서드 시그니처 분리 또는 파라미터 명확화 검토)
 # Persistence(File) : 파일 저장 방식 상세 설계 (포맷 결정: JSON, YAML, Pickle 등, 오류 처리 방안)
-# Model(Store) : 데이터 저장소 인터페이스(IMTTreeRepository) 통합 또는 분리 기준 재검토 (향후 확장성 고려)
+# Model(Store) : 데이터 저장소 인터페이스(IMTStore) 통합 또는 분리 기준 재검토 (향후 확장성 고려)
 
 # ViewModel 계층
 # ViewModel : get_items 성능 및 구현 방식 검토 (데이터 캐싱, 부분 업데이트 전략, 부모 ID 조회 효율화)

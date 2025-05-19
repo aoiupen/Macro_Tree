@@ -1,7 +1,7 @@
 from typing import Any, Dict, Protocol
 from core.interfaces.base_tree import IMTTree
 
-class IMTTreeRepository(Protocol):
+class IMTStore(Protocol):
     """트리 저장소 인터페이스"""
     
     def save(self, tree: IMTTree, tree_id: str | None = None) -> str:

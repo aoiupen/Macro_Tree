@@ -8,12 +8,12 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from model.store.db.models import MTItem, DUMMY_ROOT_ID
 from model.store.db.database_setup import get_db_session
-from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
+from model.store.repo.interfaces.base_tree_repo import IMTStore
 import core.exceptions as exc # 사용자 정의 예외 사용 (경로 확인 필요)
 
 logger = logging.getLogger(__name__)
 
-class SQLAlchemyTreeRepo(IMTTreeRepository):
+class SQLAlchemyTreeRepo(IMTStore):
     """SQLAlchemy ORM 기반 트리 저장소 구현체"""
 
     def __init__(self):

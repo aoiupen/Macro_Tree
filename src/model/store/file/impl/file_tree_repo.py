@@ -4,11 +4,11 @@ from typing import Dict, Optional, Any, TypeVar, Type
 import uuid
 
 from core.interfaces.base_tree import IMTTree
-from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
+from model.store.repo.interfaces.base_tree_repo import IMTStore
 from core.interfaces.base_tree import IMTTreeJSONSerializable
 from core.impl.tree import MTTree
 
-class MTFileTreeRepository(IMTTreeRepository, IMTTreeJSONSerializable):
+class MTFileTreeRepository(IMTStore, IMTTreeJSONSerializable):
     """파일 기반 트리 저장소 구현체"""
     
     def __init__(self, storage_dir: str = "./trees"):

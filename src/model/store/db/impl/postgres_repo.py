@@ -10,7 +10,7 @@ from psycopg2.extras import Json
 
 from core.interfaces.base_tree import IMTTree, IMTTreeSerializable
 from core.impl.tree import MTTree
-from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
+from model.store.repo.interfaces.base_tree_repo import IMTStore
 import core.exceptions as exc
 
 logger = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ class TreeNotFoundError(Exception):
     """트리를 찾을 수 없음"""
     pass
 
-class PostgreSQLTreeRepository(IMTTreeRepository, IMTTreeSerializable):
+class PostgreSQLTreeRepository(IMTStore, IMTTreeSerializable):
     """PostgreSQL 기반 매크로 트리 저장소 구현
     
     PostgreSQL 데이터베이스를 사용해 트리 데이터를 저장하고 불러옵니다.

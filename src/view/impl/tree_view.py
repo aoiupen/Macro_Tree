@@ -1,5 +1,5 @@
 import sys # resource_path를 위해 추가
-from PyQt6.QtWidgets import QVBoxLayout, QWidget, QPushButton, QHBoxLayout, QSizePolicy, QMessageBox
+from PyQt6.QtWidgets import QVBoxLayout, QWidget, QPushButton, QHBoxLayout, QSizePolicy, QMessageBox, QFileDialog
 from PyQt6.QtGui import QIcon, QFontMetrics
 from PyQt6.QtCore import Qt, QSize
 from viewmodel.impl.tree_viewmodel import MTTreeViewModel
@@ -85,10 +85,36 @@ class TreeView(QWidget):
 
         self.del_button.clicked.connect(self.on_del_item)
 
+        # Save/Load 버튼에 사용할 임시 아이콘 (Add/Del 아이콘 재사용)
+        save_icon = add_icon
+        load_icon = del_icon
+
+        # Save 버튼
+        self.save_button = QPushButton("Save")
+        self.save_button.setIcon(save_icon)
+        self.save_button.setIconSize(self.add_button.iconSize())
+        self.save_button.setStyleSheet("QPushButton { padding-left: 8px; padding-right: 5px; padding-top: 1px; padding-bottom: 1px; }")
+        self.save_button.setMinimumHeight(target_min_button_height)
+        self.save_button.setMaximumWidth(int(self.width() * increased_width_percentage) if self.width() > 0 else increased_fallback_width)
+        self.save_button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        self.save_button.clicked.connect(self.on_save_clicked)
+
+        # Load 버튼
+        self.load_button = QPushButton("Load")
+        self.load_button.setIcon(load_icon)
+        self.load_button.setIconSize(self.del_button.iconSize())
+        self.load_button.setStyleSheet("QPushButton { padding-left: 8px; padding-right: 5px; padding-top: 1px; padding-bottom: 1px; }")
+        self.load_button.setMinimumHeight(target_min_button_height)
+        self.load_button.setMaximumWidth(int(self.width() * increased_width_percentage) if self.width() > 0 else increased_fallback_width)
+        self.load_button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        self.load_button.clicked.connect(self.on_load_clicked)
+
         # 버튼을 레이아웃에 추가 (왼쪽 정렬을 위해 addStretch 사용)
-        button_layout.addWidget(self.add_button) # alignment 제거
+        button_layout.addWidget(self.add_button)
         button_layout.addWidget(self.del_button)
-        button_layout.addStretch(1) # 버튼들을 왼쪽으로 밀어주는 신축성 공간 추가
+        button_layout.addWidget(self.save_button)
+        button_layout.addWidget(self.load_button)
+        button_layout.addStretch(1)
 
         # 버튼 레이아웃을 메인 레이아웃에 추가
         self.layout.addLayout(button_layout)
@@ -135,6 +161,36 @@ class TreeView(QWidget):
         selected_item_id = self.get_selected_item_id()
         if selected_item_id:
             self._viewmodel.remove_item(selected_item_id)
+
+    def on_save_clicked(self):
+        file_path, _ = QFileDialog.getSaveFileName(self, "트리 저장", "", "JSON 파일 (*.json);;모든 파일 (*.*)")
+        if file_path:
+            try:
+                # ViewModel에 save_tree(file_path) 메서드가 있다고 가정
+                if hasattr(self._viewmodel, 'save_tree'):
+                    success = self._viewmodel.save_tree(file_path)
+                    if not success:
+                        QMessageBox.critical(self, "저장 실패", "파일을 저장할 수 없습니다.")
+                else:
+                    QMessageBox.critical(self, "오류", "ViewModel에 save_tree 메서드가 없습니다.")
+            except Exception as e:
+                QMessageBox.critical(self, "저장 오류", f"저장 중 오류 발생: {e}")
+
+    def on_load_clicked(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "트리 불러오기", "", "JSON 파일 (*.json);;모든 파일 (*.*)")
+        if file_path:
+            try:
+                # ViewModel에 load_tree(file_path) 메서드가 있다고 가정
+                if hasattr(self._viewmodel, 'load_tree'):
+                    success = self._viewmodel.load_tree(file_path)
+                    if not success:
+                        QMessageBox.critical(self, "불러오기 실패", "파일을 불러올 수 없습니다.")
+                    else:
+                        self.tree_widget.update_tree_items()
+                else:
+                    QMessageBox.critical(self, "오류", "ViewModel에 load_tree 메서드가 없습니다.")
+            except Exception as e:
+                QMessageBox.critical(self, "불러오기 오류", f"불러오기 중 오류 발생: {e}")
 
     # --- ViewModel 시그널 슬롯 ---
     def on_tree_undoredo_slot(self, event_type: MTTreeEvent, data: dict[str, Any]):
