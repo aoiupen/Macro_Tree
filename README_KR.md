@@ -109,7 +109,7 @@
 
 ## Architecture Diagram
 
-![Architecture Diagram](src/images/architecture.png)
+![Architecture Diagram](src/images/architecture_01_KR.png)
 
 ### 계층 개요
 
