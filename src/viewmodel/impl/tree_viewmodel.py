@@ -190,10 +190,22 @@ class MTTreeViewModel(QObject): # QObject 상속
         return self._core.get_tree_items()
 
     # 2. Model wrapper (상태/이벤트/저장/복원)
-    def subscribe(self, callback):
-        return self._model.subscribe(callback)
-    def unsubscribe(self, callback):
-        return self._model.unsubscribe(callback)
+    def subscribe(self, event_type, callback, source='model'):
+        if source == 'model':
+            return self._model.subscribe(event_type, callback)
+        elif source == 'event':
+            return self._event_manager.subscribe(event_type, callback)
+        else:
+            raise ValueError(f"Unknown event source: {source}")
+
+    def unsubscribe(self, event_type, callback, source='model'):
+        if source == 'model':
+            return self._model.unsubscribe(event_type, callback)
+        elif source == 'event':
+            return self._event_manager.unsubscribe(event_type, callback)
+        else:
+            raise ValueError(f"Unknown event source: {source}")
+
     def new_undo(self, tree: IMTTree) -> bool:
         return self._model.new_undo(tree)
     def undo(self, tree: IMTTree) -> bool:

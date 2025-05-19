@@ -51,7 +51,7 @@ class TestMTTreeStateManager(unittest.TestCase):
         self.assertFalse(self.state_manager.can_undo())
         self.assertFalse(self.state_manager.can_redo())
 
-    @patch.object(MTTreeStateManager, '_notify_subscribers')
+    @patch.object(MTTreeStateManager, 'notify')
     def test_new_undo(self, mock_notify):
         # 첫 번째 new_undo
         returned_stage = self.state_manager.new_undo(self.stage1)
@@ -75,7 +75,7 @@ class TestMTTreeStateManager(unittest.TestCase):
         self.assertFalse(self.state_manager.can_redo()) # new_undo 시 redo 스택은 비워짐
         mock_notify.assert_called_once_with(MTTreeEvent.TREE_CRUD, self.stage2)
 
-    @patch.object(MTTreeStateManager, '_notify_subscribers')
+    @patch.object(MTTreeStateManager, 'notify')
     def test_new_undo_clears_redo_stack(self, mock_notify):
         # Undo/Redo 히스토리 생성
         self.state_manager.new_undo(self.stage1) # undo: [stage0], new_stage: stage1
@@ -97,7 +97,7 @@ class TestMTTreeStateManager(unittest.TestCase):
         self.assertEqual(len(self.state_manager._undo_stack), 2) # max_history 가 3이므로 아직 안 넘침
         mock_notify.assert_called_once_with(MTTreeEvent.TREE_CRUD, self.stage3)
 
-    @patch.object(MTTreeStateManager, '_notify_subscribers')
+    @patch.object(MTTreeStateManager, 'notify')
     def test_undo_and_redo(self, mock_notify):
         self.state_manager.new_undo(self.stage1) # S0 -> U:[S0], N:S1
         self.state_manager.new_undo(self.stage2) # S1 -> U:[S0,S1], N:S2
@@ -163,7 +163,7 @@ class TestMTTreeStateManager(unittest.TestCase):
         self.assertIsNone(self.state_manager.redo(self.state_manager._new_stage)) # 아무 변화 없음
         self.assertEqual(self.state_manager._new_stage, self.stage0) # new_stage는 그대로
 
-    @patch.object(MTTreeStateManager, '_notify_subscribers')
+    @patch.object(MTTreeStateManager, 'notify')
     def test_max_history_limit_for_undo_stack(self, mock_notify):
         # max_history = 3
         self.state_manager.new_undo(self.stage1) # U:[S0], N:S1
@@ -183,7 +183,7 @@ class TestMTTreeStateManager(unittest.TestCase):
         self.assertEqual(self.state_manager._new_stage, self.stage4)
         mock_notify.assert_called_with(MTTreeEvent.TREE_CRUD, self.stage4) # 마지막 호출 검증
 
-    @patch.object(MTTreeStateManager, '_notify_subscribers')
+    @patch.object(MTTreeStateManager, 'notify')
     def test_max_history_limit_for_redo_stack(self, mock_notify):
         # 히스토리 생성 (U:[S0,S1,S2], N:S3)
         self.state_manager.new_undo(self.stage1)

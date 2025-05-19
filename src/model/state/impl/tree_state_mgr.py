@@ -5,6 +5,7 @@ from core.interfaces.base_tree import IMTTree
 from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 from model.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
 from model.events.interfaces.base_tree_event_mgr import TreeEventCallback
+from model.events.impl.tree_event_mgr import EventManagerBase
 
 # MTNodeType Enum을 사용한다면 import 필요
 # from core.interfaces.base_item_data import MTNodeType # 예시 경로
@@ -77,17 +78,15 @@ def _format_tree_for_comprehension(tree_data_dict: dict) -> str:
 
     return "\n".join(lines)
 
-class MTTreeStateManager(IMTTreeStateManager):
+class MTTreeStateManager(EventManagerBase, IMTTreeStateManager):
     """매크로 트리 상태 관리자 구현"""
     
     def __init__(self, tree: IMTTree, max_history: int = 100):
         """상태 관리자를 초기화합니다."""
+        super().__init__()
         self._max_history = max_history
         self._undo_stack: List[Dict[str, Any]] = []
         self._redo_stack: List[Dict[str, Any]] = []
-        self._subscribers: Dict[MTTreeEvent, List[TreeEventCallback]] = {
-            event: [] for event in MTTreeEvent
-        }
         self._new_stage = {}
         self.set_initial_state(tree)
     
@@ -121,7 +120,7 @@ class MTTreeStateManager(IMTTreeStateManager):
         self._limit_stack(self._undo_stack)
         self._redo_stack.clear()
         
-        self._notify_subscribers(MTTreeEvent.TREE_CRUD, self._new_stage)
+        self.notify(MTTreeEvent.TREE_CRUD, self._new_stage)
         return self._new_stage
 
     def undo(self, stage: Dict[str, Any]) -> Dict[str, Any] | None:
@@ -132,7 +131,7 @@ class MTTreeStateManager(IMTTreeStateManager):
         self._limit_stack(self._redo_stack)
         self._new_stage = self._undo_stack.pop() # 가장 최근 상태 (Redo 스택으로 갈 것)
 
-        self._notify_subscribers(MTTreeEvent.TREE_UNDO, self._new_stage)
+        self.notify(MTTreeEvent.TREE_UNDO, self._new_stage)
         return self._new_stage
     
     def redo(self, stage: Dict[str, Any]) -> Dict[str, Any] | None:
@@ -143,20 +142,5 @@ class MTTreeStateManager(IMTTreeStateManager):
         self._limit_stack(self._undo_stack)
         self._new_stage = self._redo_stack.pop()
 
-        self._notify_subscribers(MTTreeEvent.TREE_REDO, self._new_stage)
-        return self._new_stage
-    
-    def subscribe(self, event_type: MTTreeEvent, callback: Callable) -> None:
-        """상태 변경 이벤트를 구독합니다."""
-        self._subscribers[event_type].append(callback)
-    
-    def unsubscribe(self, event_type: MTTreeEvent, callback: Callable) -> None:
-        """상태 변경 이벤트 구독을 해제합니다."""
-        if callback in self._subscribers:
-            self._subscribers.remove(callback)
-
-    def _notify_subscribers(self, event_type: MTTreeEvent, data: Dict[str, Any]) -> None:
-        """이벤트를 구독자들에게 알립니다."""
-        if event_type in self._subscribers:
-            for callback in self._subscribers[event_type]:
-                callback(event_type, data) 
+        self.notify(MTTreeEvent.TREE_REDO, self._new_stage)
+        return self._new_stage 
