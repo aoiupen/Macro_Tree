@@ -8,11 +8,12 @@ from viewmodel.interfaces.base_tree_viewmodel_model import IMTTreeViewModelModel
 from core.interfaces.base_tree import IMTTree
 from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 class MTTreeViewModelModel(IMTTreeViewModelModel):
-    def __init__(self, tree: IMTTree) -> None:
+    def __init__(self, tree: IMTTree, state_manager: IMTTreeStateManager) -> None:
         self._tree = tree
-        self._state_mgr: IMTTreeStateManager = MTTreeStateManager(self._tree)
+        if not state_manager:
+            raise ValueError("MTTreeViewModelModel 생성 시 state_manager는 반드시 제공되어야 합니다.")
+        self._state_mgr: IMTTreeStateManager = state_manager
         self._repository: IMTTreeRepository = PostgreSQLTreeRepository()
-        self._subscribers: Set[Callable[[], None]] = set()  # 변경 알림을 받을 콜백
         self._selected_items: Set[str] = set() # RF : 각 인스턴스마다 독립적인 선택 상태를 가져야 하므로 변수 할당, 초기화
 
     # ===== 인터페이스 메서드 =====
@@ -40,20 +41,17 @@ class MTTreeViewModelModel(IMTTreeViewModelModel):
             if tree:
                 self._state_mgr.set_initial_state(tree)
                 self._selected_items.clear()
-                self._notify_change()
+                self._state_mgr
                 return True
         except ValueError:
             pass
         return False 
 
-    def subscribe(self, callback: Callable[[], None]) -> None:
-        """변경 알림 구독"""
-        self._subscribers.add(callback)
+    def subscribe(self, event_type: MTTreeEvent, callback: Callable) -> None:
+        self._state_mgr.subscribe(event_type, callback)
 
-    def unsubscribe(self, callback: Callable[[], None]) -> None:
-        """변경 알림 구독 해제"""
-        if callback in self._subscribers:
-            self._subscribers.remove(callback)
+    def unsubscribe(self, event_type: MTTreeEvent, callback: Callable) -> None:
+        self._state_mgr.unsubscribe(event_type, callback)
 
     # ===== 추가 메서드 (인터페이스에 없는 것) =====
     def can_undo(self) -> bool:
@@ -63,9 +61,3 @@ class MTTreeViewModelModel(IMTTreeViewModelModel):
     def can_redo(self) -> bool:
         """다시 실행 가능 여부를 반환합니다."""
         return self._state_mgr.can_redo()
-    
-    # RF : 각 클래스는 자신의 변경 알림 메커니즘을 독립적으로 가짐
-    def _notify_change(self) -> None:
-        """모든 구독자에게 변경을 알립니다."""
-        for callback in self._subscribers:
-            callback()

@@ -9,7 +9,6 @@ from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 from typing import Any
 import os
 import random
-from model.state.impl.tree_state_mgr import _format_tree_for_comprehension
 import logging
 
 logger = logging.getLogger(__name__)
@@ -123,80 +122,64 @@ class TreeView(QWidget):
             # self.add_button.setMinimumHeight(int(current_hint_height * 1.1))
         super().resizeEvent(event)
 
+    # --- UI 이벤트 핸들러 ---
     def on_add_item(self):
-        # 현재 선택된 아이템 가져오기
         selected_item_id = self.get_selected_item_id()
-        # RF: Add 버튼 클릭 시 무조건 "New Item [랜덤숫자3자리]" 로 생성되도록 변경 (기존)
-        # RF: node_type은 기본적으로 INSTRUCTION으로 하되, GROUP 밑에 추가할 때는 GROUP도 가능하게? (일단 INSTRUCTION)
-        # RF: 현재는 selected_item_id를 parent_id로 사용하는데, 이게 GROUP이면 그 밑에, INSTRUCTION이면 형제로 추가해야 함.
-        # RF: ViewModel에서 이 로직을 처리.
-
         item_name = f"New Item {random.randint(100, 999)}"
-        item_type = MTNodeType.INSTRUCTION # 기본값을 INSTRUCTION으로 설정
-
-        # ViewModel을 통해 아이템 추가 요청
-        # selected_item_id는 부모가 될 수도 있고, 형제 관계를 결정하는 기준이 될 수도 있음.
-        # ViewModel의 add_item에서 이를 해석하여 core 모델에 적절히 요청.
+        item_type = MTNodeType.INSTRUCTION
         new_item_id = self._viewmodel.add_item(name=item_name, 
                                                new_item_node_type=item_type,
                                                selected_potential_parent_id=selected_item_id)
 
     def on_del_item(self):
-        selected_item_id = self.get_selected_item_id() # 새로 추가한 메서드 사용
+        selected_item_id = self.get_selected_item_id()
         if selected_item_id:
-            self._viewmodel.remove_item(selected_item_id) # 뷰모델에 삭제 요청
+            self._viewmodel.remove_item(selected_item_id)
 
-    def set_viewmodel(self, viewmodel):
-        self._viewmodel = viewmodel
-        self.tree_widget.set_viewmodel(viewmodel)
-
-    def on_tree_undoredo_signal(self, event_type: MTTreeEvent, data: dict[str, Any]):
+    # --- ViewModel 시그널 슬롯 ---
+    def on_tree_undoredo_slot(self, event_type: MTTreeEvent, data: dict[str, Any]):
         if event_type == MTTreeEvent.TREE_UNDO:
             self.tree_widget.update_tree_items()
         elif event_type == MTTreeEvent.TREE_REDO:
             self.tree_widget.update_tree_items()
 
-    def on_viewmodel_signal(self, signal_type, data):
-        if signal_type == 'item_added':
+    def on_viewmodel_slot(self, signal_type, data):
+        if signal_type == MTTreeEvent.ITEM_ADDED:
             item_id = data.get('item_id')
             parent_id = data.get('parent_id')
             if item_id:
-                # ViewModel을 통해 추가된 아이템의 상세 정보 가져오기
                 item_data = self._viewmodel.get_item(item_id)
                 if item_data:
                     self.tree_widget.handle_item_added(item_data, parent_id)
                 else:
-                    self.tree_widget.update_tree_items() # 예외 처리: 정보 없으면 전체 업데이트
+                    self.tree_widget.update_tree_items()
             else:
-                 self.tree_widget.update_tree_items() # 예외 처리: ID 없으면 전체 업데이트
-
-        elif signal_type == 'item_removed':
+                self.tree_widget.update_tree_items()
+        elif signal_type == MTTreeEvent.ITEM_REMOVED:
             item_id = data.get('item_id')
             if item_id:
                 self.tree_widget.handle_item_removed(item_id)
             else:
-                self.tree_widget.update_tree_items() # 예외 처리
-
-        elif signal_type == 'item_moved':
+                self.tree_widget.update_tree_items()
+        elif signal_type == MTTreeEvent.ITEM_MOVED:
             item_id = data.get('item_id')
             new_parent_id = data.get('new_parent_id')
-            old_parent_id = data.get('old_parent_id') # 이동 전 부모 정보도 필요할 수 있음
+            old_parent_id = data.get('old_parent_id')
             if item_id:
-                 print(f"View: Received item_moved signal for {item_id}, calling handle_item_moved...")
-                 self.tree_widget.handle_item_moved(item_id, new_parent_id, old_parent_id)
+                self.tree_widget.handle_item_moved(item_id, new_parent_id, old_parent_id)
             else:
-                 self.tree_widget.update_tree_items() # 예외 처리
-
-        elif signal_type == 'item_modified':
+                self.tree_widget.update_tree_items()
+        elif signal_type == MTTreeEvent.ITEM_MODIFIED:
             item_id = data.get('item_id')
             changes = data.get('changes')
             if item_id and changes:
-                 print(f"View: Received item_modified signal for {item_id}, calling handle_item_modified...")
-                 self.tree_widget.handle_item_modified(item_id, changes)
+                self.tree_widget.handle_item_modified(item_id, changes)
             else:
-                 self.tree_widget.update_tree_items() # 예외 처리
-
-        elif signal_type == 'tree_reset':
-            print("View: Received tree_reset signal, calling update_tree_items...")
-            self.tree_widget.update_tree_items() # 트리가 리셋되면 전체 업데이트 필요
+                self.tree_widget.update_tree_items()
+        elif signal_type == MTTreeEvent.TREE_RESET:
+            self.tree_widget.update_tree_items()
         # 필요시 추가 분기
+
+    def set_viewmodel(self, viewmodel):
+        self._viewmodel = viewmodel
+        self.tree_widget.set_viewmodel(viewmodel)
