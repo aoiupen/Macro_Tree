@@ -1,3 +1,6 @@
+permissions:
+  pull-requests: write
+
 name: "Pull Request Labeler"
 on:
   pull_request:
