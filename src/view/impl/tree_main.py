@@ -56,7 +56,6 @@ class MainWindow(QMainWindow):
         # ==== UI 구성 변경 시작 ====
         # 메인 트리 뷰 생성
         self.tree_view = TreeView(self.viewmodel)
-        self.viewmodel.set_view(self.tree_view)
 
         self.debug_manager_instance: 'DebugManager' | None = None # 타입 힌트
 
@@ -89,7 +88,13 @@ class MainWindow(QMainWindow):
 
         self._setup_undo_redo_actions() # Undo/Redo 액션 설정 메서드 호출
 
-        self.viewmodel.item_modified.connect(self.on_viewmodel_item_changed)
+        self.viewmodel.item_added.connect(self.tree_view.on_viewmodel_slot)
+        self.viewmodel.item_removed.connect(self.tree_view.on_viewmodel_slot)
+        self.viewmodel.item_moved.connect(self.tree_view.on_viewmodel_slot)
+        self.viewmodel.tree_reset.connect(self.tree_view.on_viewmodel_slot)
+        self.viewmodel.item_modified.connect(self.tree_view.on_viewmodel_slot)
+        self.viewmodel.tree_undo.connect(self.tree_view.on_tree_undoredo_slot)
+        self.viewmodel.tree_redo.connect(self.tree_view.on_tree_undoredo_slot)
 
     def _setup_undo_redo_actions(self):
         undo_action = QAction("Undo", self)

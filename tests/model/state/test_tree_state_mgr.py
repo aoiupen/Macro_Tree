@@ -36,7 +36,7 @@ class TestMTTreeStateManager(unittest.TestCase):
 
 
     def test_initialization_and_set_initial_state(self):
-        self.assertEqual(self.state_manager._new_stage, self.stage0)
+        self.assertEqual(self.state_manager._stage, self.stage0)
         self.assertFalse(self.state_manager.can_undo())
         self.assertFalse(self.state_manager.can_redo())
         self.assertEqual(len(self.state_manager._undo_stack), 0)
@@ -47,16 +47,16 @@ class TestMTTreeStateManager(unittest.TestCase):
         new_initial_stage = mock_new_initial_tree.to_dict()
 
         self.state_manager.set_initial_state(mock_new_initial_tree)
-        self.assertEqual(self.state_manager._new_stage, new_initial_stage)
+        self.assertEqual(self.state_manager._stage, new_initial_stage)
         self.assertFalse(self.state_manager.can_undo())
         self.assertFalse(self.state_manager.can_redo())
 
-    @patch.object(MTTreeStateManager, '_notify_subscribers')
+    @patch.object(MTTreeStateManager, 'notify')
     def test_new_undo(self, mock_notify):
         # 첫 번째 new_undo
         returned_stage = self.state_manager.new_undo(self.stage1)
         self.assertEqual(returned_stage, self.stage1)
-        self.assertEqual(self.state_manager._new_stage, self.stage1)
+        self.assertEqual(self.state_manager._stage, self.stage1)
         self.assertTrue(self.state_manager.can_undo())
         self.assertFalse(self.state_manager.can_redo())
         self.assertEqual(len(self.state_manager._undo_stack), 1)
@@ -68,45 +68,45 @@ class TestMTTreeStateManager(unittest.TestCase):
         # 두 번째 new_undo
         returned_stage_2 = self.state_manager.new_undo(self.stage2)
         self.assertEqual(returned_stage_2, self.stage2)
-        self.assertEqual(self.state_manager._new_stage, self.stage2)
+        self.assertEqual(self.state_manager._stage, self.stage2)
         self.assertEqual(len(self.state_manager._undo_stack), 2)
         self.assertEqual(self.state_manager._undo_stack[0], self.stage0)
         self.assertEqual(self.state_manager._undo_stack[1], self.stage1)
         self.assertFalse(self.state_manager.can_redo()) # new_undo 시 redo 스택은 비워짐
         mock_notify.assert_called_once_with(MTTreeEvent.TREE_CRUD, self.stage2)
 
-    @patch.object(MTTreeStateManager, '_notify_subscribers')
+    @patch.object(MTTreeStateManager, 'notify')
     def test_new_undo_clears_redo_stack(self, mock_notify):
         # Undo/Redo 히스토리 생성
-        self.state_manager.new_undo(self.stage1) # undo: [stage0], new_stage: stage1
-        self.state_manager.new_undo(self.stage2) # undo: [stage0, stage1], new_stage: stage2
+        self.state_manager.new_undo(self.stage1) # undo: [stage0], stage: stage1
+        self.state_manager.new_undo(self.stage2) # undo: [stage0, stage1], stage: stage2
         mock_notify.reset_mock()
 
         # Undo 실행 -> Redo 스택에 stage2가 들어감
-        self.state_manager.undo(self.state_manager._new_stage) # undo: [stage0], new_stage: stage1, redo: [stage2]
+        self.state_manager.undo(self.state_manager._stage) # undo: [stage0], stage: stage1, redo: [stage2]
         self.assertTrue(self.state_manager.can_redo())
         self.assertEqual(self.state_manager._redo_stack[0], self.stage2)
         mock_notify.assert_called_once_with(MTTreeEvent.TREE_UNDO, self.stage1)
         mock_notify.reset_mock()
 
         # 이 상황에서 new_undo 실행 시 redo 스택이 비워져야 함
-        self.state_manager.new_undo(self.stage3) # undo: [stage0, stage1], new_stage: stage3, redo: []
+        self.state_manager.new_undo(self.stage3) # undo: [stage0, stage1], stage: stage3, redo: []
         self.assertFalse(self.state_manager.can_redo())
         self.assertEqual(len(self.state_manager._redo_stack), 0)
-        self.assertEqual(self.state_manager._new_stage, self.stage3)
+        self.assertEqual(self.state_manager._stage, self.stage3)
         self.assertEqual(len(self.state_manager._undo_stack), 2) # max_history 가 3이므로 아직 안 넘침
         mock_notify.assert_called_once_with(MTTreeEvent.TREE_CRUD, self.stage3)
 
-    @patch.object(MTTreeStateManager, '_notify_subscribers')
+    @patch.object(MTTreeStateManager, 'notify')
     def test_undo_and_redo(self, mock_notify):
         self.state_manager.new_undo(self.stage1) # S0 -> U:[S0], N:S1
         self.state_manager.new_undo(self.stage2) # S1 -> U:[S0,S1], N:S2
         mock_notify.reset_mock()
 
         # Undo 1
-        undone_stage = self.state_manager.undo(self.state_manager._new_stage) # N:S2가 R:[S2]로, U 스택에서 pop된 S1이 N:S1
+        undone_stage = self.state_manager.undo(self.state_manager._stage) # S2가 R:[S2]로, U 스택에서 pop된 S1이 S1
         self.assertEqual(undone_stage, self.stage1)
-        self.assertEqual(self.state_manager._new_stage, self.stage1)
+        self.assertEqual(self.state_manager._stage, self.stage1)
         self.assertTrue(self.state_manager.can_undo())
         self.assertTrue(self.state_manager.can_redo())
         self.assertEqual(len(self.state_manager._undo_stack), 1) # [S0]
@@ -117,9 +117,9 @@ class TestMTTreeStateManager(unittest.TestCase):
         mock_notify.reset_mock()
 
         # Undo 2
-        undone_stage_2 = self.state_manager.undo(self.state_manager._new_stage) # N:S1이 R:[S2,S1]로, U 스택에서 pop된 S0이 N:S0
+        undone_stage_2 = self.state_manager.undo(self.state_manager._stage) # S1이 R:[S2,S1]로, U 스택에서 pop된 S0이 S0
         self.assertEqual(undone_stage_2, self.stage0)
-        self.assertEqual(self.state_manager._new_stage, self.stage0)
+        self.assertEqual(self.state_manager._stage, self.stage0)
         self.assertFalse(self.state_manager.can_undo()) # Undo 스택 비었음
         self.assertTrue(self.state_manager.can_redo())
         self.assertEqual(len(self.state_manager._undo_stack), 0)
@@ -130,9 +130,9 @@ class TestMTTreeStateManager(unittest.TestCase):
         mock_notify.reset_mock()
 
         # Redo 1
-        redone_stage = self.state_manager.redo(self.state_manager._new_stage) # N:S0이 U:[S0]로, R 스택에서 pop된 S1이 N:S1
+        redone_stage = self.state_manager.redo(self.state_manager._stage) # S0이 U:[S0]로, R 스택에서 pop된 S1이 S1
         self.assertEqual(redone_stage, self.stage1)
-        self.assertEqual(self.state_manager._new_stage, self.stage1)
+        self.assertEqual(self.state_manager._stage, self.stage1)
         self.assertTrue(self.state_manager.can_undo())
         self.assertTrue(self.state_manager.can_redo())
         self.assertEqual(len(self.state_manager._undo_stack), 1) # [S0]
@@ -143,9 +143,9 @@ class TestMTTreeStateManager(unittest.TestCase):
         mock_notify.reset_mock()
 
         # Redo 2
-        redone_stage_2 = self.state_manager.redo(self.state_manager._new_stage) # N:S1이 U:[S0,S1]로, R 스택에서 pop된 S2이 N:S2
+        redone_stage_2 = self.state_manager.redo(self.state_manager._stage) # S1이 U:[S0,S1]로, R 스택에서 pop된 S2이 S2
         self.assertEqual(redone_stage_2, self.stage2)
-        self.assertEqual(self.state_manager._new_stage, self.stage2)
+        self.assertEqual(self.state_manager._stage, self.stage2)
         self.assertTrue(self.state_manager.can_undo())
         self.assertFalse(self.state_manager.can_redo()) # Redo 스택 비었음
         self.assertEqual(len(self.state_manager._undo_stack), 2) # [S0,S1]
@@ -156,14 +156,14 @@ class TestMTTreeStateManager(unittest.TestCase):
 
     def test_undo_redo_when_stacks_are_empty(self):
         self.assertFalse(self.state_manager.can_undo())
-        self.assertIsNone(self.state_manager.undo(self.state_manager._new_stage)) # 아무 변화 없음
-        self.assertEqual(self.state_manager._new_stage, self.stage0) # new_stage는 그대로
+        self.assertIsNone(self.state_manager.undo(self.state_manager._stage)) # 아무 변화 없음
+        self.assertEqual(self.state_manager._stage, self.stage0) # stage는 그대로
 
         self.assertFalse(self.state_manager.can_redo())
-        self.assertIsNone(self.state_manager.redo(self.state_manager._new_stage)) # 아무 변화 없음
-        self.assertEqual(self.state_manager._new_stage, self.stage0) # new_stage는 그대로
+        self.assertIsNone(self.state_manager.redo(self.state_manager._stage)) # 아무 변화 없음
+        self.assertEqual(self.state_manager._stage, self.stage0) # stage는 그대로
 
-    @patch.object(MTTreeStateManager, '_notify_subscribers')
+    @patch.object(MTTreeStateManager, 'notify')
     def test_max_history_limit_for_undo_stack(self, mock_notify):
         # max_history = 3
         self.state_manager.new_undo(self.stage1) # U:[S0], N:S1
@@ -180,10 +180,10 @@ class TestMTTreeStateManager(unittest.TestCase):
         self.assertEqual(self.state_manager._undo_stack[0], self.stage1)
         self.assertEqual(self.state_manager._undo_stack[1], self.stage2)
         self.assertEqual(self.state_manager._undo_stack[2], self.stage3)
-        self.assertEqual(self.state_manager._new_stage, self.stage4)
+        self.assertEqual(self.state_manager._stage, self.stage4)
         mock_notify.assert_called_with(MTTreeEvent.TREE_CRUD, self.stage4) # 마지막 호출 검증
 
-    @patch.object(MTTreeStateManager, '_notify_subscribers')
+    @patch.object(MTTreeStateManager, 'notify')
     def test_max_history_limit_for_redo_stack(self, mock_notify):
         # 히스토리 생성 (U:[S0,S1,S2], N:S3)
         self.state_manager.new_undo(self.stage1)
@@ -193,17 +193,17 @@ class TestMTTreeStateManager(unittest.TestCase):
 
         # Undo를 3번 하여 Redo 스택 채우기
         # 1. Undo (N:S4 -> R:[S4], U:[S1,S2], N:S3)
-        self.state_manager.undo(self.state_manager._new_stage)
+        self.state_manager.undo(self.state_manager._stage)
         self.assertEqual(len(self.state_manager._redo_stack), 1)
         self.assertEqual(self.state_manager._redo_stack[0], self.stage4)
 
         # 2. Undo (N:S3 -> R:[S4,S3], U:[S1], N:S2)
-        self.state_manager.undo(self.state_manager._new_stage)
+        self.state_manager.undo(self.state_manager._stage)
         self.assertEqual(len(self.state_manager._redo_stack), 2)
         self.assertEqual(self.state_manager._redo_stack[1], self.stage3)
 
         # 3. Undo (N:S2 -> R:[S4,S3,S2], U:[], N:S1)
-        self.state_manager.undo(self.state_manager._new_stage)
+        self.state_manager.undo(self.state_manager._stage)
         self.assertEqual(len(self.state_manager._redo_stack), 3)
         self.assertEqual(self.state_manager._redo_stack[2], self.stage2)
         self.assertEqual(self.state_manager._redo_stack, [self.stage4, self.stage3, self.stage2]) # 순서 확인
@@ -218,7 +218,7 @@ class TestMTTreeStateManager(unittest.TestCase):
 
         # 현재: U:[], N:S1, R:[S4,S3,S2]
         # Redo 한번 (N:S1 -> U:[S1], R:[S4,S3], N:S2)
-        self.state_manager.redo(self.state_manager._new_stage)
+        self.state_manager.redo(self.state_manager._stage)
         # 이제 다시 Undo할 수 있는 상태가 됨. U:[S1], N:S2, R:[S4,S3]
 
         # 새로운 상태 추가
@@ -226,8 +226,8 @@ class TestMTTreeStateManager(unittest.TestCase):
         self.state_manager.new_undo(stage5) # U:[S1,S2], N:S5, R:[] (redo 스택 clear)
 
         # 다시 undo해서 redo 스택을 채운다.
-        self.state_manager.undo(self.state_manager._new_stage) # U:[S1], N:S2, R:[S5]
-        self.state_manager.undo(self.state_manager._new_stage) # U:[], N:S1, R:[S5,S2]
+        self.state_manager.undo(self.state_manager._stage) # U:[S1], N:S2, R:[S5]
+        self.state_manager.undo(self.state_manager._stage) # U:[], N:S1, R:[S5,S2]
 
         # redo 스택에 S1을 추가하기 위해 stage1을 redo
         # 먼저 stage1을 new_undo로 만들어야 함.
@@ -236,16 +236,16 @@ class TestMTTreeStateManager(unittest.TestCase):
         s0_variant = self.stage0.copy()
         s0_variant["name"] = "S0 Variant"
         self.state_manager.new_undo(s0_variant) # U:[S1], N:S0_variant, R:[]
-        self.state_manager.undo(self.state_manager._new_stage) # U:[], N:S1, R:[S0_variant]
+        self.state_manager.undo(self.state_manager._stage) # U:[], N:S1, R:[S0_variant]
 
         # redo 스택이 [S5, S2, S0_variant] 가 될 수 있도록 조작
         self.state_manager._redo_stack = [self.stage4, self.stage3, self.stage2] # 강제 설정
-        self.state_manager._new_stage = self.stage1 # 현재 상태
+        self.state_manager._stage = self.stage1 # 현재 상태
         self.state_manager._undo_stack = [] # undo 스택 비움
 
         # undo 호출 (이때 stage1이 redo_stack에 들어가면서 limit_stack이 호출됨)
         # self.state_manager.undo(self.stage_that_would_go_to_redo)
-        # undo 시에는 new_stage가 redo_stack으로.
+        # undo 시에는 stage가 redo_stack으로.
         # 이 테스트 케이스는 redo() 메소드가 redo_stack에서 pop하고 undo_stack에 push할 때,
         # undo_stack이 _limit_stack의 대상이 되는 것을 검증해야 함.
         # redo() 메소드에서는 self._undo_stack.append(stage) 이후 self._limit_stack(self._undo_stack) 호출.
@@ -253,23 +253,23 @@ class TestMTTreeStateManager(unittest.TestCase):
         # redo_stack을 초과하게 만들고 redo를 실행
         self.state_manager._undo_stack = []
         self.state_manager._redo_stack = [self.stage1, self.stage2, self.stage3] # 꽉 참
-        self.state_manager._new_stage = self.stage0 # 현재 상태
+        self.state_manager._stage = self.stage0 # 현재 상태
         
-        # stage0을 undo 스택에 넣고, stage1을 redo에서 꺼내 new_stage로. undo_stack은 [stage0]
-        self.state_manager.redo(self.state_manager._new_stage) 
-        self.assertEqual(self.state_manager._new_stage, self.stage1)
+        # stage0을 undo 스택에 넣고, stage1을 redo에서 꺼내 stage로. undo_stack은 [stage0]
+        self.state_manager.redo(self.state_manager._stage) 
+        self.assertEqual(self.state_manager._stage, self.stage1)
         self.assertEqual(self.state_manager._undo_stack, [self.stage0])
         self.assertEqual(self.state_manager._redo_stack, [self.stage2, self.stage3])
 
-        # stage1을 undo 스택에 넣고, stage2를 redo에서 꺼내 new_stage로. undo_stack은 [stage0, stage1]
-        self.state_manager.redo(self.state_manager._new_stage)
-        self.assertEqual(self.state_manager._new_stage, self.stage2)
+        # stage1을 undo 스택에 넣고, stage2를 redo에서 꺼내 stage로. undo_stack은 [stage0, stage1]
+        self.state_manager.redo(self.state_manager._stage)
+        self.assertEqual(self.state_manager._stage, self.stage2)
         self.assertEqual(self.state_manager._undo_stack, [self.stage0, self.stage1])
         self.assertEqual(self.state_manager._redo_stack, [self.stage3])
 
-        # stage2를 undo 스택에 넣고, stage3을 redo에서 꺼내 new_stage로. undo_stack은 [stage0, stage1, stage2] (꽉 참)
-        self.state_manager.redo(self.state_manager._new_stage)
-        self.assertEqual(self.state_manager._new_stage, self.stage3)
+        # stage2를 undo 스택에 넣고, stage3을 redo에서 꺼내 stage로. undo_stack은 [stage0, stage1, stage2] (꽉 참)
+        self.state_manager.redo(self.state_manager._stage)
+        self.assertEqual(self.state_manager._stage, self.stage3)
         self.assertEqual(self.state_manager._undo_stack, [self.stage0, self.stage1, self.stage2])
         self.assertEqual(self.state_manager._redo_stack, [])
 
@@ -280,10 +280,10 @@ class TestMTTreeStateManager(unittest.TestCase):
         self.state_manager._redo_stack = [self.stage4] # redo 할 아이템 하나 더 추가
         # 현재: U:[S0,S1,S2], N:S3, R:[S4]
         
-        self.state_manager.redo(self.state_manager._new_stage)
+        self.state_manager.redo(self.state_manager._stage)
         # N:S3이 U로 들어가면서 S0이 밀려나야 함 -> U:[S1,S2,S3]
         # R에서 S4가 N으로 -> N:S4
-        self.assertEqual(self.state_manager._new_stage, self.stage4)
+        self.assertEqual(self.state_manager._stage, self.stage4)
         self.assertEqual(self.state_manager._undo_stack, [self.stage1, self.stage2, self.stage3])
         self.assertEqual(self.state_manager._redo_stack, [])
 
@@ -295,8 +295,8 @@ class TestMTTreeStateManager(unittest.TestCase):
         # 내부 상태의 복사본이라는 가정 하에 동작합니다.
         # 이 테스트는 MTTreeStateManager가 내부적으로 deepcopy를 호출하지 않음을 확인합니다.
         self.state_manager.new_undo(self.stage1)
-        self.state_manager.undo(self.state_manager._new_stage)
-        self.state_manager.redo(self.state_manager._new_stage)
+        self.state_manager.undo(self.state_manager._stage)
+        self.state_manager.redo(self.state_manager._stage)
         mock_deepcopy.assert_not_called()
 
 

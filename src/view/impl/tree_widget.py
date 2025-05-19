@@ -5,7 +5,7 @@ from PyQt6.QtGui import QIcon
 from core.interfaces.base_item_data import MTNodeType
 import os
 from viewmodel.impl.tree_viewmodel import MTTreeViewModel
-import logging
+import logging                                                                                              
 
 logger = logging.getLogger(__name__)
 
