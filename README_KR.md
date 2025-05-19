@@ -103,9 +103,18 @@
 
 ## 아키텍처
 
-- **SOLID 원칙**: SRP, OCP, LSP, ISP, DIP
-- **인터페이스 기반 설계**: Protocol을 활용한 명확한 계약 정의
-- **계층화 아키텍처**: Core, Model, ViewModel, Platforms, View
+- **core**: 핵심 비즈니스 로직, 인터페이스, 구현체
+- **model**: 비즈니스 로직 확장 (데이터 영속성, 상태, 액션, 트리 탐색, 이벤트)
+    - `store/`: 저장소, 파일, DB 등 영속성 계층
+    - `state/`: 상태 및 Undo/Redo 관리
+    - `action/`: 입력/액션 추상화
+    - `traversal/`: 트리 순회/탐색 로직
+    - `events/`: 이벤트 관리
+- **viewmodel**: 상태 변환, UI 로직 (MVVM ViewModel)
+    - `impl/`: core/model/view 로직 분리
+- **platforms**: 크로스 플랫폼 어댑터 (뷰모델-뷰 연결, Adapter 패턴)
+- **view**: 뷰 계층 (PyQt6/QML UI 컴포넌트)
+- **tests**: 자동화 테스트 (pytest)
 
 ## Architecture Diagram
 
@@ -114,10 +123,18 @@
 ### 계층 개요
 
 - **core**: 핵심 비즈니스 로직, 인터페이스, 구현체
-- **model**: 비즈니스 로직 확장 (저장소, 서비스, 상태, 이벤트)
-- **viewmodel**: 뷰모델 계층 (상태 변환, UI 로직)
-- **platforms**: 크로스 플랫폼 어댑터 (뷰모델과 뷰 사이, Adapter 패턴)
+- **model**: 비즈니스 로직 확장 (데이터 영속성, 상태, 액션, 트리 탐색, 이벤트)
+    - `store/`: 저장소, 파일, DB 등 영속성 계층
+    - `state/`: 상태 및 Undo/Redo 관리
+    - `action/`: 입력/액션 추상화
+    - `traversal/`: 트리 순회/탐색 로직
+    - `events/`: 이벤트 관리
+- **viewmodel**: 상태 변환, UI 로직 (MVVM ViewModel)
+    - `impl/`: core/model/view 로직 분리
+- **platforms**: 크로스 플랫폼 어댑터 (뷰모델-뷰 연결, Adapter 패턴)
 - **view**: 뷰 계층 (PyQt6/QML UI 컴포넌트)
+- **debug**: 디버깅 도구 및 뷰어
+- **tests**: 자동화 테스트 (pytest)
 
 <details>
 <summary>Project Structure</summary>
@@ -129,24 +146,23 @@
 │   └── exceptions.py         # 코어 예외
 ├── model/                    # 비즈니스 로직 확장 계층
 │   ├── store/                # 데이터 영속성 관리 (repo, file, db)
-│   ├── state/                # 상태 관리
-│   ├── action/               # 액션 처리
-│   ├── traversal/            # 트리 순회 로직
+│   ├── state/                # 상태 관리 및 Undo/Redo
+│   ├── action/               # 입력/액션 처리
+│   ├── traversal/            # 트리 순회/탐색 로직
 │   └── events/               # 이벤트 처리
-├── viewmodel/                # 뷰모델 계층
+├── viewmodel/
 │   ├── interfaces/           # 뷰모델 인터페이스
 │   └── impl/                 # 뷰모델 구현체
-│       ├── tree_viewmodel_core.py    # 뷰모델 코어 로직
-│       ├── tree_viewmodel_model.py   # 모델 관련 뷰모델 로직
-│       ├── tree_viewmodel_view.py    # 뷰 관련 뷰모델 로직
-│       └── tree_viewmodel.py         # 메인 뷰모델 클래스
+│       ├── tree_viewmodel_core.py
+│       ├── tree_viewmodel_model.py
+│       ├── tree_viewmodel_view.py
+│       └── tree_viewmodel.py
 ├── view/                     # 뷰/UI 계층
 ├── platforms/                # 플랫폼 특화 코드 (어댑터, 인터페이스)
-├── debug/                    # 디버깅 도구 및 뷰어
 ├── tests/                    # 테스트 코드 (pytest)
 ├── main.py                   # 애플리케이션 진입점
 ├── requirements.txt          # 파이썬 의존성
-├── README_KR.md              # 프로젝트 문서 (현재 파일)
+├── README_KR.md              # 한글 프로젝트 문서
 └── README.md                 # 영문 프로젝트 문서
 ```
 

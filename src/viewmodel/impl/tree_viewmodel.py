@@ -123,7 +123,7 @@ class MTTreeViewModel(QObject): # QObject 상속
         self._core.reset_tree()
 
     def get_tree_items(self) -> dict[str, IMTTreeItem]:
-        return self._core.get_tree_items()
+        return dict(self._core.get_tree_items())
 
     # --- StateManager 위임 (상태/이벤트/저장/복원) ---
     def subscribe(self, event_type, callback, source='state'):
