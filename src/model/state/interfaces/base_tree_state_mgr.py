@@ -7,6 +7,7 @@ class IMTTreeStateManager(Protocol):
     """매크로 트리 상태 관리자 인터페이스
     
     트리의 상태 변경을 추적하고 관리합니다.
+    내부적으로 History 클래스를 통해 undo/redo/new_undo/can_undo/can_redo/set_initial_state 등을 위임합니다.
     """
     
     def __init__(self, max_history: int = 50):

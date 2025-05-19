@@ -38,3 +38,4 @@
 
 - 모든 함수와 메서드에 타입 힌트 추가
 - 복잡한 타입은 `typing` 모듈 사용 (예: `List[int]`, `Dict[str, Any]`)
+- Optional 타입은 Union 타입(|) 사용 (예: `str | None` 대신 `Optional[str]`)

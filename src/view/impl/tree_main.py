@@ -88,13 +88,13 @@ class MainWindow(QMainWindow):
 
         self._setup_undo_redo_actions() # Undo/Redo 액션 설정 메서드 호출
 
-        self.viewmodel.item_added.connect(self.tree_view.on_viewmodel_signal)
-        self.viewmodel.item_removed.connect(self.tree_view.on_viewmodel_signal)
-        self.viewmodel.item_moved.connect(self.tree_view.on_viewmodel_signal)
-        self.viewmodel.tree_reset.connect(self.tree_view.on_viewmodel_signal)
-        self.viewmodel.item_modified.connect(self.tree_view.on_viewmodel_signal)
-        self.viewmodel.tree_undo.connect(self.tree_view.on_tree_undoredo_signal)
-        self.viewmodel.tree_redo.connect(self.tree_view.on_tree_undoredo_signal)
+        self.viewmodel.item_added.connect(self.tree_view.on_viewmodel_slot)
+        self.viewmodel.item_removed.connect(self.tree_view.on_viewmodel_slot)
+        self.viewmodel.item_moved.connect(self.tree_view.on_viewmodel_slot)
+        self.viewmodel.tree_reset.connect(self.tree_view.on_viewmodel_slot)
+        self.viewmodel.item_modified.connect(self.tree_view.on_viewmodel_slot)
+        self.viewmodel.tree_undo.connect(self.tree_view.on_tree_undoredo_slot)
+        self.viewmodel.tree_redo.connect(self.tree_view.on_tree_undoredo_slot)
 
     def _setup_undo_redo_actions(self):
         undo_action = QAction("Undo", self)
