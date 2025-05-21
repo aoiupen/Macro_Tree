@@ -20,7 +20,7 @@ class MTTreeItem(IMTTreeItem):
     def __init__(
         self,
         item_id: str,
-        initial_data: MTItemDomainDTO | dict | None = None,
+        domain_data: MTItemDomainDTO | dict | None = None,
         ui_state_data: MTItemUIStateDTO | dict | None = None
     ):
         """
@@ -32,10 +32,10 @@ class MTTreeItem(IMTTreeItem):
         """
         self._id = item_id
         # 도메인 데이터 처리
-        if isinstance(initial_data, dict):
-            self._domain_data = MTItemDomainDTO(**initial_data)
-        elif isinstance(initial_data, MTItemDomainDTO):
-            self._domain_data = initial_data
+        if isinstance(domain_data, dict):
+            self._domain_data = MTItemDomainDTO(**domain_data)
+        elif isinstance(domain_data, MTItemDomainDTO):
+            self._domain_data = domain_data
         else:
             self._domain_data = MTItemDomainDTO(name="")
         # UI 상태 데이터 처리
@@ -123,9 +123,9 @@ class MTTreeItem(IMTTreeItem):
         """
         return MTTreeItem(self._id, copy.deepcopy(self._domain_data), copy.deepcopy(self._ui_state_data))
 
-    def to_itemdict(self) -> dict:
+    def to_dict(self) -> dict:
         return {
-            DK.ID: self._id,
-            DK.DATA: self._domain_data.to_dict(),
-            UK.UI_STATE: self._ui_state_data.to_datadict()
+            "id": self._id,
+            DK.DOMAIN: self._domain_data.to_dict(),
+            UK.UI_STATE: self._ui_state_data.to_dict()
         }

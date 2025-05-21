@@ -1,4 +1,4 @@
-from typing import Callable, Set
+from typing import Callable, Set, Any
 
 from model.state.impl.tree_state_mgr import MTTreeStateManager
 from model.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
@@ -18,12 +18,12 @@ class MTTreeViewModelModel(IMTTreeViewModelModel):
 
     # ===== 인터페이스 메서드 =====
     def undo(self, tree: IMTTree) -> bool:
-        result = self._state_mgr.undo(self._tree) is not None
-        return result
+        result: dict[str, Any] | None = self._state_mgr.undo()
+        return bool(result is not None)
 
     def redo(self, tree: IMTTree) -> bool:
-        result = self._state_mgr.redo(self._tree) is not None
-        return result
+        result: dict[str, Any] | None = self._state_mgr.redo()
+        return bool(result is not None)
 
     def save_tree(self, tree_id: str | None = None) -> str | None:
         tree = self._view.get_current_tree()
@@ -31,14 +31,14 @@ class MTTreeViewModelModel(IMTTreeViewModelModel):
             return None
         try:
             saved_id = self._repository.save(tree, tree_id)
-            return saved_id
+            return str(saved_id) if saved_id is not None else None
         except Exception:
             return None
 
     def load_tree(self, tree_id: str) -> bool:
         try:
             tree = self._repository.load(tree_id)
-            if tree:
+            if tree is not None:
                 self._state_mgr.set_initial_state(tree)
                 self._selected_items.clear()
                 self._state_mgr

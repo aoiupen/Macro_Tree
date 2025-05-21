@@ -1,7 +1,7 @@
 from core.interfaces.base_types import IMTPoint
 from typing import Optional
 from core.interfaces.base_tree import IMTTreeItem
-from core.interfaces.base_item_data import MTTreeItemData
+from core.interfaces.base_item_data import MTItemDomainDTO
 
 """
 이 모듈은 트리에서 사용하는 좌표(Point) 타입의 구현을 제공합니다.

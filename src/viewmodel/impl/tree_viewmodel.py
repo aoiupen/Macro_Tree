@@ -3,7 +3,7 @@ from viewmodel.impl.tree_viewmodel_model import MTTreeViewModelModel
 from viewmodel.impl.tree_viewmodel_view import MTTreeViewModelView
 from core.interfaces.base_tree import IMTTree
 from core.interfaces.base_tree import IMTTreeItem
-from core.interfaces.base_item_data import MTTreeItemData
+from core.interfaces.base_item_data import MTItemDomainDTO
 from model.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
 from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 from model.events.interfaces.base_tree_event_mgr import IMTTreeEventManager
@@ -282,11 +282,11 @@ class MTTreeViewModel(QObject): # QObject 상속
         return self._state_manager.can_redo()
 
     # --- View 위임 (UI/조회/상태) ---
-    def get_items(self) -> list[MTTreeItemData]:
+    def get_items(self) -> list[MTItemDomainDTO]:
         """
         트리의 모든 아이템 데이터를 리스트로 반환합니다.
         Returns:
-            list[MTTreeItemData]: 아이템 데이터 리스트
+            list[MTItemDomainDTO]: 아이템 데이터 리스트
         """
         return self._view.get_items()
     def select_item(self, item_id: str, multi_select: bool = False) -> bool:
@@ -322,13 +322,13 @@ class MTTreeViewModel(QObject): # QObject 상속
             list[str]: 선택된 아이템 ID 리스트
         """
         return self._view.get_selected_items()
-    def get_item_children(self, parent_id: str | None = None) -> list[MTTreeItemData]:
+    def get_item_children(self, parent_id: str | None = None) -> list[MTItemDomainDTO]:
         """
         지정된 부모 ID의 자식 아이템 데이터 리스트를 반환합니다.
         Args:
             parent_id (str | None): 부모 아이디(선택)
         Returns:
-            list[MTTreeItemData]: 자식 아이템 데이터 리스트
+            list[MTItemDomainDTO]: 자식 아이템 데이터 리스트
         """
         return self._view.get_item_children(parent_id)
     def toggle_expanded(self, item_id: str, expanded: bool | None = None) -> bool:

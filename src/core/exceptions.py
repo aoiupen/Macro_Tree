@@ -14,7 +14,7 @@ class MTTreeItemAlreadyExistsError(MTTreeError):
     """트리 아이템이 이미 존재할 때 발생하는 예외입니다."""
     pass
 
-class InvalidMTTreeItemDataError(MTTreeError):
+class InvalidMTItemDomainDTOError(MTTreeError):
     """트리 아이템 데이터가 유효하지 않을 때 발생하는 예외입니다."""
     pass
 

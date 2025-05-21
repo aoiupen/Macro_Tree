@@ -39,7 +39,9 @@ class MTFileTreeRepository:
             with open(file_path, 'r', encoding='utf-8') as file:
                 json_str = file.read()
             tree_data = json.loads(json_str)
-            return tree_data
+            if isinstance(tree_data, dict):
+                return tree_data
+            return None
         except Exception as e:
             print(f"트리 로드 실패: {e}")
             return None

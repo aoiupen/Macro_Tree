@@ -444,14 +444,6 @@ class _MTTreeSerializable:
 
     @classmethod
     def dict_to_tree(cls, data: Dict[str, Any], event_manager: IMTTreeEventManager | None = None) -> IMTTree:
-        """
-        딕셔너리 데이터로부터 새로운 MTTree 인스턴스를 생성합니다.
-        Args:
-            data (Dict[str, Any]): 트리 데이터
-            event_manager (IMTTreeEventManager | None): 이벤트 매니저
-        Returns:
-            IMTTree: 생성된 트리 인스턴스
-        """
         tree_id = data.get("id", "")
         tree_name = data.get("name", "")
         new_tree = MTTree(tree_id, tree_name, event_manager)
@@ -712,15 +704,10 @@ class MTTree:
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any], event_manager: IMTTreeEventManager | None = None) -> IMTTree:
-        """
-        딕셔너리에서 새로운 MTTree 인스턴스를 생성하여 반환합니다.
-        Args:
-            data (Dict[str, Any]): 트리 데이터 딕셔너리
-            event_manager (IMTTreeEventManager | None): 이벤트 매니저(선택)
-        Returns:
-            IMTTree: 생성된 트리 인스턴스
-        """
-        return _MTTreeSerializable.dict_to_tree(data, event_manager)
+        tree = _MTTreeSerializable.dict_to_tree(data, event_manager)
+        if tree is None:
+            raise ValueError("from_dict: 트리 생성 실패")
+        return tree
     
     def tree_to_json(self) -> str:
         """
@@ -740,7 +727,12 @@ class MTTree:
         Returns:
             IMTTree: 생성된 트리 인스턴스
         """
-        return _MTTreeSerializable.json_to_tree(json_str, event_manager)
+        try:
+            data = json.loads(json_str)
+            return _MTTreeSerializable.dict_to_tree(data, event_manager)
+        except json.JSONDecodeError as e:
+            print(f"JSON 파싱 실패: {e}")
+            return MTTree("", "Error Tree", event_manager)
 
     def dict_to_state(self, data: Dict[str, Any]) -> None:
         """

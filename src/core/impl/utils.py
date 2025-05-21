@@ -1,5 +1,5 @@
 from core.interfaces.base_tree import IMTTreeItem
-from core.interfaces.base_item_data import MTTreeItemData
+from core.interfaces.base_item_data import MTItemDomainDTO
 from dataclasses import asdict
 
 """
@@ -10,21 +10,21 @@ def to_tree_item_data(
     item: IMTTreeItem,
     parent_id: str | None,
     selected: bool = False
-) -> MTTreeItemData:
+) -> MTItemDomainDTO:
     """
-    IMTTreeItem 객체와 parent_id, selected 정보를 받아 MTTreeItemData로 변환합니다.
+    IMTTreeItem 객체와 parent_id, selected 정보를 받아 MTItemDomainDTO로 변환합니다.
     Args:
         item (IMTTreeItem): 변환할 트리 아이템
         parent_id (str | None): 부모 아이템 ID
         selected (bool): 선택 여부
     Returns:
-        MTTreeItemData: 변환된 트리 아이템 데이터
+        MTItemDomainDTO: 변환된 트리 아이템 데이터
     """
-    # RF : MTTreeItemData를 dataclass로 바꾸면 dict 대신 asdict()로 변환해야 한다.
+    # RF : MTItemDomainDTO를 dataclass로 바꾸면 dict 대신 asdict()로 변환해야 한다.
     data = asdict(item.data) if hasattr(item, "data") else {}
     data["parent_id"] = parent_id
     data["selected"] = selected
-    return MTTreeItemData(
+    return MTItemDomainDTO(
         id=data.get('id', ""),
         name=data.get('name', ""),
         parent_id=data.get('parent_id'),

@@ -310,7 +310,7 @@ class PostgreSQLTreeRepository(IMTStore, IMTTreeSerializable):
             생성된 트리 객체
             
         Raises:
-            InvalidMTTreeItemDataError: 잘못된 JSON 형식
+            InvalidMTItemDomainDTOError: 잘못된 JSON 형식
         """
         try:
             # JSON을 딕셔너리로 변환
@@ -319,7 +319,7 @@ class PostgreSQLTreeRepository(IMTStore, IMTTreeSerializable):
             # 딕셔너리로부터 트리 생성
             return MTTree.from_dict(tree_dict)
         except json.JSONDecodeError as e:
-            raise exc.InvalidMTTreeItemDataError(f"잘못된 JSON 형식: {e}")
+            raise exc.InvalidMTItemDomainDTOError(f"잘못된 JSON 형식: {e}")
         except Exception as e:
             raise exc.MTTreeError(f"트리 생성 실패: {e}")
             
@@ -457,3 +457,7 @@ class PostgreSQLTreeRepository(IMTStore, IMTTreeSerializable):
         # 저장소 객체 자체가 특정 '상태'를 복원하는 것은 적합하지 않을 수 있습니다.
         # 실제 트리 데이터의 복원은 load 메서드 등을 통해 이루어집니다.
         pass 
+
+    def dict_to_state(self, data: dict) -> None:
+        # 실제 구현 또는 NotImplementedError라도 명시
+        raise NotImplementedError("dict_to_state는 아직 구현되지 않았습니다.") 

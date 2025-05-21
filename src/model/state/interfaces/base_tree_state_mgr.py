@@ -32,15 +32,15 @@ class IMTTreeStateManager(Protocol):
         """다시 실행 가능 여부를 반환합니다."""
         ...
     
-    def new_undo(self, stage: Dict[str, Any]) -> None:
+    def new_undo(self, stage: Dict[str, Any]) -> Dict[str, Any] | None:
         """레코드를 시작합니다."""
         ...
 
-    def undo(self, stage: Dict[str, Any]) -> IMTTree | None:
+    def undo(self) -> Dict[str, Any] | None:
         """이전 상태로 되돌립니다."""
         ...
     
-    def redo(self, stage: Dict[str, Any]) -> IMTTree | None:
+    def redo(self) -> Dict[str, Any] | None:
         """다음 상태로 복원합니다."""
         ...
     
