@@ -4,12 +4,13 @@ from unittest.mock import Mock, call
 from src.core.impl.tree import MTTree
 from src.core.impl.item import MTTreeItem
 from src.core.interfaces.base_item_data import MTNodeType
+from src.core.interfaces.base_tree import IMTTree
 from src.model.events.interfaces.base_tree_event_mgr import IMTTreeEventManager, MTTreeEvent
 import src.core.exceptions as exc
 
 def test_tree_create():
     mock_event_manager = Mock(spec=IMTTreeEventManager)
-    tree = MTTree(tree_id="root_tree_id", name="Root Tree", event_manager=mock_event_manager)
+    tree:IMTTree = MTTree(tree_id="root_tree_id", name="Root Tree", event_manager=mock_event_manager)
     assert tree.id == "root_tree_id"
     assert tree.name == "Root Tree"
     assert tree.root_id == MTTree.DUMMY_ROOT_ID
@@ -310,20 +311,27 @@ class TestMTTree:
         ]
         mock_event_manager.notify.assert_has_calls(calls, any_order=False)
 
-    def test_to_dict_and_from_dict(self, tree, item1, item2, mock_event_manager):
+    def test_to_treedict_and_dict_to_tree(self, tree, item1, item2, mock_event_manager):
         tree.add_item(item1)
         tree.add_item(item2, parent_id="item1")
-
-        tree_dict = tree.to_dict()
-
-        new_tree = MTTree.from_dict(tree_dict, event_manager=mock_event_manager)
-
+        tree_dict = tree.to_treedict()
+        new_tree = MTTree.dict_to_tree(tree_dict, event_manager=mock_event_manager)
         assert new_tree.id == tree.id
         assert new_tree.name == tree.name
         assert new_tree.root_id == tree.root_id
         assert len(new_tree.items) == len(tree.items)
         assert new_tree.get_item("item1").get_property("name") == item1.get_property("name")
         assert new_tree.get_item("item2").get_property("name") == item2.get_property("name")
+
+    def test_json_serialization_deserialization(self, tree, item1, item2, mock_event_manager):
+        tree.add_item(item1)
+        tree.add_item(item2, parent_id="item1")
+        json_string = tree.tree_to_json()
+        assert isinstance(json_string, str)
+        new_tree = MTTree.json_to_tree(json_string, event_manager=mock_event_manager)
+        assert new_tree.id == tree.id
+        assert len(new_tree.items) == len(tree.items)
+        assert new_tree.get_item("item1").get_property("name") == item1.get_property("name")
 
     def test_clone(self, tree, item1, item2, mock_event_manager):
         original_event_manager = tree._event_manager
@@ -375,16 +383,4 @@ class TestMTTree:
         assert dummy_root.get_property("name") == "MTTree Dummy Root"
         assert dummy_root.get_property("node_type") == MTNodeType.DUMMY_ROOT
         assert dummy_root.get_property("parent_id") is None
-        assert isinstance(dummy_root.get_property("children_ids"), list)
-
-    def test_json_serialization_deserialization(self, tree, item1, item2, mock_event_manager):
-        tree.add_item(item1)
-        tree.add_item(item2, parent_id="item1")
-
-        json_string = tree.to_json()
-        assert isinstance(json_string, str)
-
-        new_tree = MTTree.from_json(json_string, event_manager=mock_event_manager)
-        assert new_tree.id == tree.id
-        assert len(new_tree.items) == len(tree.items)
-        assert new_tree.get_item("item1").get_property("name") == item1.get_property("name") 
+        assert isinstance(dummy_root.get_property("children_ids"), list) 

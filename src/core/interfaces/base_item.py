@@ -1,5 +1,5 @@
 from typing import Protocol, TypeVar, runtime_checkable
-from .base_item_data import MTTreeItemData
+from .base_item_data import MTItemDomainDTO
 
 # -------------------
 # TreeItemKeys 분리: 도메인 키와 UI/확장/부가 키를 별도 관리
@@ -20,7 +20,7 @@ class IMTBaseItem(Protocol):
     def id(self) -> str: ...
     
     @property
-    def data(self) -> MTTreeItemData: ...
+    def data(self) -> MTItemDomainDTO: ...
 
 # 트리 아이템 인터페이스
 @runtime_checkable

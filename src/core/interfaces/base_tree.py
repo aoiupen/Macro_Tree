@@ -60,22 +60,26 @@ class IMTTreeTraversable(Protocol):
 class IMTTreeSerializable(Protocol):
     """
     트리 직렬화/역직렬화 인터페이스.
-    구현 클래스는 from_dict, from_json 클래스 메서드도 제공해야 함 (규약 사항).
+    구현 클래스는 dict_to_tree, json_to_tree 클래스 메서드도 제공해야 함 (규약 사항).
     """
     def to_dict(self) -> Dict[str, Any]:
         """트리를 딕셔너리로 변환합니다."""
         ...
-    
-    def to_json(self) -> str:
+    def tree_to_json(self) -> str:
         """트리 구조를 JSON 문자열로 직렬화합니다."""
         ...
-    
     @abstractmethod
-    def restore_state(self, data: Dict[str, Any]) -> None:
+    def dict_to_state(self, data: Dict[str, Any]) -> None:
         """
         주어진 딕셔너리 데이터로부터 현재 트리 인스턴스의 상태를 복원합니다.
         이 메서드는 기존 인스턴스의 내용을 변경합니다.
         """
+        ...
+    @classmethod
+    def dict_to_tree(cls, data: Dict[str, Any], event_manager: Any = None) -> Any:
+        ...
+    @classmethod
+    def json_to_tree(cls, json_str: str, event_manager: Any = None) -> Any:
         ...
 
 class IMTTreeClonable(Protocol):

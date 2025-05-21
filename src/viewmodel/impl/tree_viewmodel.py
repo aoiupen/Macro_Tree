@@ -7,6 +7,7 @@ from core.interfaces.base_item_data import MTTreeItemData
 from model.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
 from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 from model.events.interfaces.base_tree_event_mgr import IMTTreeEventManager
+from model.store.file.impl.file_tree_repo import MTFileTreeRepository
 from core.interfaces.base_item_data import MTNodeType
 from core.impl.tree import MTTree # MTTree 클래스 임포트
 from PyQt6.QtCore import pyqtSignal, QObject # pyqtSignal 임포트, QObject 임포트
@@ -27,7 +28,7 @@ class MTTreeViewModel(QObject): # QObject 상속
     tree_undo = pyqtSignal(MTTreeEvent, dict)
     tree_redo = pyqtSignal(MTTreeEvent, dict)
 
-    def __init__(self, tree: IMTTree, state_manager: IMTTreeStateManager, event_manager: IMTTreeEventManager, repository=None, parent=None):
+    def __init__(self, tree: IMTTree, state_manager: IMTTreeStateManager, event_manager: IMTTreeEventManager, repository: MTFileTreeRepository, parent=None):
         """
         ViewModel을 초기화합니다.
         Args:
@@ -45,6 +46,7 @@ class MTTreeViewModel(QObject): # QObject 상속
         self._view: MTTreeViewModelView = MTTreeViewModelView(self._tree)
         self._state_manager = state_manager
         self._event_manager = event_manager
+        self._repository = repository
 
         events_to_subscribe = [
             MTTreeEvent.ITEM_ADDED,
@@ -354,3 +356,32 @@ class MTTreeViewModel(QObject): # QObject 상속
         if self._core and hasattr(self._core, '_tree') and hasattr(self._core._tree, 'DUMMY_ROOT_ID'):
              return self._core._tree.DUMMY_ROOT_ID
         return None
+
+    def save_tree(self, tree_id: str | None = None) -> str:
+        """
+        현재 트리 상태를 저장합니다.
+        Args:
+            tree_id (str | None): 저장할 트리의 ID(선택)
+        Returns:
+            str: 저장된 트리의 ID
+        """
+        tree_dict = self._core.to_dict()
+        return self._repository.save(tree_dict, tree_id)
+
+    def load_tree(self, tree_id: str) -> bool:
+        """
+        저장소에서 트리 데이터를 불러와 현재 트리 상태를 복원합니다.
+        Args:
+            tree_id (str): 불러올 트리의 ID
+        Returns:
+            bool: 성공 여부
+        """
+        tree_dict = self._repository.load(tree_id)
+        if tree_dict:
+            self._core.restore_state(tree_dict)
+            if self._state_manager:
+                self._state_manager.set_initial_state(self._core._tree)
+            if self._event_manager:
+                self._event_manager.notify(MTTreeEvent.TREE_RESET, {"tree_data": tree_dict})
+            return True
+        return False

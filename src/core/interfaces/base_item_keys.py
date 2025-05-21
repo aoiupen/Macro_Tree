@@ -2,9 +2,8 @@
 이 모듈은 트리 아이템의 속성 키 상수를 정의합니다.
 """
 
-class DataKeys:
-    """트리 아이템의 속성 키 상수 (도메인 + UI/확장)"""
-    # 도메인 속성 키
+class DomainKeys:
+    """트리 아이템의 도메인 속성 키 상수"""
     ID = "id"
     NAME = "name"
     PARENT_ID = "parent_id"
@@ -13,11 +12,12 @@ class DataKeys:
     DEVICE = "device"
     ACTION = "action"
     ACTION_DATA = "action_data"
-
-class UIKeys:
-    """트리 아이템의 UI/확장/부가 속성 키 상수"""
     DATA = "data"
+
+class UIStateKeys:
+    """트리 아이템의 UI 상태/확장/부가 속성 키 상수"""
     EXPANDED = "expanded"
     SELECTED = "selected"
     VISIBLE = "visible"
     ICON = "icon"
+    UI_STATE = "ui_state"

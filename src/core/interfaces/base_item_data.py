@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Protocol, Any, List, TypedDict, TypeVar, Generic, Optional
 from core.interfaces.base_types import IMTPoint
 from dataclasses import dataclass, field
+import dataclasses
 
 """
 이 모듈은 매크로 트리의 도메인 Enum, 타입, 프로토콜, 데이터 구조를 정의합니다.
@@ -90,8 +91,7 @@ class IMTActionPerformer(Protocol, Generic[TActionData]):
 # RF: TypedDict는 구조체. 그 아래는 인터페이스 가질 수 있음
 # RF: I는 TypedDict, dataclass, enum에 쓰지 않는다
 @dataclass
-class MTTreeItemData:
-    id: str = ""
+class MTItemDomainDTO:
     name: str = ""
     parent_id: str | None = None
     children_ids: List[str] = field(default_factory=list)
@@ -99,5 +99,15 @@ class MTTreeItemData:
     device: MTDevice | None = None
     action: IMTAction | None = None
     action_data: IMTActionData | None = None
-    # 기타 UI/확장 속성은 필요에 따라 추가
+    def to_dict(self) -> dict:
+        # 실제 변환 로직 필요시 구현
+        return dataclasses.asdict(self)
 
+@dataclass
+class MTItemUIStateDTO:
+    is_selected: bool = False
+    is_expanded: bool = False
+    visible: bool = True
+    icon: str = ""
+    def to_dict(self) -> dict:
+        return dataclasses.asdict(self)
