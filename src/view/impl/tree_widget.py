@@ -2,6 +2,7 @@ import sys
 from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QAbstractItemView
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
+from core.interfaces.base_item_keys import DomainKeys as DK, UIStateKeys as UK
 from core.interfaces.base_item_data import MTNodeType
 import os
 from viewmodel.impl.tree_viewmodel import MTTreeViewModel
@@ -42,35 +43,34 @@ class MTTreeWidget(QTreeWidget):
         all_items = self._viewmodel.get_tree_items()
         def add_children_to_widget(parent_item_id_in_model, parent_qwidget_item):
             for item_id, item_model in all_items.items():
-                if item_model.get_property("parent_id") == parent_item_id_in_model:
+                if item_model.get_property(DK.PARENT_ID) == parent_item_id_in_model:
                     self._add_tree_item(item_model, parent_qwidget_item)
                     new_qwidget_item = self._id_to_widget_map.get(item_id)
                     if new_qwidget_item:
                         add_children_to_widget(item_id, new_qwidget_item)
-
         if dummy_root_id:
             for item_id, item_model in all_items.items():
-                if item_model.get_property("parent_id") == dummy_root_id:
+                if item_model.get_property(DK.PARENT_ID) == dummy_root_id:
                     self._add_tree_item(item_model, self)
                     top_level_qwidget_item = self._id_to_widget_map.get(item_id)
                     if top_level_qwidget_item:
                         add_children_to_widget(item_id, top_level_qwidget_item)
         else:
             logger.warning("Dummy root ID not found. Tree might not be built correctly.")
-
+        print("build", self._id_to_widget_map)
     def _apply_tree_state(self):
         for item_id, widget_item in self._id_to_widget_map.items():
             item = self._viewmodel.get_item(item_id)
             if item:
-                if item.get_property("expanded", False):
+                if item.get_property(UK.EXPANDED, False):
                     self.expandItem(widget_item)
                 if item_id in self._viewmodel.get_selected_items():
                     widget_item.setSelected(True)
-
+        print("apply", self._id_to_widget_map)
     def _add_tree_item(self, item, parent_widget):
-        widget_item = QTreeWidgetItem(parent_widget, [item.get_property("name", item.id)])
+        widget_item = QTreeWidgetItem(parent_widget, [item.get_property(DK.NAME, item.id)])
         widget_item.setData(0, Qt.ItemDataRole.UserRole, item.id)
-        node_type = item.get_property("node_type", None)
+        node_type = item.get_property(DK.NODE_TYPE, None)
         icon_path = None
 
         # Define project_root relative to this file's location
@@ -154,7 +154,7 @@ class MTTreeWidget(QTreeWidget):
 
         self._add_tree_item(item_data, parent_widget)
         new_widget_item = self._id_to_widget_map.get(item_data.id)
-        if new_widget_item and item_data.get_property("expanded", False):
+        if new_widget_item and item_data.get_property(UK.EXPANDED, False):
             self.expandItem(new_widget_item)
         if new_widget_item and item_data.id in self._viewmodel.get_selected_items():
              new_widget_item.setSelected(True)
@@ -242,7 +242,7 @@ class MTTreeWidget(QTreeWidget):
         self._id_to_widget_map[item_id] = taken_item_from_ui 
 
         if item_data_from_model := self._viewmodel.get_item(item_id):
-            if item_data_from_model.get_property("expanded", False):
+            if item_data_from_model.get_property(UK.EXPANDED, False):
                 self.expandItem(taken_item_from_ui)
             else:
                 self.collapseItem(taken_item_from_ui)

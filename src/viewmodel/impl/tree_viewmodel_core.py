@@ -1,6 +1,6 @@
 from typing import Callable, Dict, Set
 from uuid import uuid4
-
+from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 from core.impl.tree import MTTreeItem
 from core.interfaces.base_item_data import MTTreeItemData
 from core.interfaces.base_tree import IMTTreeItem, IMTTree
@@ -117,8 +117,13 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
     def restore_tree_from_snapshot(self, snapshot_dict: dict) -> None:
         """주어진 스냅샷 딕셔너리로부터 트리 상태를 복원합니다."""
         tree = self._get_tree()
-        if hasattr(tree, 'restore_state'):
-            tree.restore_state(snapshot_dict)
+        if hasattr(tree, 'dict_to_state'):
+            tree.dict_to_state(snapshot_dict)
         else:
-            # 이 경우는 발생하면 안 되지만, 방어적으로 처리
-            print("Error: Tree object does not have a restore_state method.")
+            print("Error: Tree object does not have a dict_to_state method.")
+
+    def to_dict(self):
+        return self._tree.to_dict()
+
+    def dict_to_state(self, data):
+        return self._tree.dict_to_state(data)

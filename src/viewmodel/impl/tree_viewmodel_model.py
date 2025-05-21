@@ -3,7 +3,7 @@ from typing import Callable, Set
 from model.state.impl.tree_state_mgr import MTTreeStateManager
 from model.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
 from model.store.db.impl.postgres_repo import PostgreSQLTreeRepository
-from model.store.repo.interfaces.base_tree_repo import IMTTreeRepository
+from model.store.repo.interfaces.base_tree_repo import IMTStore
 from viewmodel.interfaces.base_tree_viewmodel_model import IMTTreeViewModelModel
 from core.interfaces.base_tree import IMTTree
 from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
@@ -13,7 +13,7 @@ class MTTreeViewModelModel(IMTTreeViewModelModel):
         if not state_manager:
             raise ValueError("MTTreeViewModelModel 생성 시 state_manager는 반드시 제공되어야 합니다.")
         self._state_mgr: IMTTreeStateManager = state_manager
-        self._repository: IMTTreeRepository = PostgreSQLTreeRepository()
+        self._repository: IMTStore = PostgreSQLTreeRepository()
         self._selected_items: Set[str] = set() # RF : 각 인스턴스마다 독립적인 선택 상태를 가져야 하므로 변수 할당, 초기화
 
     # ===== 인터페이스 메서드 =====
