@@ -458,6 +458,34 @@ class PostgreSQLTreeRepository(IMTStore, IMTTreeSerializable):
         # 실제 트리 데이터의 복원은 load 메서드 등을 통해 이루어집니다.
         pass 
 
-    def dict_to_state(self, data: dict) -> None:
-        # 실제 구현 또는 NotImplementedError라도 명시
-        raise NotImplementedError("dict_to_state는 아직 구현되지 않았습니다.") 
+    # IMTTreeSerializable 인터페이스의 dict_to_state 메서드 구현
+    def dict_to_state(self, data_dict: dict) -> MTTree | None:
+        """
+        제공된 딕셔너리로부터 MTTree 객체를 생성하여 반환합니다.
+        IMTTreeSerializable 인터페이스 구현의 일부입니다.
+        """
+        if not data_dict:
+            # 빈 딕셔너리나 None이 입력된 경우 처리
+            # 예를 들어, 경고를 로깅하거나 None을 반환할 수 있습니다.
+            # print("Warning: dict_to_state received empty or None data_dict.")
+            return None
+        try:
+            # MTTree 클래스에 from_dict 클래스 메서드가 구현되어 있다고 가정
+            return MTTree.from_dict(data_dict)
+        except Exception as e:
+            # 실제 운영 환경에서는 적절한 로깅 프레임워크 사용 권장
+            print(f"Error converting dictionary to MTTree state in PostgreSQLTreeRepository: {e}")
+            # 필요에 따라 사용자 정의 예외를 발생시키거나, None을 반환하여 호출 측에서 처리하도록 할 수 있습니다.
+            return None
+
+    # tree_to_dict 메서드도 IMTTreeSerializable의 일부일 수 있으므로 확인 필요
+    # 만약 그렇다면, 다음과 같이 구현될 수 있음:
+    # def tree_to_dict(self, tree: IMTTree) -> dict | None:
+    #     if not tree:
+    #         return None
+    #     try:
+    #         return tree.to_dict()
+    #     except Exception as e:
+    #         print(f"Error converting MTTree state to dictionary: {e}")
+    #         return None 
+>>>>>>> c0be85d97bac1da4a4900bdea000745110119cfd

@@ -1,6 +1,5 @@
 from typing import Callable, List, Set
-
-from core.interfaces.base_item_data import MTItemDomainDTO
+from core.interfaces.base_item_data import MTItemDomainDTO, MTItemUIStateDTO
 from core.interfaces.base_tree import IMTTree, IMTTreeItem
 from core.impl.utils import to_tree_item_data
 from viewmodel.interfaces.base_tree_viewmodel_view import IMTTreeViewModelView

@@ -1,5 +1,6 @@
 from core.interfaces.base_tree import IMTTreeItem
-from core.interfaces.base_item_data import MTItemDomainDTO
+
+from core.interfaces.base_item_data import MTItemDomainDTO, MTItemUIStateDTO
 from dataclasses import asdict
 
 """

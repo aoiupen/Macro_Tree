@@ -3,6 +3,7 @@ from typing import Protocol, Any, List, TypedDict, TypeVar, Generic, Optional
 from core.interfaces.base_types import IMTPoint
 from dataclasses import dataclass, field
 import dataclasses
+import uuid
 
 """
 이 모듈은 매크로 트리의 도메인 Enum, 타입, 프로토콜, 데이터 구조를 정의합니다.
@@ -100,8 +101,13 @@ class MTItemDomainDTO:
     action: IMTAction | None = None
     action_data: IMTActionData | None = None
     def to_dict(self) -> dict:
-        # 실제 변환 로직 필요시 구현
         return dataclasses.asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'MTItemDomainDTO':
+        field_names = {f.name for f in dataclasses.fields(cls)}
+        filtered_data = {k: v for k, v in data.items() if k in field_names}
+        return cls(**filtered_data)
 
 @dataclass
 class MTItemUIStateDTO:
@@ -109,5 +115,40 @@ class MTItemUIStateDTO:
     is_expanded: bool = False
     visible: bool = True
     icon: str = ""
+
     def to_dict(self) -> dict:
         return dataclasses.asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'MTItemUIStateDTO':
+        field_names = {f.name for f in dataclasses.fields(cls)}
+        filtered_data = {k: v for k, v in data.items() if k in field_names}
+        return cls(**filtered_data)
+
+@dataclass
+class MTItemDTO: # MTTreeItemSnapshotDTO 대신 MTItemDTO 사용
+    """MTTreeItem의 상태(도메인 데이터와 UI 상태)를 포함하는 DTO입니다. ID는 제외됩니다."""
+    id: str  # ID 필드 추가
+    domain_data: MTItemDomainDTO
+    ui_state_data: MTItemUIStateDTO
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,  # ID 포함
+            "domain_data": self.domain_data.to_dict(),
+            "ui_state_data": self.ui_state_data.to_dict()
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'MTItemDTO':
+        item_id = data.get("id")
+        if item_id is None:
+            # ID가 없는 경우에 대한 처리 (예: UUID 자동 생성 또는 예외 발생)
+            # 여기서는 UUID를 새로 생성하거나, 예외를 발생시킬 수 있습니다.
+            # 현재 요구사항에 따라 ID가 항상 있어야 한다면 예외 발생이 적절할 수 있습니다.
+            # raise ValueError("ID is required for MTItemDTO")
+            item_id = str(uuid.uuid4()) # 또는 기본값으로 UUID 생성
+
+        domain_dto = MTItemDomainDTO.from_dict(data.get("domain_data", {}))
+        ui_state_dto = MTItemUIStateDTO.from_dict(data.get("ui_state_data", {}))
+        return cls(id=item_id, domain_data=domain_dto, ui_state_data=ui_state_dto)
