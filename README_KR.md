@@ -158,9 +158,8 @@
 
 - **Backend**: Python 3.10
 - **Frontend**: PyQt6
-- **Data Management**: PostgreSQL, 파일 기반 저장소
+- **Data Management**: SQLite, 파일 기반 저장소
 - **Architecture**: MVVM 패턴, Protocol 기반 인터페이스
-- **Automation**: PyAutoGUI, pynput
 
 ---
 

@@ -4,7 +4,7 @@ from PyQt6.QtGui import QIcon, QFontMetrics
 from PyQt6.QtCore import Qt, QSize
 from viewmodel.impl.tree_viewmodel import MTTreeViewModel
 from view.impl.tree_widget import MTTreeWidget
-from core.interfaces.base_item_data import MTNodeType
+from core.interfaces.base_item_data import MTNodeType, MTItemDTO
 from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 from typing import Any
 import os
@@ -123,7 +123,16 @@ class TreeView(QWidget):
         self.layout.addWidget(self.tree_widget)
         self.setLayout(self.layout)
 
-        """MTTreeWidget에서 현재 선택된 아이템의 ID를 반환합니다."""
+        # ViewModel 시그널 연결
+        self._viewmodel.item_added.connect(self.on_item_crud_slot)
+        self._viewmodel.item_removed.connect(self.on_item_crud_slot)
+        self._viewmodel.item_moved.connect(self.on_item_crud_slot)
+        self._viewmodel.item_modified.connect(self.on_item_crud_slot)
+        self._viewmodel.tree_reset.connect(self.on_item_crud_slot)
+        self._viewmodel.tree_undo.connect(self.on_tree_undoredo_slot)
+        self._viewmodel.tree_redo.connect(self.on_tree_undoredo_slot)
+
+    """MTTreeWidget에서 현재 선택된 아이템의 ID를 반환합니다."""
     def get_selected_item_id(self):
         selected_items = self.tree_widget.selectedItems()
         if selected_items:
@@ -194,47 +203,43 @@ class TreeView(QWidget):
 
     # --- ViewModel 시그널 슬롯 ---
     def on_tree_undoredo_slot(self, event_type: MTTreeEvent, data: dict[str, Any]):
-        if event_type == MTTreeEvent.TREE_UNDO:
-            self.tree_widget.update_tree_items()
-        elif event_type == MTTreeEvent.TREE_REDO:
-            self.tree_widget.update_tree_items()
+        logger.debug(f"Undo/Redo Slot triggered: {event_type}, data keys: {data.keys() if isinstance(data, dict) else 'Not a dict'}")
+        self.tree_widget.update_tree_items(data)
 
-    def on_viewmodel_slot(self, signal_type, data):
-        if signal_type == MTTreeEvent.ITEM_ADDED:
+    def on_item_crud_slot(self, event_type: MTTreeEvent, data: dict[str, Any]):
+        logger.debug(f"Item CRUD Slot triggered: {event_type}, data: {data}")
+        if event_type == MTTreeEvent.ITEM_ADDED:
             item_id = data.get('item_id')
             parent_id = data.get('parent_id')
             if item_id:
-                item_data = self._viewmodel.get_item(item_id)
-                if item_data:
-                    self.tree_widget.handle_item_added(item_data, parent_id)
+                item_dto = self._viewmodel.get_item_dto(item_id)
+                if item_dto:
+                    self.tree_widget.handle_item_added(item_dto, parent_id)
                 else:
                     self.tree_widget.update_tree_items()
             else:
                 self.tree_widget.update_tree_items()
-        elif signal_type == MTTreeEvent.ITEM_REMOVED:
+        elif event_type == MTTreeEvent.ITEM_REMOVED:
             item_id = data.get('item_id')
             if item_id:
                 self.tree_widget.handle_item_removed(item_id)
             else:
                 self.tree_widget.update_tree_items()
-        elif signal_type == MTTreeEvent.ITEM_MOVED:
-            item_id = data.get('item_id')
-            new_parent_id = data.get('new_parent_id')
-            old_parent_id = data.get('old_parent_id')
-            if item_id:
-                self.tree_widget.handle_item_moved(item_id, new_parent_id, old_parent_id)
-            else:
-                self.tree_widget.update_tree_items()
-        elif signal_type == MTTreeEvent.ITEM_MODIFIED:
-            item_id = data.get('item_id')
-            changes = data.get('changes')
-            if item_id and changes:
-                self.tree_widget.handle_item_modified(item_id, changes)
-            else:
-                self.tree_widget.update_tree_items()
-        elif signal_type == MTTreeEvent.TREE_RESET:
+        elif event_type == MTTreeEvent.ITEM_MOVED:
             self.tree_widget.update_tree_items()
-        # 필요시 추가 분기
+        elif event_type == MTTreeEvent.ITEM_MODIFIED:
+            item_id = data.get('item_id')
+            item_dto_dict = data.get('changes')
+            if item_id and isinstance(item_dto_dict, dict):
+                item_dto = MTItemDTO.from_dict(item_dto_dict)
+                self.tree_widget.handle_item_modified(item_id, item_dto)
+            else:
+                self.tree_widget.update_tree_items()
+        elif event_type == MTTreeEvent.TREE_CRUD:
+            logger.debug(f"Handling TREE_CRUD event by updating all tree items.")
+            self.tree_widget.update_tree_items(data)
+        elif event_type == MTTreeEvent.TREE_RESET:
+            self.tree_widget.update_tree_items()
 
     def set_viewmodel(self, viewmodel):
         self._viewmodel = viewmodel

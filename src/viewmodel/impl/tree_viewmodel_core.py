@@ -2,7 +2,7 @@ from typing import Callable, Dict, Set
 from uuid import uuid4
 from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 from core.impl.tree import MTTreeItem
-from core.interfaces.base_item_data import MTTreeItemData
+from core.interfaces.base_item_data import MTItemDomainDTO, MTItemUIStateDTO, MTItemDTO
 from core.interfaces.base_tree import IMTTreeItem, IMTTree
 import core.exceptions as exc
 from core.interfaces.base_item_data import MTNodeType
@@ -26,43 +26,33 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
 
     # 1. 데이터 접근/조회
     def get_tree_items(self) -> Dict[str, IMTTreeItem]:
-        tree = self._tree
-        if not tree:
-            return {}
+        tree = self._get_tree()
         return tree.items
 
-    # 2. CRUD/비즈니스 로직
-    def add_item(self, name: str, parent_id: str | None = None, index: int = -1, node_type: MTNodeType | None = None) -> str | None:
+    def get_item(self, item_id: str) -> IMTTreeItem | None:
+        """지정된 ID를 가진 아이템을 반환합니다."""
         tree = self._get_tree()
-        item_id = str(uuid4())
-        item_data = MTTreeItemData(name=name, node_type=node_type)
-        new_item = MTTreeItem(item_id, item_data)
+        return tree.get_item(item_id)
+
+    # 2. CRUD/비즈니스 로직
+    def add_item(self, parent_id: str | None, domain_data: MTItemDomainDTO, ui_state_data: MTItemUIStateDTO) -> str | None:
+        tree = self._get_tree()
         try:
-            tree.add_item(new_item, parent_id, index)
+            item_id = tree.add_item(parent_id=parent_id, domain_data=domain_data, ui_state_data=ui_state_data, index=-1)
             return item_id
-        except exc.MTTreeItemAlreadyExistsError:
-            return None
         except exc.MTTreeItemNotFoundError:
             return None
-        except exc.MTTreeError:
-            return False
+        except Exception:
+            return None
 
-    def update_item(self, item_id: str, name: str | None = None, parent_id: str | None = None) -> bool:
+    def update_item(self, item_id: str, item_dto: MTItemDTO) -> bool:
         tree = self._get_tree()
-
-        item = tree.get_item(item_id)
-        if not item:
+        try:
+            return tree.modify_item(item_id, item_dto)
+        except exc.MTTreeItemNotFoundError:
             return False
-        if name is not None:
-            item.set_property("name", name)
-        if parent_id is not None:
-            try:
-                tree.move_item(item_id, parent_id)
-            except exc.MTTreeItemNotFoundError:
-                return False
-            except exc.MTTreeError:
-                return False
-        return True
+        except Exception:
+            return False
 
     def remove_item(self, item_id: str) -> bool:
         tree = self._get_tree()
@@ -126,4 +116,5 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         return self._tree.to_dict()
 
     def dict_to_state(self, data):
+        return self._tree.dict_to_state(data)
         return self._tree.dict_to_state(data)

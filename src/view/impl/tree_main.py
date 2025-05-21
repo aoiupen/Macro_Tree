@@ -11,9 +11,10 @@ from viewmodel.impl.tree_viewmodel import MTTreeViewModel
 from view.impl.tree_view import TreeView
 from model.state.impl.tree_state_mgr import MTTreeStateManager
 from model.events.impl.tree_event_mgr import MTTreeEventManager
-from core.interfaces.base_item_data import MTNodeType
+from core.interfaces.base_item_data import MTNodeType, MTItemDomainDTO, MTItemUIStateDTO
 from model.events.interfaces.base_tree_event_mgr import MTTreeUIEvent   
 from model.store.file.impl.file_tree_repo import MTFileTreeRepository
+from model.store.store_manager import StoreManager
 
 # MACRO_TREE_DEBUG 환경 변수 확인
 load_dotenv() # .env 파일 로드, os.environ 접근 전에 호출
@@ -39,19 +40,41 @@ class MainWindow(QMainWindow):
         self.repository = MTFileTreeRepository()
 
         # 샘플 데이터: 그룹 1개와 그 하위에 INSTRUCTION 1개만 추가
-        group = MTTreeItem("group-1", {"name": "Group 1", "node_type": MTNodeType.GROUP})
-        self.tree.add_item(group, None)
-        instr = MTTreeItem("item-1", {"name": "Instruction 1", "node_type": MTNodeType.INSTRUCTION})
-        self.tree.add_item(instr, "group-1")
+        # group = MTTreeItem("group-1", {"name": "Group 1", "node_type": MTNodeType.GROUP})
+        # self.tree.add_item(group, None)
+        # instr = MTTreeItem("item-1", {"name": "Instruction 1", "node_type": MTNodeType.INSTRUCTION})
+        # self.tree.add_item(instr, "group-1")
+
+        # MTItemDomainDTO 및 MTItemUIStateDTO를 사용하여 아이템 추가
+        group_domain_data = MTItemDomainDTO(name="Group 1", node_type=MTNodeType.GROUP, action_data=None)
+        group_ui_state_data = MTItemUIStateDTO(is_expanded=False, is_selected=False)
+        self.tree.add_item(
+            item_id="group-1",
+            domain_data=group_domain_data,
+            ui_state_data=group_ui_state_data,
+            parent_id=None
+        )
+
+        instr_domain_data = MTItemDomainDTO(name="Instruction 1", node_type=MTNodeType.INSTRUCTION, action_data=None)
+        instr_ui_state_data = MTItemUIStateDTO(is_expanded=False, is_selected=False)
+        self.tree.add_item(
+            item_id="item-1",
+            domain_data=instr_domain_data,
+            ui_state_data=instr_ui_state_data,
+            parent_id="group-1"
+        )
 
         # ViewModel 생성 (parent=self 추가)
         self.state_manager = MTTreeStateManager(tree=self.tree) 
 
+        store_manager = StoreManager(repository=self.repository) # MTFileTreeRepository 인스턴스(self.repository)를 직접 주입
+
         self.viewmodel = MTTreeViewModel(
             tree=self.tree, 
-            repository=self.repository, # 필요에 따라 
+            repository=self.repository, # 이 부분은 ViewModel 내부 로직에 따라 유지 또는 제거 가능 (StoreManager를 통해 접근한다면 제거 가능)
             state_manager=self.state_manager, 
             event_manager=self.event_manager, 
+            store_manager=store_manager,
             parent=self
         )
         

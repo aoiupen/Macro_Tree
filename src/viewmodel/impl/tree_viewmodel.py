@@ -3,12 +3,11 @@ from viewmodel.impl.tree_viewmodel_model import MTTreeViewModelModel
 from viewmodel.impl.tree_viewmodel_view import MTTreeViewModelView
 from core.interfaces.base_tree import IMTTree
 from core.interfaces.base_tree import IMTTreeItem
-from core.interfaces.base_item_data import MTTreeItemData
+from core.interfaces.base_item_data import MTItemDomainDTO, MTNodeType, MTItemDTO
 from model.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
 from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 from model.events.interfaces.base_tree_event_mgr import IMTTreeEventManager
-from model.store.file.impl.file_tree_repo import MTFileTreeRepository
-from core.interfaces.base_item_data import MTNodeType
+from model.store.repo.interfaces.base_tree_repo import IMTStore
 from core.impl.tree import MTTree # MTTree 클래스 임포트
 from PyQt6.QtCore import pyqtSignal, QObject # pyqtSignal 임포트, QObject 임포트
 from typing import Any
@@ -28,7 +27,7 @@ class MTTreeViewModel(QObject): # QObject 상속
     tree_undo = pyqtSignal(MTTreeEvent, dict)
     tree_redo = pyqtSignal(MTTreeEvent, dict)
 
-    def __init__(self, tree: IMTTree, state_manager: IMTTreeStateManager, event_manager: IMTTreeEventManager, repository: MTFileTreeRepository, parent=None):
+    def __init__(self, tree: IMTTree, state_manager: IMTTreeStateManager, event_manager: IMTTreeEventManager, repository: IMTStore, parent=None):
         """
         ViewModel을 초기화합니다.
         Args:
@@ -81,16 +80,22 @@ class MTTreeViewModel(QObject): # QObject 상속
 
     def on_tree_crud(self, event_type: MTTreeEvent, data: dict[str, Any]):
         """
-        트리 CRUD 이벤트를 처리합니다.
+        트리 CRUD 이벤트를 처리합니다. (주로 StateManager의 new_undo 호출 후 발생)
+        이 이벤트는 트리에 변경이 있었고, 해당 변경이 undo 스택에 기록되었음을 의미합니다.
+        ViewModel은 이 변경을 View에 알려 UI를 갱신해야 합니다.
         Args:
             event_type (MTTreeEvent): 이벤트 타입
-            data (dict): 이벤트 데이터
+            data (dict): 이벤트 데이터 (변경된 트리 상태 딕셔너리)
         """
         if event_type == MTTreeEvent.TREE_CRUD:
-            if self._state_manager:
-                new_stage = data.get("tree_data")
-                if new_stage:
-                    self._state_manager.new_undo(new_stage)
+            # TREE_CRUD 이벤트는 트리의 어떤 부분이든 변경되었음을 나타냄.
+            # View가 전체 트리를 다시 그리거나, 변경된 부분을 식별하여 업데이트해야 함.
+            # 여기서는 item_modified 시그널을 사용하여 View에 알림.
+            # View에서는 이 시그널을 받고, data (트리 전체 스냅샷)를 사용하여 UI를 갱신할 수 있음.
+            # 또는, TREE_RESET과 유사하게 tree_changed 와 같은 별도 시그널 사용도 고려 가능.
+            # 현재는 item_modified 시그널을 사용하고, View에서 이 데이터를 어떻게 활용할지 결정 필요.
+            self.item_modified.emit(MTTreeEvent.TREE_CRUD, data)
+            # 기존의 self._state_manager.new_undo 호출은 중복이므로 제거됨.
 
     def on_tree_mod(self, event_type: MTTreeEvent, data: dict[str, Any]):
         """
@@ -282,23 +287,71 @@ class MTTreeViewModel(QObject): # QObject 상속
         return self._state_manager.can_redo()
 
     # --- View 위임 (UI/조회/상태) ---
-    def get_items(self) -> list[MTTreeItemData]:
-        """
-        트리의 모든 아이템 데이터를 리스트로 반환합니다.
-        Returns:
-            list[MTTreeItemData]: 아이템 데이터 리스트
-        """
+    def get_items(self) -> list[MTItemDTO]:
+        """View로부터 아이템 DTO 목록을 가져옵니다."""
         return self._view.get_items()
+
     def select_item(self, item_id: str, multi_select: bool = False) -> bool:
         """
-        아이템을 선택합니다.
+        아이템을 선택하고, 변경 사항을 Undo/Redo 스택에 기록합니다.
         Args:
-            item_id (str): 선택할 아이템 ID
-            multi_select (bool): 다중 선택 여부
+            item_id (str): 선택할 아이템의 ID
+            multi_select (bool): 다중 선택 여부 (현재는 단일 선택만 완전 지원)
         Returns:
             bool: 성공 여부
         """
-        return self._view.select_item(item_id, multi_select)
+        succeeded = False
+        item_to_select = self._core.get_item(item_id)
+
+        if not item_to_select:
+            return False
+
+        # 현재 선택된 아이템들 (단일 선택 모드에서는 하나 또는 없음)
+        # ViewModel이 직접 선택 상태를 관리하기보다 Core의 상태를 따르는 것이 좋음
+        # 여기서는 모든 아이템의 is_selected를 False로 초기화 후 대상만 True로 설정
+        
+        state_changed = False
+        all_items = self._core.get_tree_items() # Dict[str, IMTTreeItem]
+
+        if not multi_select:
+            # 단일 선택 모드: 다른 모든 아이템 선택 해제
+            for core_item_id, core_item in all_items.items():
+                current_ui_state = core_item.ui_state # deepcopy된 DTO
+                if current_ui_state.is_selected:
+                    if core_item_id != item_id:
+                        current_ui_state.is_selected = False
+                        core_item.ui_state = current_ui_state # setter (deepcopy)
+                        state_changed = True
+                    # 이미 선택된 아이템을 다시 클릭한 경우 (선택 유지)
+                    # 만약 다시 클릭 시 선택 해제 로직을 원한다면 여기서 처리
+        
+        # 대상 아이템 선택 상태 변경
+        current_ui_state_selected_item = item_to_select.ui_state
+        if not current_ui_state_selected_item.is_selected:
+            current_ui_state_selected_item.is_selected = True
+            item_to_select.ui_state = current_ui_state_selected_item
+            state_changed = True
+            succeeded = True
+        elif multi_select: # 멀티 선택 모드에서 이미 선택된 것을 다시 클릭하면 선택 해제 (토글)
+            current_ui_state_selected_item.is_selected = False
+            item_to_select.ui_state = current_ui_state_selected_item
+            state_changed = True # 선택 해제도 변경임
+            succeeded = True # 선택 해제도 성공으로 간주
+        else: # 단일 선택 모드에서 이미 선택된 것을 다시 클릭 (상태 유지)
+            succeeded = True
+
+        if state_changed:
+            current_tree_snapshot = self._core.to_dict() # MTTreeViewModelCore의 to_dict() 사용
+            if current_tree_snapshot:
+                self._state_manager.new_undo(current_tree_snapshot)
+            else:
+                print(f"Warning: Could not get tree snapshot for undo in select_item for item {item_id}")
+                succeeded = False # 스냅샷 저장 실패 시 작업 실패로 간주 가능
+        
+        # View에 직접 알리기보다는, on_tree_crud를 통한 UI 업데이트에 의존
+        # self._view.select_item(item_id, multi_select) # 이 부분은 View의 UI 직접 조작이므로 제거 또는 수정 필요
+        return succeeded
+
     def get_current_tree(self) -> IMTTree | None:
         """
         현재 트리 인스턴스를 반환합니다.
@@ -306,6 +359,7 @@ class MTTreeViewModel(QObject): # QObject 상속
             IMTTree | None: 트리 인스턴스 또는 None
         """
         return self._view.get_current_tree()
+
     def get_item(self, item_id: str) -> IMTTreeItem | None:
         """
         지정된 ID의 아이템을 반환합니다.
@@ -315,6 +369,7 @@ class MTTreeViewModel(QObject): # QObject 상속
             IMTTreeItem | None: 아이템 또는 None
         """
         return self._view.get_item(item_id)
+
     def get_selected_items(self) -> list[str]:
         """
         현재 선택된 아이템들의 ID 리스트를 반환합니다.
@@ -322,25 +377,29 @@ class MTTreeViewModel(QObject): # QObject 상속
             list[str]: 선택된 아이템 ID 리스트
         """
         return self._view.get_selected_items()
-    def get_item_children(self, parent_id: str | None = None) -> list[MTTreeItemData]:
+
+    def get_item_children(self, parent_id: str | None = None) -> list[MTItemDTO]:
         """
-        지정된 부모 ID의 자식 아이템 데이터 리스트를 반환합니다.
+        지정된 부모 ID의 자식 아이템 데이터 MTItemDTO 리스트를 반환합니다.
         Args:
             parent_id (str | None): 부모 아이디(선택)
         Returns:
-            list[MTTreeItemData]: 자식 아이템 데이터 리스트
+            list[MTItemDTO]: 자식 아이템 DTO 리스트
         """
         return self._view.get_item_children(parent_id)
+
+    def get_item_dto(self, item_id: str) -> MTItemDTO | None:
+        """지정된 ID의 아이템을 MTItemDTO로 반환합니다."""
+        item = self._core.get_item(item_id)
+        if item:
+            return item.to_dto() # IMTTreeItem에는 to_dto() 메서드가 있다고 가정
+        return None
+
     def toggle_expanded(self, item_id: str, expanded: bool | None = None) -> bool:
-        """
-        아이템의 확장/축소 상태를 토글합니다.
-        Args:
-            item_id (str): 아이템 ID
-            expanded (bool | None): 확장 여부(선택)
-        Returns:
-            bool: 성공 여부
-        """
+        # 이 메서드는 주로 View에서 UI 상태를 직접 토글하고 Core에 알릴 때 사용 (단방향)
+        # 양방향 동기화를 위해서는 Core의 상태를 변경하고, 그 결과 이벤트를 View가 받는 구조가 더 적합할 수 있음
         return self._view.toggle_expanded(item_id, expanded)
+
     def clear_selection_state(self) -> None:
         """
         선택 상태를 초기화합니다.
@@ -365,8 +424,10 @@ class MTTreeViewModel(QObject): # QObject 상속
         Returns:
             str: 저장된 트리의 ID
         """
-        tree_dict = self._core.to_dict()
-        return self._repository.save(tree_dict, tree_id)
+        current_tree_object = self._core.get_tree()
+        if not current_tree_object:
+            raise ValueError("현재 트리 객체를 가져올 수 없습니다.")
+        return self._repository.save(current_tree_object, tree_id)
 
     def load_tree(self, tree_id: str) -> bool:
         """
@@ -376,12 +437,40 @@ class MTTreeViewModel(QObject): # QObject 상속
         Returns:
             bool: 성공 여부
         """
-        tree_dict = self._repository.load(tree_id)
-        if tree_dict:
-            self._core.restore_state(tree_dict)
+        loaded_tree = self._repository.load(tree_id)
+        if loaded_tree:
+            self._core.restore_tree_from_object(loaded_tree)
+            
             if self._state_manager:
-                self._state_manager.set_initial_state(self._core._tree)
+                self._state_manager.set_initial_state(loaded_tree)
+            
             if self._event_manager:
-                self._event_manager.notify(MTTreeEvent.TREE_RESET, {"tree_data": tree_dict})
+                self._event_manager.notify(MTTreeEvent.TREE_RESET, {"tree_data": loaded_tree.to_dict()})
             return True
         return False
+
+    def toggle_expanded_state(self, item_id: str, is_expanded: bool) -> None:
+        """
+        Core 아이템의 확장 상태를 변경하고, 변경 사항을 Undo/Redo 스택에 기록합니다.
+        Args:
+            item_id (str): 상태를 변경할 아이템의 ID
+            is_expanded (bool): 새로운 확장 상태
+        """
+        core_item = self._core.get_item(item_id) # MTTreeViewModelCore에 get_item이 있다고 가정
+        if core_item:
+            # MTTreeItem의 ui_state는 MTItemUIStateDTO 객체여야 함
+            # 직접 수정보다는 새로운 DTO를 생성하여 할당하는 것이 안전할 수 있음 (불변성)
+            current_ui_state = core_item.ui_state # deepcopy된 DTO를 가져옴
+            if current_ui_state.is_expanded != is_expanded:
+                current_ui_state.is_expanded = is_expanded
+                core_item.ui_state = current_ui_state # 수정된 DTO를 다시 할당 (setter가 deepcopy)
+                
+                # 변경된 전체 트리 상태를 Undo 스택에 저장
+                # MTTreeViewModelCore에 get_tree() -> IMTTree 메서드가 필요
+                current_tree_snapshot = self._core.get_tree_snapshot() # 또는 self._core.get_tree().to_dict()
+                if current_tree_snapshot:
+                    self._state_manager.new_undo(current_tree_snapshot)
+                else:
+                    # 트리 스냅샷을 가져오지 못한 경우의 처리 (로깅 등)
+                    print(f"Warning: Could not get tree snapshot for undo in toggle_expanded_state for item {item_id}")
+            # else: 상태 변경이 없으면 아무것도 안 함
