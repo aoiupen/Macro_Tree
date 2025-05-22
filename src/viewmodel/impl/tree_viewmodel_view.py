@@ -1,6 +1,6 @@
 from typing import Callable, List, Set
 from core.interfaces.base_item_data import MTItemDomainDTO, MTItemUIStateDTO, MTItemDTO
-from core.interfaces.base_tree import IMTTree, IMTTreeItem
+from core.interfaces.base_tree import IMTTree, IMTItem
 from core.impl.utils import to_tree_item_data
 from viewmodel.interfaces.base_tree_viewmodel_view import IMTTreeViewModelView
 
@@ -18,7 +18,7 @@ class MTTreeViewModelView(IMTTreeViewModelView):
         result = []
         # DFS(깊이 우선 탐색) 순회로 트리 아이템을 방문
         # RF : nested func. 여기서만 공유. Result 확인 용이. 깔끔한 코드
-        def dfs(item: IMTTreeItem):
+        def dfs(item: IMTItem):
             parent_id = item.get_property("parent_id")
             if not (isinstance(parent_id, str) or parent_id is None):
                 parent_id = None
@@ -66,7 +66,7 @@ class MTTreeViewModelView(IMTTreeViewModelView):
     def get_current_tree(self) -> IMTTree | None:
         return self._tree
 
-    def get_item(self, item_id: str) -> IMTTreeItem | None:
+    def get_item(self, item_id: str) -> IMTItem | None:
         tree = self.get_current_tree()
         if tree:
             return tree.get_item(item_id)

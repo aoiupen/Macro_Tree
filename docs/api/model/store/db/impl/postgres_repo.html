@@ -362,7 +362,7 @@ el.replaceWith(d);
             생성된 트리 객체
             
         Raises:
-            InvalidMTTreeItemDataError: 잘못된 JSON 형식
+            InvalidMTItemDataError: 잘못된 JSON 형식
         &#34;&#34;&#34;
         try:
             # JSON을 딕셔너리로 변환
@@ -371,7 +371,7 @@ el.replaceWith(d);
             # 딕셔너리로부터 트리 생성
             return MTTree.from_dict(tree_dict)
         except json.JSONDecodeError as e:
-            raise exc.InvalidMTTreeItemDataError(f&#34;잘못된 JSON 형식: {e}&#34;)
+            raise exc.InvalidMTItemDataError(f&#34;잘못된 JSON 형식: {e}&#34;)
         except Exception as e:
             raise exc.MTTreeError(f&#34;트리 생성 실패: {e}&#34;)
             
@@ -535,7 +535,7 @@ el.replaceWith(d);
 <p>생성된 트리 객체</p>
 <h2 id="raises">Raises</h2>
 <dl>
-<dt><code>InvalidMTTreeItemDataError</code></dt>
+<dt><code>InvalidMTItemDataError</code></dt>
 <dd>잘못된 JSON 형식</dd>
 </dl></div>
 </dd>

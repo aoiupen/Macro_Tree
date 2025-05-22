@@ -44,8 +44,8 @@ class MTTreeWidget(QTreeWidget):
 
     def _add_tree_item_recursive(self, item_dto: MTItemDTO, parent_q_widget: QTreeWidgetItem | QTreeWidget):
         widget_item = QTreeWidgetItem(parent_q_widget, [item_dto.domain_data.name])
-        widget_item.setData(0, Qt.ItemDataRole.UserRole, item_dto.id)
-        self._id_to_widget_map[item_dto.id] = widget_item
+        widget_item.setData(0, Qt.ItemDataRole.UserRole, item_dto.item_id)
+        self._id_to_widget_map[item_dto.item_id] = widget_item
 
         node_type = item_dto.domain_data.node_type
         icon_path = None
@@ -57,17 +57,17 @@ class MTTreeWidget(QTreeWidget):
         if icon_path and os.path.exists(icon_path):
             widget_item.setIcon(0, QIcon(icon_path))
         elif icon_path:
-            logger.warning(f"Icon file not found at {icon_path} for item {item_dto.id}")
+            logger.warning(f"Icon file not found at {icon_path} for item {item_dto.item_id}")
 
         widget_item.setExpanded(item_dto.ui_state_data.is_expanded)
         if item_dto.ui_state_data.is_selected:
             widget_item.setSelected(True)
 
-        children_dtos = self._viewmodel.get_item_children(item_dto.id)
+        children_dtos = self._viewmodel.get_item_children(item_dto.item_id)
         for child_dto in children_dtos:
             self._add_tree_item_recursive(child_dto, widget_item)
 
-    def handle_item_added(self, item: MTItemDTO, parent_id: str | None):
+    def handle_item_added(self, item_dto: MTItemDTO, parent_id: str | None):
         parent_q_widget: QTreeWidgetItem | QTreeWidget | None = None
         if parent_id is None or parent_id == self._viewmodel.get_dummy_root_id():
             parent_q_widget = self.invisibleRootItem()
@@ -75,19 +75,19 @@ class MTTreeWidget(QTreeWidget):
             parent_q_widget = self._id_to_widget_map.get(parent_id)
 
         if parent_q_widget is None:
-            logger.warning(f"Parent widget not found for {parent_id}, cannot add {item.id}. Triggering full update.")
+            logger.warning(f"Parent widget not found for {parent_id}, cannot add {item_dto.item_id}. Triggering full update.")
             self.update_tree_items()
             return
 
-        if item.id in self._id_to_widget_map:
-            logger.warning(f"Item DTO {item.id} already in widget map. Skipping add.")
+        if item_dto.item_id in self._id_to_widget_map:
+            logger.warning(f"Item DTO {item_dto.item_id} already in widget map. Skipping add.")
             return
         
-        widget_item = QTreeWidgetItem(parent_q_widget, [item.domain_data.name])
-        widget_item.setData(0, Qt.ItemDataRole.UserRole, item.id)
-        self._id_to_widget_map[item.id] = widget_item
+        widget_item = QTreeWidgetItem(parent_q_widget, [item_dto.domain_data.name])
+        widget_item.setData(0, Qt.ItemDataRole.UserRole, item_dto.item_id)
+        self._id_to_widget_map[item_dto.item_id] = widget_item
 
-        node_type = item.domain_data.node_type
+        node_type = item_dto.domain_data.node_type
         icon_path = None
         if node_type == MTNodeType.GROUP:
             icon_path = resource_path("src/images/icons/group.png")
@@ -97,10 +97,10 @@ class MTTreeWidget(QTreeWidget):
         if icon_path and os.path.exists(icon_path):
             widget_item.setIcon(0, QIcon(icon_path))
         elif icon_path:
-            logger.warning(f"Icon file not found at {icon_path} for item {item.id}")
+            logger.warning(f"Icon file not found at {icon_path} for item {item_dto.item_id}")
 
-        widget_item.setExpanded(item.ui_state_data.is_expanded)
-        if item.ui_state_data.is_selected:
+        widget_item.setExpanded(item_dto.ui_state_data.is_expanded)
+        if item_dto.ui_state_data.is_selected:
             widget_item.setSelected(True)
 
     def handle_item_removed(self, item_id: str):
@@ -114,11 +114,11 @@ class MTTreeWidget(QTreeWidget):
                 if index != -1:
                     self.takeTopLevelItem(index)
 
-    def handle_item_modified(self, item_id: str, item: MTItemDTO):
+    def handle_item_modified(self, item_id: str, item_dto: MTItemDTO):
         widget_item = self._id_to_widget_map.get(item_id)
         if widget_item:
-            widget_item.setText(0, item.domain_data.name)
-            node_type = item.domain_data.node_type
+            widget_item.setText(0, item_dto.domain_data.name)
+            node_type = item_dto.domain_data.node_type
             icon_path = None
             if node_type == MTNodeType.GROUP:
                 icon_path = resource_path("src/images/icons/group.png")
@@ -129,8 +129,8 @@ class MTTreeWidget(QTreeWidget):
             elif icon_path: logger.warning(f"Icon file not found {icon_path}")
             else: widget_item.setIcon(0, QIcon())
 
-            widget_item.setExpanded(item.ui_state_data.is_expanded)
-            widget_item.setSelected(item.ui_state_data.is_selected)
+            widget_item.setExpanded(item_dto.ui_state_data.is_expanded)
+            widget_item.setSelected(item_dto.ui_state_data.is_selected)
 
     def on_qtree_item_clicked(self, item: QTreeWidgetItem, column: int):
         item_id = item.data(0, Qt.ItemDataRole.UserRole)
@@ -140,12 +140,12 @@ class MTTreeWidget(QTreeWidget):
     def on_qtree_item_expanded(self, item: QTreeWidgetItem):
         item_id = item.data(0, Qt.ItemDataRole.UserRole)
         if item_id:
-            self._viewmodel.toggle_expanded_state(item_id, True)
+            self._viewmodel.toggle_expanded(item_id, expanded=True)
 
     def on_qtree_item_collapsed(self, item: QTreeWidgetItem):
         item_id = item.data(0, Qt.ItemDataRole.UserRole)
         if item_id:
-            self._viewmodel.toggle_expanded_state(item_id, False)
+            self._viewmodel.toggle_expanded(item_id, expanded=False)
 
     def dropEvent(self, event):
         drop_indicator = self.dropIndicatorPosition()
@@ -160,12 +160,12 @@ class MTTreeWidget(QTreeWidget):
             event.ignore()
             return
         if drop_indicator == QTreeWidget.DropIndicatorPosition.OnItem:
-            target_item_obj = self._viewmodel.get_item(target_id)
-            if target_item_obj is None:
+            target_item_dto = self._viewmodel.get_item_dto(target_id)
+            if target_item_dto is None:
                 event.ignore()
-                print("target_item_obj is None")
+                print("target_item_dto is None")
                 return
-            target_node_type = target_item_obj.get_property("node_type")
+            target_node_type = target_item_dto.domain_data.node_type
             if target_node_type == MTNodeType.GROUP:
                 print(f"DropEvent: Requesting move {dragged_id} onto {target_id}")
                 self._viewmodel.move_item(dragged_id, target_id)
@@ -174,11 +174,11 @@ class MTTreeWidget(QTreeWidget):
                 print("target의 node_type이 group이 아님: 이동 불가")
                 return
         elif drop_indicator == QTreeWidget.DropIndicatorPosition.AboveItem or drop_indicator == QTreeWidget.DropIndicatorPosition.BelowItem:
-            target_item_obj = self._viewmodel.get_item(target_id)
-            if target_item_obj is None:
+            target_item_dto = self._viewmodel.get_item_dto(target_id)
+            if target_item_dto is None:
                 event.ignore()
                 return
-            target_parent_id = target_item_obj.get_property("parent_id")
+            target_parent_id = target_item_dto.domain_data.parent_id
             print(f"DropEvent: Requesting move {dragged_id} near {target_id} (parent: {target_parent_id})")
             self._viewmodel.move_item(dragged_id, target_parent_id)
         else:
@@ -232,8 +232,8 @@ class MTTreeWidget(QTreeWidget):
 
         self._id_to_widget_map[item_id] = taken_item_from_ui 
 
-        if item_data_from_model := self._viewmodel.get_item(item_id):
-            if item_data_from_model.get_property(UK.EXPANDED, False):
+        if item_dto_from_model := self._viewmodel.get_item_dto(item_id):
+            if item_dto_from_model.ui_state_data.is_expanded:
                 self.expandItem(taken_item_from_ui)
             else:
                 self.collapseItem(taken_item_from_ui)

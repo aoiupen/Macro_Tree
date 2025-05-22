@@ -1,4 +1,4 @@
-from core.interfaces.base_item import IMTTreeItem
+from core.interfaces.base_item import IMTItem
 
 def test_base_item_protocol():
-    assert hasattr(IMTTreeItem, "item_id") 
+    assert hasattr(IMTItem, "item_id") 

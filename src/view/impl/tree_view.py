@@ -164,24 +164,26 @@ class TreeView(QWidget):
         item_type = MTNodeType.INSTRUCTION
 
         # 1. 도메인/상태 DTO 생성
+        # parent_id는 ViewModel의 add_item 내부에서 selected_potential_parent_id를 기반으로 설정됨
+        # 여기서 domain_data에 parent_id를 미리 설정하지 않음.
         domain_data = MTItemDomainDTO(
             name=item_name,
             node_type=item_type,
-            # 필요시 parent_id, children_ids 등도 지정 가능
+            # parent_id=selected_item_id, # ViewModel에서 처리하도록 parent_id 직접 설정 제거
         )
         ui_state_data = MTItemUIStateDTO(
-            is_selected=False,
+            is_selected=False, # 새로 추가되는 아이템의 초기 선택 상태
             is_expanded=False
         )
 
-        # 2. MTItemDTO 생성 (id는 새로 생성)
+        # 2. MTItemDTO 생성 (item_id는 새로 생성, DTO 필드명 item_id 사용)
         item_dto = MTItemDTO(
-            id=str(uuid.uuid4()),
+            item_id=str(uuid.uuid4()), # id -> item_id
             domain_data=domain_data,
             ui_state_data=ui_state_data
         )
 
-        # 3. ViewModel에 추가
+        # 3. ViewModel에 추가 (ViewModel이 item_dto에 parent_id를 설정하여 Core에 전달)
         new_item_id = self._viewmodel.add_item(
             item_dto=item_dto,
             selected_potential_parent_id=selected_item_id
@@ -196,11 +198,22 @@ class TreeView(QWidget):
         file_path, _ = QFileDialog.getSaveFileName(self, "트리 저장", "", "JSON 파일 (*.json);;모든 파일 (*.*)")
         if file_path:
             try:
-                # ViewModel에 save_tree(file_path) 메서드가 있다고 가정
+                # 파일 경로에서 파일명(확장자 제외)을 tree_id로 사용
+                tree_id = os.path.splitext(os.path.basename(file_path))[0]
+                if not tree_id: # 파일명이 없는 경우 (거의 발생 안함)
+                    QMessageBox.warning(self, "경고", "유효한 파일명이 아닙니다.")
+                    return
+
                 if hasattr(self._viewmodel, 'save_tree'):
-                    success = self._viewmodel.save_tree(file_path)
-                    if not success:
+                    # ViewModel의 save_tree는 tree_id를 인자로 받음 (또는 None)
+                    # 여기서 생성된 tree_id를 명시적으로 전달
+                    saved_id = self._viewmodel.save_tree(tree_id=tree_id) 
+                    if not saved_id:
                         QMessageBox.critical(self, "저장 실패", "파일을 저장할 수 없습니다.")
+                    else:
+                        # 저장 성공 시 추가 작업 (예: 상태바 메시지 등)
+                        # QMessageBox.information(self, "저장 완료", f"트리가 '{saved_id}.json'으로 저장되었습니다.")
+                        pass 
                 else:
                     QMessageBox.critical(self, "오류", "ViewModel에 save_tree 메서드가 없습니다.")
             except Exception as e:
@@ -210,9 +223,16 @@ class TreeView(QWidget):
         file_path, _ = QFileDialog.getOpenFileName(self, "트리 불러오기", "", "JSON 파일 (*.json);;모든 파일 (*.*)")
         if file_path:
             try:
-                # ViewModel에 load_tree(file_path) 메서드가 있다고 가정
+                # 파일 경로에서 파일명(확장자 제외)을 tree_id로 사용
+                tree_id = os.path.splitext(os.path.basename(file_path))[0]
+                if not tree_id: # 파일명이 없는 경우
+                    QMessageBox.warning(self, "경고", "유효한 파일명이 아닙니다.")
+                    return
+
                 if hasattr(self._viewmodel, 'load_tree'):
-                    success = self._viewmodel.load_tree(file_path)
+                    # ViewModel의 load_tree는 tree_id를 인자로 받는다고 가정 (file_path 대신)
+                    # ViewModel의 load_tree 시그니처가 (self, tree_id: str)로 변경 필요
+                    success = self._viewmodel.load_tree(tree_id) # file_path 대신 tree_id 전달
                     if not success:
                         QMessageBox.critical(self, "불러오기 실패", "파일을 불러올 수 없습니다.")
                     else:

@@ -1,9 +1,9 @@
 from typing import Callable, Dict, Set
 from uuid import uuid4
 from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
-from core.impl.tree import MTTreeItem
+from core.impl.tree import MTItem
 from core.interfaces.base_item_data import MTItemDomainDTO, MTItemUIStateDTO, MTItemDTO
-from core.interfaces.base_tree import IMTTreeItem, IMTTree
+from core.interfaces.base_tree import IMTItem, IMTTree
 import core.exceptions as exc
 from core.interfaces.base_item_data import MTNodeType
 from viewmodel.interfaces.base_tree_viewmodel_core import IMTTreeViewModelCore
@@ -25,40 +25,44 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         return self._tree
 
     # 1. 데이터 접근/조회
-    def get_tree_items(self) -> Dict[str, IMTTreeItem]:
+    def get_all_item_dtos(self) -> Dict[str, MTItemDTO]:
         tree = self._get_tree()
-        return tree.items
+        if hasattr(tree, 'items_dtos') and callable(getattr(tree, 'items_dtos')):
+            return tree.items_dtos()
+        elif hasattr(tree, 'items_dtos'):
+            return tree.items_dtos
+        else:
+            return {item_id: item.to_dto() for item_id, item in tree.items.items()}
 
-    def get_item(self, item_id: str) -> IMTTreeItem | None:
+    def get_item(self, item_id: str) -> IMTItem | None:
         """지정된 ID를 가진 아이템을 반환합니다."""
         tree = self._get_tree()
         return tree.get_item(item_id)
 
     # 2. CRUD/비즈니스 로직
-    def add_item(self, item_dto: MTItemDTO, parent_id: str | None = None, index: int = -1) -> str | None:
+    def add_item(self, item_dto: MTItemDTO, index: int = -1) -> str | None:
         tree = self._get_tree()
         try:
             item_id = tree.add_item(
                 item_dto=item_dto,
-                parent_id=parent_id,
                 index=index
             )
             return item_id
-        except exc.MTTreeItemNotFoundError:
+        except exc.MTItemNotFoundError:
             return None
-        except exc.MTTreeError:
-            return False
+        except exc.MTTreeError as e:
+            print(f"Error in add_item: {e}")
+            return None
 
     def update_item(self, item_id: str, item_dto: MTItemDTO) -> bool:
         tree = self._get_tree()
-        item = tree.get_item(item_id)
-        if not item:
+        try:
+            return tree.modify_item(item_id, item_dto)
+        except exc.MTItemNotFoundError:
             return False
-        # 도메인 데이터 갱신
-        item.data = item_dto.domain_data
-        # UI 상태 데이터 갱신
-        item.ui_state = item_dto.ui_state_data
-        return True
+        except Exception as e:
+            print(f"Error in update_item: {e}")
+            return False
 
     def remove_item(self, item_id: str) -> bool:
         tree = self._get_tree()
@@ -67,7 +71,7 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         try:
             tree.remove_item(item_id)
             return True
-        except exc.MTTreeItemNotFoundError:
+        except exc.MTItemNotFoundError:
             return False
 
     def move_item(self, item_id: str, new_parent_id: str | None = None, new_index: int = -1) -> bool:
@@ -75,7 +79,7 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         try:
             result = tree.move_item(item_id, new_parent_id, new_index)
             return bool(result)
-        except exc.MTTreeItemNotFoundError:
+        except exc.MTItemNotFoundError:
             return False
         except exc.MTTreeError:
             return False
@@ -120,5 +124,4 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         return self._tree.to_dict() if self._tree else {}
 
     def dict_to_state(self, data):
-        return self._tree.dict_to_state(data)
         return self._tree.dict_to_state(data)

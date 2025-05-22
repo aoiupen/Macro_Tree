@@ -46,19 +46,19 @@ el.replaceWith(d);
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="core.impl.item.MTTreeItem"><code class="flex name class">
-<span>class <span class="ident">MTTreeItem</span></span>
-<span>(</span><span>item_id: str,<br>initial_data: <a title="core.interfaces.base_item_data.MTTreeItemData" href="../interfaces/base_item_data.html#core.interfaces.base_item_data.MTTreeItemData">MTTreeItemData</a> | dict | None = None)</span>
+<dt id="core.impl.item.MTItem"><code class="flex name class">
+<span>class <span class="ident">MTItem</span></span>
+<span>(</span><span>item_id: str,<br>initial_data: <a title="core.interfaces.base_item_data.MTItemData" href="../interfaces/base_item_data.html#core.interfaces.base_item_data.MTItemData">MTItemData</a> | dict | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class MTTreeItem(IMTTreeItem):
+<pre><code class="python">class MTItem(IMTItem):
     &#34;&#34;&#34;매크로 트리 아이템 구현 클래스&#34;&#34;&#34;
     
-    def __init__(self, item_id: str, initial_data: MTTreeItemData | dict | None = None):
+    def __init__(self, item_id: str, initial_data: MTItemData | dict | None = None):
         &#34;&#34;&#34;아이템 초기화
         
         Args:
@@ -67,11 +67,11 @@ el.replaceWith(d);
         &#34;&#34;&#34;
         self._id = item_id
         if isinstance(initial_data, dict):
-            self._data = MTTreeItemData(**initial_data)
-        elif isinstance(initial_data, MTTreeItemData):
+            self._data = MTItemData(**initial_data)
+        elif isinstance(initial_data, MTItemData):
             self._data = initial_data
         else:
-            self._data = MTTreeItemData(id=item_id, name=&#34;&#34;)
+            self._data = MTItemData(id=item_id, name=&#34;&#34;)
     
     @property
     def id(self) -&gt; str:
@@ -82,7 +82,7 @@ el.replaceWith(d);
     # RF : 대신 deepcopy는 속도 저하 가능성. 추구 캡슐화 예정
     # RF : 그러므로 불변 객체는 딕셔너리에 저장하고, 가변 객체는 캡슐화,불변 래퍼로 처리하면 얕은 복사로도 불변 보장
     @property
-    def data(self) -&gt; MTTreeItemData:
+    def data(self) -&gt; MTItemData:
         &#34;&#34;&#34;아이템 데이터를 깊은 복사로 반환 (불변성 보장)&#34;&#34;&#34;
         return copy.deepcopy(self._data)
     
@@ -97,9 +97,9 @@ el.replaceWith(d);
         &#34;&#34;&#34;아이템 속성을 설정합니다.&#34;&#34;&#34;
         setattr(self._data, key, value)
     
-    def clone(self) -&gt; IMTTreeItem:
+    def clone(self) -&gt; IMTItem:
         &#34;&#34;&#34;아이템의 복제본을 생성합니다.&#34;&#34;&#34;
-        return MTTreeItem(self._id, copy.deepcopy(self._data))</code></pre>
+        return MTItem(self._id, copy.deepcopy(self._data))</code></pre>
 </details>
 <div class="desc"><p>매크로 트리 아이템 구현 클래스</p>
 <p>아이템 초기화</p>
@@ -112,27 +112,27 @@ el.replaceWith(d);
 </dl></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="core.interfaces.base_item.IMTTreeItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a></li>
+<li><a title="core.interfaces.base_item.IMTItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTItem">IMTItem</a></li>
 <li><a title="core.interfaces.base_item.IMTBaseItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTBaseItem">IMTBaseItem</a></li>
 <li>typing.Protocol</li>
 <li>typing.Generic</li>
 </ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="core.impl.item.MTTreeItem.data"><code class="name">prop <span class="ident">data</span> : <a title="core.interfaces.base_item_data.MTTreeItemData" href="../interfaces/base_item_data.html#core.interfaces.base_item_data.MTTreeItemData">MTTreeItemData</a></code></dt>
+<dt id="core.impl.item.MTItem.data"><code class="name">prop <span class="ident">data</span> : <a title="core.interfaces.base_item_data.MTItemData" href="../interfaces/base_item_data.html#core.interfaces.base_item_data.MTItemData">MTItemData</a></code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
-def data(self) -&gt; MTTreeItemData:
+def data(self) -&gt; MTItemData:
     &#34;&#34;&#34;아이템 데이터를 깊은 복사로 반환 (불변성 보장)&#34;&#34;&#34;
     return copy.deepcopy(self._data)</code></pre>
 </details>
 <div class="desc"><p>아이템 데이터를 깊은 복사로 반환 (불변성 보장)</p></div>
 </dd>
-<dt id="core.impl.item.MTTreeItem.id"><code class="name">prop <span class="ident">id</span> : str</code></dt>
+<dt id="core.impl.item.MTItem.id"><code class="name">prop <span class="ident">id</span> : str</code></dt>
 <dd>
 <details class="source">
 <summary>
@@ -148,7 +148,7 @@ def id(self) -&gt; str:
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="core.impl.item.MTTreeItem.get_property"><code class="name flex">
+<dt id="core.impl.item.MTItem.get_property"><code class="name flex">
 <span>def <span class="ident">get_property</span></span>(<span>self, key: str, default: Any = None) ‑> Any</span>
 </code></dt>
 <dd>
@@ -169,10 +169,10 @@ dataclass는 dict처럼 get을 지원하지 않으므로, getattr 사용</p></di
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="core.interfaces.base_item.IMTTreeItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a></b></code>:
+<li><code><b><a title="core.interfaces.base_item.IMTItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTItem">IMTItem</a></b></code>:
 <ul class="hlist">
-<li><code><a title="core.interfaces.base_item.IMTTreeItem.clone" href="../interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem.clone">clone</a></code></li>
-<li><code><a title="core.interfaces.base_item.IMTTreeItem.set_property" href="../interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem.set_property">set_property</a></code></li>
+<li><code><a title="core.interfaces.base_item.IMTItem.clone" href="../interfaces/base_item.html#core.interfaces.base_item.IMTItem.clone">clone</a></code></li>
+<li><code><a title="core.interfaces.base_item.IMTItem.set_property" href="../interfaces/base_item.html#core.interfaces.base_item.IMTItem.set_property">set_property</a></code></li>
 </ul>
 </li>
 </ul>
@@ -193,11 +193,11 @@ dataclass는 dict처럼 get을 지원하지 않으므로, getattr 사용</p></di
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="core.impl.item.MTTreeItem" href="#core.impl.item.MTTreeItem">MTTreeItem</a></code></h4>
+<h4><code><a title="core.impl.item.MTItem" href="#core.impl.item.MTItem">MTItem</a></code></h4>
 <ul class="">
-<li><code><a title="core.impl.item.MTTreeItem.data" href="#core.impl.item.MTTreeItem.data">data</a></code></li>
-<li><code><a title="core.impl.item.MTTreeItem.get_property" href="#core.impl.item.MTTreeItem.get_property">get_property</a></code></li>
-<li><code><a title="core.impl.item.MTTreeItem.id" href="#core.impl.item.MTTreeItem.id">id</a></code></li>
+<li><code><a title="core.impl.item.MTItem.data" href="#core.impl.item.MTItem.data">data</a></code></li>
+<li><code><a title="core.impl.item.MTItem.get_property" href="#core.impl.item.MTItem.get_property">get_property</a></code></li>
+<li><code><a title="core.impl.item.MTItem.id" href="#core.impl.item.MTItem.id">id</a></code></li>
 </ul>
 </li>
 </ul>

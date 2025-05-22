@@ -56,12 +56,12 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class IMTTreeViewModelView(Protocol):
-    def get_items(self) -&gt; List[MTTreeItemData]: ...
+    def get_items(self) -&gt; List[MTItemData]: ...
     def select_item(self, item_id: str, multi_select: bool = False) -&gt; bool: ...
     def get_current_tree(self) -&gt; IMTTree | None: ...
-    def get_item(self, item_id: str) -&gt; IMTTreeItem | None: ...
+    def get_item(self, item_id: str) -&gt; IMTItem | None: ...
     def get_selected_items(self) -&gt; list[str]: ...
-    def get_item_children(self, parent_id: str | None = None) -&gt; list[MTTreeItemData]: ...
+    def get_item_children(self, parent_id: str | None = None) -&gt; list[MTItemData]: ...
     def toggle_expanded(self, item_id: str, expanded: bool | None = None) -&gt; bool: ...
     # 기타 view 기반 필수 메서드 </code></pre>
 </details>
@@ -114,38 +114,38 @@ Protocol classes can be generic, they are defined as::</p>
 <div class="desc"></div>
 </dd>
 <dt id="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.get_item"><code class="name flex">
-<span>def <span class="ident">get_item</span></span>(<span>self, item_id: str) ‑> <a title="core.interfaces.base_item.IMTTreeItem" href="../../core/interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a> | None</span>
+<span>def <span class="ident">get_item</span></span>(<span>self, item_id: str) ‑> <a title="core.interfaces.base_item.IMTItem" href="../../core/interfaces/base_item.html#core.interfaces.base_item.IMTItem">IMTItem</a> | None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_item(self, item_id: str) -&gt; IMTTreeItem | None: ...</code></pre>
+<pre><code class="python">def get_item(self, item_id: str) -&gt; IMTItem | None: ...</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.get_item_children"><code class="name flex">
-<span>def <span class="ident">get_item_children</span></span>(<span>self, parent_id: str | None = None) ‑> list[<a title="core.interfaces.base_item_data.MTTreeItemData" href="../../core/interfaces/base_item_data.html#core.interfaces.base_item_data.MTTreeItemData">MTTreeItemData</a>]</span>
+<span>def <span class="ident">get_item_children</span></span>(<span>self, parent_id: str | None = None) ‑> list[<a title="core.interfaces.base_item_data.MTItemData" href="../../core/interfaces/base_item_data.html#core.interfaces.base_item_data.MTItemData">MTItemData</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_item_children(self, parent_id: str | None = None) -&gt; list[MTTreeItemData]: ...</code></pre>
+<pre><code class="python">def get_item_children(self, parent_id: str | None = None) -&gt; list[MTItemData]: ...</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="viewmodel.interfaces.base_tree_viewmodel_view.IMTTreeViewModelView.get_items"><code class="name flex">
-<span>def <span class="ident">get_items</span></span>(<span>self) ‑> List[<a title="core.interfaces.base_item_data.MTTreeItemData" href="../../core/interfaces/base_item_data.html#core.interfaces.base_item_data.MTTreeItemData">MTTreeItemData</a>]</span>
+<span>def <span class="ident">get_items</span></span>(<span>self) ‑> List[<a title="core.interfaces.base_item_data.MTItemData" href="../../core/interfaces/base_item_data.html#core.interfaces.base_item_data.MTItemData">MTItemData</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_items(self) -&gt; List[MTTreeItemData]: ...</code></pre>
+<pre><code class="python">def get_items(self) -&gt; List[MTItemData]: ...</code></pre>
 </details>
 <div class="desc"></div>
 </dd>

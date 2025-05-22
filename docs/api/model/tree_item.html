@@ -404,8 +404,8 @@ def y(self) -&gt; int: ...</code></pre>
 </dd>
 </dl>
 </dd>
-<dt id="model.tree_item.IMTTreeItem"><code class="flex name class">
-<span>class <span class="ident">IMTTreeItem</span></span>
+<dt id="model.tree_item.IMTItem"><code class="flex name class">
+<span>class <span class="ident">IMTItem</span></span>
 <span>(</span><span>*args, **kwargs)</span>
 </code></dt>
 <dd>
@@ -413,7 +413,7 @@ def y(self) -&gt; int: ...</code></pre>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class IMTTreeItem(IMTBaseItem, Protocol):
+<pre><code class="python">class IMTItem(IMTBaseItem, Protocol):
     &#34;&#34;&#34;매크로 트리 아이템 인터페이스
     
     트리에서 사용되는 개별 아이템의 인터페이스입니다.
@@ -443,7 +443,7 @@ def y(self) -&gt; int: ...</code></pre>
         &#34;&#34;&#34;
         ...
     
-    def clone(self) -&gt; &#39;IMTTreeItem&#39;:
+    def clone(self) -&gt; &#39;IMTItem&#39;:
         &#34;&#34;&#34;아이템의 복제본을 생성합니다.&#34;&#34;&#34;
         ...</code></pre>
 </details>
@@ -458,21 +458,21 @@ id만 직접 접근 속성으로 제공하고, 나머지는 data 딕셔너리를
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="model.tree_item.IMTTreeItem.clone"><code class="name flex">
-<span>def <span class="ident">clone</span></span>(<span>self) ‑> <a title="model.tree_item.IMTTreeItem" href="#model.tree_item.IMTTreeItem">IMTTreeItem</a></span>
+<dt id="model.tree_item.IMTItem.clone"><code class="name flex">
+<span>def <span class="ident">clone</span></span>(<span>self) ‑> <a title="model.tree_item.IMTItem" href="#model.tree_item.IMTItem">IMTItem</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def clone(self) -&gt; &#39;IMTTreeItem&#39;:
+<pre><code class="python">def clone(self) -&gt; &#39;IMTItem&#39;:
     &#34;&#34;&#34;아이템의 복제본을 생성합니다.&#34;&#34;&#34;
     ...</code></pre>
 </details>
 <div class="desc"><p>아이템의 복제본을 생성합니다.</p></div>
 </dd>
-<dt id="model.tree_item.IMTTreeItem.get_id"><code class="name flex">
+<dt id="model.tree_item.IMTItem.get_id"><code class="name flex">
 <span>def <span class="ident">get_id</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
@@ -486,7 +486,7 @@ id만 직접 접근 속성으로 제공하고, 나머지는 data 딕셔너리를
 </details>
 <div class="desc"><p>아이템 ID 반환</p></div>
 </dd>
-<dt id="model.tree_item.IMTTreeItem.get_property"><code class="name flex">
+<dt id="model.tree_item.IMTItem.get_property"><code class="name flex">
 <span>def <span class="ident">get_property</span></span>(<span>self, key: str, default: ~T | None = None) ‑> ~T | None</span>
 </code></dt>
 <dd>
@@ -508,7 +508,7 @@ id만 직접 접근 속성으로 제공하고, 나머지는 data 딕셔너리를
 item.get_property(TreeItemKeys.NAME)
 item.get_property(TreeItemKeys.PARENT_ID)</p></div>
 </dd>
-<dt id="model.tree_item.IMTTreeItem.set_property"><code class="name flex">
+<dt id="model.tree_item.IMTItem.set_property"><code class="name flex">
 <span>def <span class="ident">set_property</span></span>(<span>self, key: str, value: ~T) ‑> None</span>
 </code></dt>
 <dd>
@@ -1088,12 +1088,12 @@ attributes &ndash; see the documentation for details.</p></div>
 </ul>
 </li>
 <li>
-<h4><code><a title="model.tree_item.IMTTreeItem" href="#model.tree_item.IMTTreeItem">IMTTreeItem</a></code></h4>
+<h4><code><a title="model.tree_item.IMTItem" href="#model.tree_item.IMTItem">IMTItem</a></code></h4>
 <ul class="">
-<li><code><a title="model.tree_item.IMTTreeItem.clone" href="#model.tree_item.IMTTreeItem.clone">clone</a></code></li>
-<li><code><a title="model.tree_item.IMTTreeItem.get_id" href="#model.tree_item.IMTTreeItem.get_id">get_id</a></code></li>
-<li><code><a title="model.tree_item.IMTTreeItem.get_property" href="#model.tree_item.IMTTreeItem.get_property">get_property</a></code></li>
-<li><code><a title="model.tree_item.IMTTreeItem.set_property" href="#model.tree_item.IMTTreeItem.set_property">set_property</a></code></li>
+<li><code><a title="model.tree_item.IMTItem.clone" href="#model.tree_item.IMTItem.clone">clone</a></code></li>
+<li><code><a title="model.tree_item.IMTItem.get_id" href="#model.tree_item.IMTItem.get_id">get_id</a></code></li>
+<li><code><a title="model.tree_item.IMTItem.get_property" href="#model.tree_item.IMTItem.get_property">get_property</a></code></li>
+<li><code><a title="model.tree_item.IMTItem.set_property" href="#model.tree_item.IMTItem.set_property">set_property</a></code></li>
 </ul>
 </li>
 <li>

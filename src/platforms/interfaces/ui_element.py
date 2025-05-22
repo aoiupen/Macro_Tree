@@ -1,6 +1,6 @@
 from typing import Any, Callable, Dict, List, Optional, Protocol
 
-from core.interfaces.base_tree import IMTTreeItem
+from core.interfaces.base_tree import IMTItem
 
 
 class IMTUIElement(Protocol):
@@ -14,7 +14,7 @@ class IMTUIElement(Protocol):
         """UI 상태 업데이트"""
         pass
     
-    def bind_item(self, item: Optional[IMTTreeItem]) -> None:
+    def bind_item(self, item: Optional[IMTItem]) -> None:
         """트리 아이템 바인딩"""
         pass
     

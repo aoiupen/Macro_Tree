@@ -6,7 +6,7 @@ from PyQt6.QtGui import QAction, QKeySequence, QIcon
 from PyQt6.QtCore import Qt
 
 from core.impl.tree import MTTree
-from core.impl.item import MTTreeItem
+from core.impl.item import MTItem
 from viewmodel.impl.tree_viewmodel import MTTreeViewModel
 from view.impl.tree_view import TreeView
 from model.state.impl.tree_state_mgr import MTTreeStateManager
@@ -41,35 +41,37 @@ class MainWindow(QMainWindow):
         self.store_manager = StoreManager(repository=self.repository) # MTFileTreeRepository 인스턴스(self.repository)를 직접 주입
 
         # 샘플 데이터: 그룹 1개와 그 하위에 INSTRUCTION 1개만 추가
-        # group = MTTreeItem("group-1", {"name": "Group 1", "node_type": MTNodeType.GROUP})
+        # group = MTItem("group-1", {"name": "Group 1", "node_type": MTNodeType.GROUP})
         # self.tree.add_item(group, None)
-        # instr = MTTreeItem("item-1", {"name": "Instruction 1", "node_type": MTNodeType.INSTRUCTION})
+        # instr = MTItem("item-1", {"name": "Instruction 1", "node_type": MTNodeType.INSTRUCTION})
         # self.tree.add_item(instr, "group-1")
 
         # MTItemDomainDTO 및 MTItemUIStateDTO를 사용하여 아이템 추가
-        group_domain_data = MTItemDomainDTO(name="Group 1", node_type=MTNodeType.GROUP, action_data=None)
+        # parent_id는 MTItemDomainDTO 내에 설정
+        group_domain_data = MTItemDomainDTO(name="Group 1", node_type=MTNodeType.GROUP, parent_id=None, action_data=None) 
         group_ui_state_data = MTItemUIStateDTO(is_expanded=False, is_selected=False)
         group_item_dto = MTItemDTO(
-            id=None,  # id는 내부에서 생성되므로 None 또는 생략 가능
+            item_id="group-1",  # id -> item_id, 명시적 ID 사용
             domain_data=group_domain_data,
             ui_state_data=group_ui_state_data
         )
-        group_id = self.tree.add_item(
-            item_dto=group_item_dto,
-            parent_id=None
+        # MTTree.add_item은 parent_id 인자를 받지 않음. item_dto에 parent_id가 설정되어야 함.
+        group_id_added = self.tree.add_item(
+            item_dto=group_item_dto 
         )
 
-        instr_domain_data = MTItemDomainDTO(name="Instruction 1", node_type=MTNodeType.INSTRUCTION, action_data=None)
+        # MTItemDomainDTO 및 MTItemUIStateDTO를 사용하여 아이템 추가 (자식 아이템)
+        # instr_domain_data의 parent_id는 실제 부모의 ID (group_id_added)로 설정
+        instr_domain_data = MTItemDomainDTO(name="Instruction 1", node_type=MTNodeType.INSTRUCTION, parent_id=group_id_added, action_data=None)
         instr_ui_state_data = MTItemUIStateDTO(is_expanded=False, is_selected=False)
-        item_dto = MTItemDTO(
-            id=None,  # id는 내부에서 생성되므로 None 또는 생략 가능
+        instr_item_dto = MTItemDTO(
+            item_id="instr-1",  # id -> item_id, 명시적 ID 사용
             domain_data=instr_domain_data,
             ui_state_data=instr_ui_state_data
         )
-        if group_id: 
+        if group_id_added: 
             self.tree.add_item(
-                item_dto=item_dto,
-                parent_id=group_id
+                item_dto=instr_item_dto
             )
         else:
             print("Error: Could not create group item, so instruction item will not be added.") 
@@ -153,9 +155,9 @@ class MainWindow(QMainWindow):
         self.addAction(redo_action)
 
     def on_viewmodel_item_changed(self, data: dict):
-        item_id = data.get("id")
+        item_id_val = data.get("item_id") # id -> item_id
         new_name = data.get("name")
-        print(f"MainWindow: Received item_modified signal for {item_id} to {new_name if new_name else '(name not in data)'}")
+        print(f"MainWindow: Received item_modified signal for {item_id_val if item_id_val else '(item_id not in data)'} to {new_name if new_name else '(name not in data)'}")
         if self.debug_manager_instance:
             self.debug_manager_instance.update_on_item_changed()
 

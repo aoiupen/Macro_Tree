@@ -2,7 +2,7 @@ from typing import List, Dict, Any, Protocol, runtime_checkable
 from core.interfaces.base_tree import IMTTreeReadable
 from core.interfaces.base_item_data import MTItemDomainDTO
 from viewmodel.interfaces.base_tree_viewmodel_core import IMTTreeViewModelCore
-from core.interfaces.base_item import IMTTreeItem
+from core.interfaces.base_item import IMTItem
 
 @runtime_checkable
 class IMTTreeView(Protocol):

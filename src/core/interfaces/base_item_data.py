@@ -132,25 +132,28 @@ class MTItemUIStateDTO:
         return cls(**filtered_data)
 
 @dataclass
-class MTItemDTO: # MTTreeItemSnapshotDTO 대신 MTItemDTO 사용
-    """MTTreeItem의 ID와 상태(도메인 데이터와 UI 상태)를 포함하는 DTO입니다."""
-    id: str  # ID 필드 추가
+class MTItemDTO: # MTItemSnapshotDTO 대신 MTItemDTO 사용
+    """MTItem의 ID와 상태(도메인 데이터와 UI 상태)를 포함하는 DTO입니다."""
+    item_id: str  # id -> item_id 로 변경
     domain_data: MTItemDomainDTO
     ui_state_data: MTItemUIStateDTO
 
     def to_dict(self) -> dict:
         return {
-            "id": self.id,  # ID 포함
+            "item_id": self.item_id,  # id -> item_id 로 변경
             "domain_data": self.domain_data.to_dict(),
             "ui_state_data": self.ui_state_data.to_dict()
         }
 
     @classmethod
     def from_dict(cls, data: dict) -> 'MTItemDTO':
-        item_id = data.get("id")
-        if item_id is None:
-            raise ValueError("ID is required in the input dictionary for MTItemDTO.from_dict")
+        item_id_val = data.get("item_id") # id -> item_id 로 변경
+        if item_id_val is None:
+            # 이전 id 키도 호환성을 위해 잠시 확인 (추후 제거 가능)
+            item_id_val = data.get("id")
+            if item_id_val is None:
+                raise ValueError("item_id is required in the input dictionary for MTItemDTO.from_dict")
 
         domain_dto = MTItemDomainDTO.from_dict(data.get("domain_data", {}))
         ui_state_dto = MTItemUIStateDTO.from_dict(data.get("ui_state_data", {}))
-        return cls(id=item_id, domain_data=domain_dto, ui_state_data=ui_state_dto)
+        return cls(item_id=item_id_val, domain_data=domain_dto, ui_state_data=ui_state_dto)

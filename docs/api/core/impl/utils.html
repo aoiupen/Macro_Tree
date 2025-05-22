@@ -45,7 +45,7 @@ el.replaceWith(d);
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="core.impl.utils.to_tree_item_data"><code class="name flex">
-<span>def <span class="ident">to_tree_item_data</span></span>(<span>item: <a title="core.interfaces.base_item.IMTTreeItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a>,<br>parent_id: str | None,<br>selected: bool = False) ‑> <a title="core.interfaces.base_item_data.MTTreeItemData" href="../interfaces/base_item_data.html#core.interfaces.base_item_data.MTTreeItemData">MTTreeItemData</a></span>
+<span>def <span class="ident">to_tree_item_data</span></span>(<span>item: <a title="core.interfaces.base_item.IMTItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTItem">IMTItem</a>,<br>parent_id: str | None,<br>selected: bool = False) ‑> <a title="core.interfaces.base_item_data.MTItemData" href="../interfaces/base_item_data.html#core.interfaces.base_item_data.MTItemData">MTItemData</a></span>
 </code></dt>
 <dd>
 <details class="source">
@@ -53,18 +53,18 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def to_tree_item_data(
-    item: IMTTreeItem,
+    item: IMTItem,
     parent_id: str | None,
     selected: bool = False
-) -&gt; MTTreeItemData:
+) -&gt; MTItemData:
     &#34;&#34;&#34;
-    IMTTreeItem 객체와 parent_id, selected 정보를 받아 MTTreeItemData로 변환합니다.
+    IMTItem 객체와 parent_id, selected 정보를 받아 MTItemData로 변환합니다.
     &#34;&#34;&#34;
-    # RF : MTTreeItemData를 dataclass로 바꾸면 dict 대신 asdict()로 변환해야 한다.
+    # RF : MTItemData를 dataclass로 바꾸면 dict 대신 asdict()로 변환해야 한다.
     data = asdict(item.data) if hasattr(item, &#34;data&#34;) else {}
     data[&#34;parent_id&#34;] = parent_id
     data[&#34;selected&#34;] = selected
-    return MTTreeItemData(
+    return MTItemData(
         id=data.get(&#39;id&#39;, &#34;&#34;),
         name=data.get(&#39;name&#39;, &#34;&#34;),
         parent_id=data.get(&#39;parent_id&#39;),
@@ -75,7 +75,7 @@ el.replaceWith(d);
         action_data=data.get(&#39;action_data&#39;),
     ) </code></pre>
 </details>
-<div class="desc"><p>IMTTreeItem 객체와 parent_id, selected 정보를 받아 MTTreeItemData로 변환합니다.</p></div>
+<div class="desc"><p>IMTItem 객체와 parent_id, selected 정보를 받아 MTItemData로 변환합니다.</p></div>
 </dd>
 </dl>
 </section>

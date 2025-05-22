@@ -76,7 +76,7 @@ el.replaceWith(d);
         self._model: IMTTreeViewModelModel = MTTreeViewModelModel()
     
     # 1. 데이터 접근/조회
-    def get_tree_items(self) -&gt; Dict[str, IMTTreeItem]:
+    def get_tree_items(self) -&gt; Dict[str, IMTItem]:
         &#34;&#34;&#34;트리의 모든 아이템(노드) 객체를 ID → 객체 딕셔너리로 반환&#34;&#34;&#34;
         tree = self._tree
         if not tree:
@@ -90,15 +90,15 @@ el.replaceWith(d);
             return None
         self._state_mgr.new_undo(tree)
         item_id = str(uuid4())
-        item_data = MTTreeItemData(name=name)
-        new_item = MTTreeItem(item_id, item_data)
+        item_data = MTItemData(name=name)
+        new_item = MTItem(item_id, item_data)
         try:
             tree.add_item(new_item, parent_id)
             self._notify_change()
             return item_id
-        except exc.MTTreeItemAlreadyExistsError:
+        except exc.MTItemAlreadyExistsError:
             return None
-        except exc.MTTreeItemNotFoundError:
+        except exc.MTItemNotFoundError:
             return None
 
     def update_item(self, item_id: str, name: str | None = None, parent_id: str | None = None) -&gt; bool:
@@ -114,7 +114,7 @@ el.replaceWith(d);
         if parent_id is not None:
             try:
                 tree.move_item(item_id, parent_id)
-            except exc.MTTreeItemNotFoundError:
+            except exc.MTItemNotFoundError:
                 return False
             except exc.MTTreeError:
                 return False
@@ -132,7 +132,7 @@ el.replaceWith(d);
             tree.remove_item(item_id)
             self._notify_change()
             return True
-        except exc.MTTreeItemNotFoundError:
+        except exc.MTItemNotFoundError:
             return False
 
     def move_item(self, item_id: str, new_parent_id: str | None = None) -&gt; bool:
@@ -144,7 +144,7 @@ el.replaceWith(d);
             tree.move_item(item_id, new_parent_id)
             self._notify_change()
             return True
-        except exc.MTTreeItemNotFoundError:
+        except exc.MTItemNotFoundError:
             return False
         except exc.MTTreeError:
             return False
@@ -186,28 +186,28 @@ el.replaceWith(d);
         return None
     self._state_mgr.new_undo(tree)
     item_id = str(uuid4())
-    item_data = MTTreeItemData(name=name)
-    new_item = MTTreeItem(item_id, item_data)
+    item_data = MTItemData(name=name)
+    new_item = MTItem(item_id, item_data)
     try:
         tree.add_item(new_item, parent_id)
         self._notify_change()
         return item_id
-    except exc.MTTreeItemAlreadyExistsError:
+    except exc.MTItemAlreadyExistsError:
         return None
-    except exc.MTTreeItemNotFoundError:
+    except exc.MTItemNotFoundError:
         return None</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel_core.MTTreeViewModelCore.get_tree_items"><code class="name flex">
-<span>def <span class="ident">get_tree_items</span></span>(<span>self) ‑> Dict[str, <a title="core.interfaces.base_item.IMTTreeItem" href="../../core/interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a>]</span>
+<span>def <span class="ident">get_tree_items</span></span>(<span>self) ‑> Dict[str, <a title="core.interfaces.base_item.IMTItem" href="../../core/interfaces/base_item.html#core.interfaces.base_item.IMTItem">IMTItem</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_tree_items(self) -&gt; Dict[str, IMTTreeItem]:
+<pre><code class="python">def get_tree_items(self) -&gt; Dict[str, IMTItem]:
     &#34;&#34;&#34;트리의 모든 아이템(노드) 객체를 ID → 객체 딕셔너리로 반환&#34;&#34;&#34;
     tree = self._tree
     if not tree:
@@ -233,7 +233,7 @@ el.replaceWith(d);
         tree.move_item(item_id, new_parent_id)
         self._notify_change()
         return True
-    except exc.MTTreeItemNotFoundError:
+    except exc.MTItemNotFoundError:
         return False
     except exc.MTTreeError:
         return False</code></pre>
@@ -259,7 +259,7 @@ el.replaceWith(d);
         tree.remove_item(item_id)
         self._notify_change()
         return True
-    except exc.MTTreeItemNotFoundError:
+    except exc.MTItemNotFoundError:
         return False</code></pre>
 </details>
 <div class="desc"></div>
@@ -285,7 +285,7 @@ el.replaceWith(d);
     if parent_id is not None:
         try:
             tree.move_item(item_id, parent_id)
-        except exc.MTTreeItemNotFoundError:
+        except exc.MTItemNotFoundError:
             return False
         except exc.MTTreeError:
             return False

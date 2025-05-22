@@ -1,6 +1,6 @@
 from core.interfaces.base_types import IMTPoint
 from typing import Optional
-from core.interfaces.base_tree import IMTTreeItem
+from core.interfaces.base_tree import IMTItem
 from core.interfaces.base_item_data import MTItemDomainDTO
 
 """

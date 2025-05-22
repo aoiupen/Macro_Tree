@@ -266,7 +266,7 @@ def root_id(self) -&gt; Optional[str]: ...</code></pre>
 <pre><code class="python">class IMTTreeModifiable(Protocol):
     &#34;&#34;&#34;트리 수정 작업 인터페이스&#34;&#34;&#34;
     
-    def add_item(self, item: IMTTreeItem, parent_id: Optional[str] = None) -&gt; bool:
+    def add_item(self, item: IMTItem, parent_id: Optional[str] = None) -&gt; bool:
         &#34;&#34;&#34;아이템을 트리에 추가합니다. Raises: ValueError-아이템 ID 중복 시&#34;&#34;&#34;
         ...
     
@@ -299,14 +299,14 @@ def root_id(self) -&gt; Optional[str]: ...</code></pre>
 <h3>Methods</h3>
 <dl>
 <dt id="core.tree.IMTTreeModifiable.add_item"><code class="name flex">
-<span>def <span class="ident">add_item</span></span>(<span>self, item: model.tree_item.IMTTreeItem, parent_id: str | None = None) ‑> bool</span>
+<span>def <span class="ident">add_item</span></span>(<span>self, item: model.tree_item.IMTItem, parent_id: str | None = None) ‑> bool</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def add_item(self, item: IMTTreeItem, parent_id: Optional[str] = None) -&gt; bool:
+<pre><code class="python">def add_item(self, item: IMTItem, parent_id: Optional[str] = None) -&gt; bool:
     &#34;&#34;&#34;아이템을 트리에 추가합니다. Raises: ValueError-아이템 ID 중복 시&#34;&#34;&#34;
     ...</code></pre>
 </details>
@@ -520,7 +520,7 @@ def root_id(self) -&gt; Optional[str]: ...</code></pre>
 <pre><code class="python">class IMTTreeTraversable(Protocol):
     &#34;&#34;&#34;트리 순회 인터페이스&#34;&#34;&#34;
     
-    def traverse(self, visitor: Callable[[IMTTreeItem], None], 
+    def traverse(self, visitor: Callable[[IMTItem], None], 
                 node_id: Optional[str] = None) -&gt; None:
         &#34;&#34;&#34;트리를 BFS로 순회하면서 각 아이템에 방문자 함수를 적용합니다.&#34;&#34;&#34;
         ...</code></pre>
@@ -538,14 +538,14 @@ def root_id(self) -&gt; Optional[str]: ...</code></pre>
 <h3>Methods</h3>
 <dl>
 <dt id="core.tree.IMTTreeTraversable.traverse"><code class="name flex">
-<span>def <span class="ident">traverse</span></span>(<span>self,<br>visitor: Callable[[model.tree_item.IMTTreeItem], None],<br>node_id: str | None = None) ‑> None</span>
+<span>def <span class="ident">traverse</span></span>(<span>self,<br>visitor: Callable[[model.tree_item.IMTItem], None],<br>node_id: str | None = None) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def traverse(self, visitor: Callable[[IMTTreeItem], None], 
+<pre><code class="python">def traverse(self, visitor: Callable[[IMTItem], None], 
             node_id: Optional[str] = None) -&gt; None:
     &#34;&#34;&#34;트리를 BFS로 순회하면서 각 아이템에 방문자 함수를 적용합니다.&#34;&#34;&#34;
     ...</code></pre>

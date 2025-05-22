@@ -1,7 +1,7 @@
 from typing import Any, Callable, Dict, List, Optional, Protocol
 
 from model.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
-from core.interfaces.base_tree import IMTTreeItem
+from core.interfaces.base_tree import IMTItem
 
 
 class IMTTreeUIStateManager(Protocol):
@@ -39,7 +39,7 @@ class IMTTreeUIStateManager(Protocol):
         """UI 상태 업데이트"""
         pass
     
-    def subscribe_to_item_change(self, callback: Callable[[IMTTreeItem], None]) -> None:
+    def subscribe_to_item_change(self, callback: Callable[[IMTItem], None]) -> None:
         """아이템 변경 구독"""
         pass
     
@@ -55,7 +55,7 @@ class IMTTreeUIStateManager(Protocol):
         """아이템 선택"""
         pass
 
-    def unsubscribe_from_item_change(self, callback: Callable[[IMTTreeItem], None]) -> None:
+    def unsubscribe_from_item_change(self, callback: Callable[[IMTItem], None]) -> None:
         """아이템 변경 구독 해제"""
         pass
 

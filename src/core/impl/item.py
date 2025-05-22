@@ -4,15 +4,15 @@ import dataclasses
 from enum import Enum
 import uuid
 from dataclasses import asdict, dataclass, field
-from core.interfaces.base_item import IMTTreeItem
+from core.interfaces.base_item import IMTItem
 from core.interfaces.base_item_keys import DomainKeys as DK, UIStateKeys as UK
 from core.interfaces.base_item_data import MTItemDomainDTO, MTItemUIStateDTO, MTNodeType, MTItemDTO
 
 """
-이 모듈은 매크로 트리의 아이템(MTTreeItem) 구현을 제공합니다.
+이 모듈은 매크로 트리의 아이템(MTItem) 구현을 제공합니다.
 """
 
-class MTTreeItem(IMTTreeItem):
+class MTItem(IMTItem):
     """
     매크로 트리 아이템 구현 클래스입니다.
     각 아이템의 ID와 데이터를 관리하며, 속성 접근 및 복제 기능을 제공합니다.
@@ -127,13 +127,13 @@ class MTTreeItem(IMTTreeItem):
         else:
             raise AttributeError(f"Property '{key}' not found on domain or UI state data, cannot set value.")
     
-    def clone(self) -> IMTTreeItem:
+    def clone(self) -> IMTItem:
         """
         아이템의 복제본을 생성합니다.
         Returns:
-            IMTTreeItem: 복제된 아이템
+            IMTItem: 복제된 아이템
         """
-        return MTTreeItem(self._id, copy.deepcopy(self._domain_data), copy.deepcopy(self._ui_state_data))
+        return MTItem(self._id, copy.deepcopy(self._domain_data), copy.deepcopy(self._ui_state_data))
 
     def to_dict(self) -> dict: # Renamed
         return {
@@ -149,7 +149,7 @@ class MTTreeItem(IMTTreeItem):
             MTItemDTO: 변환된 DTO
         """
         return MTItemDTO(
-            id=self.id,
+            item_id=self.id,
             domain_data=copy.deepcopy(self._domain_data),
             ui_state_data=copy.deepcopy(self._ui_state_data)
         )

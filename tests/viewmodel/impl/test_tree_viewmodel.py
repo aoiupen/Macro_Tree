@@ -4,7 +4,7 @@ from unittest.mock import Mock, call, patch
 from src.viewmodel.impl.tree_viewmodel import MTTreeViewModel
 from src.core.interfaces.base_tree import IMTTree
 from src.core.impl.tree import MTTree # 실제 MTTree도 필요할 수 있음
-from src.core.impl.item import MTTreeItem
+from src.core.impl.item import MTItem
 from src.core.interfaces.base_item_data import MTNodeType
 from src.model.state.interfaces.base_tree_state_mgr import IMTTreeStateManager
 from src.model.events.interfaces.base_tree_event_mgr import IMTTreeEventManager, MTTreeEvent
