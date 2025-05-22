@@ -16,7 +16,7 @@ class DomainKeys:
 class UIStateKeys:
     """트리 아이템의 UI 상태/확장/부가 속성 키 상수"""
     UI_STATE = "ui_state"
-    EXPANDED = "expanded"
-    SELECTED = "selected"
-    VISIBLE = "visible"
+    EXPANDED = "is_expanded"  # Changed
+    SELECTED = "is_selected"  # Changed
+    VISIBLE = "is_visible"
     ICON = "icon"

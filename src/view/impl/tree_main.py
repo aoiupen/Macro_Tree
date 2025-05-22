@@ -11,7 +11,7 @@ from viewmodel.impl.tree_viewmodel import MTTreeViewModel
 from view.impl.tree_view import TreeView
 from model.state.impl.tree_state_mgr import MTTreeStateManager
 from model.events.impl.tree_event_mgr import MTTreeEventManager
-from core.interfaces.base_item_data import MTNodeType, MTItemDomainDTO, MTItemUIStateDTO
+from core.interfaces.base_item_data import MTNodeType, MTItemDomainDTO, MTItemUIStateDTO, MTItemDTO
 from model.events.interfaces.base_tree_event_mgr import MTTreeUIEvent   
 from model.store.file.impl.file_tree_repo import MTFileTreeRepository
 from model.store.store_manager import StoreManager
@@ -38,6 +38,7 @@ class MainWindow(QMainWindow):
         self.event_manager = MTTreeEventManager()
         self.tree = MTTree(tree_id="root", name="Root Tree", event_manager=self.event_manager)
         self.repository = MTFileTreeRepository()
+        self.store_manager = StoreManager(repository=self.repository) # MTFileTreeRepository 인스턴스(self.repository)를 직접 주입
 
         # 샘플 데이터: 그룹 1개와 그 하위에 INSTRUCTION 1개만 추가
         # group = MTTreeItem("group-1", {"name": "Group 1", "node_type": MTNodeType.GROUP})
@@ -48,33 +49,41 @@ class MainWindow(QMainWindow):
         # MTItemDomainDTO 및 MTItemUIStateDTO를 사용하여 아이템 추가
         group_domain_data = MTItemDomainDTO(name="Group 1", node_type=MTNodeType.GROUP, action_data=None)
         group_ui_state_data = MTItemUIStateDTO(is_expanded=False, is_selected=False)
-        self.tree.add_item(
-            item_id="group-1",
+        group_item_dto = MTItemDTO(
+            id=None,  # id는 내부에서 생성되므로 None 또는 생략 가능
             domain_data=group_domain_data,
-            ui_state_data=group_ui_state_data,
+            ui_state_data=group_ui_state_data
+        )
+        group_id = self.tree.add_item(
+            item_dto=group_item_dto,
             parent_id=None
         )
 
         instr_domain_data = MTItemDomainDTO(name="Instruction 1", node_type=MTNodeType.INSTRUCTION, action_data=None)
         instr_ui_state_data = MTItemUIStateDTO(is_expanded=False, is_selected=False)
-        self.tree.add_item(
-            item_id="item-1",
+        item_dto = MTItemDTO(
+            id=None,  # id는 내부에서 생성되므로 None 또는 생략 가능
             domain_data=instr_domain_data,
-            ui_state_data=instr_ui_state_data,
-            parent_id="group-1"
+            ui_state_data=instr_ui_state_data
         )
+        if group_id: 
+            self.tree.add_item(
+                item_dto=item_dto,
+                parent_id=group_id
+            )
+        else:
+            print("Error: Could not create group item, so instruction item will not be added.") 
 
         # ViewModel 생성 (parent=self 추가)
         self.state_manager = MTTreeStateManager(tree=self.tree) 
 
-        store_manager = StoreManager(repository=self.repository) # MTFileTreeRepository 인스턴스(self.repository)를 직접 주입
 
         self.viewmodel = MTTreeViewModel(
             tree=self.tree, 
-            repository=self.repository, # 이 부분은 ViewModel 내부 로직에 따라 유지 또는 제거 가능 (StoreManager를 통해 접근한다면 제거 가능)
             state_manager=self.state_manager, 
             event_manager=self.event_manager, 
-            store_manager=store_manager,
+            store_manager=self.store_manager,
+            repository=self.repository, # 이 부분은 ViewModel 내부 로직에 따라 유지 또는 제거 가능 (StoreManager를 통해 접근한다면 제거 가능)
             parent=self
         )
         
@@ -113,11 +122,12 @@ class MainWindow(QMainWindow):
 
         self._setup_undo_redo_actions() # Undo/Redo 액션 설정 메서드 호출
 
-        self.viewmodel.item_added.connect(self.tree_view.on_viewmodel_slot)
-        self.viewmodel.item_removed.connect(self.tree_view.on_viewmodel_slot)
-        self.viewmodel.item_moved.connect(self.tree_view.on_viewmodel_slot)
-        self.viewmodel.tree_reset.connect(self.tree_view.on_viewmodel_slot)
-        self.viewmodel.item_modified.connect(self.tree_view.on_viewmodel_slot)
+        self.viewmodel.item_added.connect(self.tree_view.on_item_crud_slot)
+        self.viewmodel.item_removed.connect(self.tree_view.on_item_crud_slot)
+        self.viewmodel.item_moved.connect(self.tree_view.on_item_crud_slot)
+        self.viewmodel.tree_reset.connect(self.tree_view.on_item_crud_slot)
+        self.viewmodel.item_modified.connect(self.tree_view.on_item_crud_slot) 
+        self.viewmodel.tree_state_changed.connect(self.tree_view.on_item_crud_slot) 
         self.viewmodel.tree_undo.connect(self.tree_view.on_tree_undoredo_slot)
         self.viewmodel.tree_redo.connect(self.tree_view.on_tree_undoredo_slot)
 
@@ -141,11 +151,6 @@ class MainWindow(QMainWindow):
             print("Warning: MTTreeViewModel does not have a 'redo' method or it is not callable.")
             redo_action.setEnabled(False)
         self.addAction(redo_action)
-
-        # 선택: 메뉴에도 추가 (예시)
-        # edit_menu = self.menuBar().addMenu("&Edit")
-        # edit_menu.addAction(undo_action)
-        # edit_menu.addAction(redo_action)
 
     def on_viewmodel_item_changed(self, data: dict):
         item_id = data.get("id")

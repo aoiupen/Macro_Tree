@@ -2,7 +2,7 @@ from typing import Callable, Dict, Set
 from uuid import uuid4
 from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 from core.impl.tree import MTTreeItem
-from core.interfaces.base_item_data import MTTreeItemData
+from core.interfaces.base_item_data import MTItemDomainDTO, MTItemUIStateDTO, MTItemDTO
 from core.interfaces.base_tree import IMTTreeItem, IMTTree
 import core.exceptions as exc
 from core.interfaces.base_item_data import MTNodeType
@@ -35,13 +35,14 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
         return tree.get_item(item_id)
 
     # 2. CRUD/비즈니스 로직
-    def add_item(self, parent_id: str | None, domain_data: MTItemDomainDTO, ui_state_data: MTItemUIStateDTO) -> str | None:
+    def add_item(self, item_dto: MTItemDTO, parent_id: str | None = None, index: int = -1) -> str | None:
         tree = self._get_tree()
-        item_id = str(uuid4())
-        item_data = MTTreeItemData(name=name, node_type=node_type)
-        new_item = MTTreeItem(item_id, item_data)
         try:
-            item_id = tree.add_item(parent_id=parent_id, domain_data=domain_data, ui_state_data=ui_state_data, index=-1)
+            item_id = tree.add_item(
+                item_dto=item_dto,
+                parent_id=parent_id,
+                index=index
+            )
             return item_id
         except exc.MTTreeItemNotFoundError:
             return None
@@ -50,19 +51,13 @@ class MTTreeViewModelCore(IMTTreeViewModelCore):
 
     def update_item(self, item_id: str, item_dto: MTItemDTO) -> bool:
         tree = self._get_tree()
-
         item = tree.get_item(item_id)
         if not item:
             return False
-        if name is not None:
-            item.set_property("name", name)
-        if parent_id is not None:
-            try:
-                tree.move_item(item_id, parent_id)
-            except exc.MTTreeItemNotFoundError:
-                return False
-            except exc.MTTreeError:
-                return False
+        # 도메인 데이터 갱신
+        item.data = item_dto.domain_data
+        # UI 상태 데이터 갱신
+        item.ui_state = item_dto.ui_state_data
         return True
 
     def remove_item(self, item_id: str) -> bool:

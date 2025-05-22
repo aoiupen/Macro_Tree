@@ -1,5 +1,5 @@
 from typing import Callable, List, Set
-from core.interfaces.base_item_data import MTItemDomainDTO, MTItemUIStateDTO
+from core.interfaces.base_item_data import MTItemDomainDTO, MTItemUIStateDTO, MTItemDTO
 from core.interfaces.base_tree import IMTTree, IMTTreeItem
 from core.impl.utils import to_tree_item_data
 from viewmodel.interfaces.base_tree_viewmodel_view import IMTTreeViewModelView
@@ -10,7 +10,7 @@ class MTTreeViewModelView(IMTTreeViewModelView):
         self._selected_items = selected_items if selected_items is not None else set()
         self._notify_change = notify_change if notify_change is not None else lambda: None
 
-    def get_items(self) -> list[MTItemDomainDTO]:
+    def get_items(self) -> list[MTItemDTO]:
         """UI에 표시할 아이템 목록을 반환합니다. (DFS 순회)"""
         tree = self.get_current_tree()
         if not tree:
@@ -75,7 +75,7 @@ class MTTreeViewModelView(IMTTreeViewModelView):
     def get_selected_items(self) -> list[str]:
         return list(self._selected_items)
 
-    def get_item_children(self, parent_id: str | None = None) -> list[MTItemDomainDTO]:
+    def get_item_children(self, parent_id: str | None = None) -> list[MTItemDTO]:
         tree = self.get_current_tree()
         if not tree:
             return []

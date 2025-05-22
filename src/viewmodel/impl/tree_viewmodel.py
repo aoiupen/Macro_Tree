@@ -23,11 +23,12 @@ class MTTreeViewModel(QObject): # QObject 상속
     item_moved = pyqtSignal(MTTreeEvent, dict)
     item_removed = pyqtSignal(MTTreeEvent, dict)
     tree_reset = pyqtSignal(MTTreeEvent, dict)
-    item_modified = pyqtSignal(MTTreeEvent, dict)
+    item_modified = pyqtSignal(MTTreeEvent, dict) 
+    tree_state_changed = pyqtSignal(MTTreeEvent, dict) 
     tree_undo = pyqtSignal(MTTreeEvent, dict)
     tree_redo = pyqtSignal(MTTreeEvent, dict)
 
-    def __init__(self, tree: IMTTree, state_manager: IMTTreeStateManager, event_manager: IMTTreeEventManager, repository: IMTStore, parent=None):
+    def __init__(self, tree: IMTTree, state_manager: IMTTreeStateManager, event_manager: IMTTreeEventManager, store_manager:IMTStore, repository: IMTStore, parent=None):
         """
         ViewModel을 초기화합니다.
         Args:
@@ -40,12 +41,13 @@ class MTTreeViewModel(QObject): # QObject 상속
         # (멤버 변수) 인스턴스 변수 선언
         super().__init__(parent) # QObject 생성자 호출
         self._tree = tree
-        self._core: MTTreeViewModelCore = MTTreeViewModelCore(self._tree)
-        self._model: MTTreeViewModelModel = MTTreeViewModelModel(self._tree, state_manager=state_manager)
-        self._view: MTTreeViewModelView = MTTreeViewModelView(self._tree)
+        self._repository = repository
         self._state_manager = state_manager
         self._event_manager = event_manager
-        self._repository = repository
+        self._store_manager = store_manager
+        self._core: MTTreeViewModelCore = MTTreeViewModelCore(self._tree)
+        self._model: MTTreeViewModelModel = MTTreeViewModelModel(self._tree, self._state_manager, self._store_manager)
+        self._view: MTTreeViewModelView = MTTreeViewModelView(self._tree)
 
         events_to_subscribe = [
             MTTreeEvent.ITEM_ADDED,
@@ -88,14 +90,7 @@ class MTTreeViewModel(QObject): # QObject 상속
             data (dict): 이벤트 데이터 (변경된 트리 상태 딕셔너리)
         """
         if event_type == MTTreeEvent.TREE_CRUD:
-            # TREE_CRUD 이벤트는 트리의 어떤 부분이든 변경되었음을 나타냄.
-            # View가 전체 트리를 다시 그리거나, 변경된 부분을 식별하여 업데이트해야 함.
-            # 여기서는 item_modified 시그널을 사용하여 View에 알림.
-            # View에서는 이 시그널을 받고, data (트리 전체 스냅샷)를 사용하여 UI를 갱신할 수 있음.
-            # 또는, TREE_RESET과 유사하게 tree_changed 와 같은 별도 시그널 사용도 고려 가능.
-            # 현재는 item_modified 시그널을 사용하고, View에서 이 데이터를 어떻게 활용할지 결정 필요.
-            self.item_modified.emit(MTTreeEvent.TREE_CRUD, data)
-            # 기존의 self._state_manager.new_undo 호출은 중복이므로 제거됨.
+            self.tree_state_changed.emit(MTTreeEvent.TREE_CRUD, data)
 
     def on_tree_mod(self, event_type: MTTreeEvent, data: dict[str, Any]):
         """
@@ -128,12 +123,11 @@ class MTTreeViewModel(QObject): # QObject 상속
             return self._core.get_item_node_type(item_id)
         return None
 
-    def add_item(self, name: str, new_item_node_type: MTNodeType, selected_potential_parent_id: str | None = None) -> str | None:
+    def add_item(self, item_dto: MTItemDTO, selected_potential_parent_id: str | None = None) -> str | None:
         """
         새 트리 아이템을 추가합니다.
         Args:
-            name (str): 아이템 이름
-            new_item_node_type (MTNodeType): 추가할 노드 타입
+            item_dto (MTItemDTO): 추가할 아이템 DTO
             selected_potential_parent_id (str | None): 부모 후보 아이디(선택)
         Returns:
             str | None: 추가된 아이템의 ID 또는 None
@@ -157,20 +151,18 @@ class MTTreeViewModel(QObject): # QObject 상속
             return selected_id, -1
 
         parent_id, insert_index = get_parent_and_index(selected_potential_parent_id)
-        return self._core.add_item(name=name, parent_id=parent_id, index=insert_index, node_type=new_item_node_type)
+        return self._core.add_item(item_dto=item_dto, parent_id=parent_id, index=insert_index)
 
-    def update_item(self, item_id: str, name: str | None = None, parent_id: str | None = None) -> bool:
+    def update_item(self, item_id: str, item_dto: MTItemDTO) -> bool:
         """
-        아이템의 이름 또는 부모를 수정합니다.
+        아이템의 데이터를 수정합니다.
         Args:
             item_id (str): 아이템 ID
-            name (str | None): 새 이름(선택)
-            parent_id (str | None): 새 부모 ID(선택)
+            item_dto (MTItemDTO): 새로운 데이터
         Returns:
             bool: 성공 여부
         """
-        result = self._core.update_item(item_id, name, parent_id)
-        return result
+        return self._core.update_item(item_id, item_dto)
 
     def remove_item(self, item_id: str) -> bool:
         """
@@ -391,9 +383,9 @@ class MTTreeViewModel(QObject): # QObject 상속
 
     def get_item_dto(self, item_id: str) -> MTItemDTO | None:
         """지정된 ID의 아이템을 MTItemDTO로 반환합니다."""
-        item = self._core.get_item(item_id)
+        item: IMTTreeItem | None = self._core.get_item(item_id)
         if item:
-            return item.to_dto() # IMTTreeItem에는 to_dto() 메서드가 있다고 가정
+            return item.to_dto()
         return None
 
     def toggle_expanded(self, item_id: str, expanded: bool | None = None) -> bool:
@@ -425,12 +417,12 @@ class MTTreeViewModel(QObject): # QObject 상속
         Returns:
             str: 저장된 트리의 ID
         """
-        current_tree_object = self._core.get_tree()
+        current_tree_object = self._core._get_tree()
         if not current_tree_object:
             raise ValueError("현재 트리 객체를 가져올 수 없습니다.")
         return self._repository.save(current_tree_object, tree_id)
 
-    def load_tree(self, tree_id: str) -> bool:
+    def load_tree(self, file_path: str) -> bool:
         """
         저장소에서 트리 데이터를 불러와 현재 트리 상태를 복원합니다.
         Args:
@@ -438,10 +430,8 @@ class MTTreeViewModel(QObject): # QObject 상속
         Returns:
             bool: 성공 여부
         """
-        loaded_tree = self._repository.load(tree_id)
+        loaded_tree = self._repository.load(file_path)
         if loaded_tree:
-            self._core.restore_tree_from_object(loaded_tree)
-            
             if self._state_manager:
                 self._state_manager.set_initial_state(loaded_tree)
             

@@ -488,4 +488,3 @@ class PostgreSQLTreeRepository(IMTStore, IMTTreeSerializable):
     #     except Exception as e:
     #         print(f"Error converting MTTree state to dictionary: {e}")
     #         return None 
->>>>>>> c0be85d97bac1da4a4900bdea000745110119cfd

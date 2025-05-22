@@ -1,8 +1,4 @@
-"""
-이 모듈은 매크로 트리의 핵심 구현을 제공합니다.
-트리의 읽기, 수정, 순회, 직렬화, 복제 등 모든 기능을 담당하는 클래스와 메서드를 포함합니다.
-"""
-from typing import Any, Callable, Dict, List, Optional, Set, cast
+from typing import Any, Callable, Dict, List, Set, cast # Optional removed
 import json
 import copy
 import uuid
@@ -111,13 +107,12 @@ class _MTTreeModifiable:
         """
         self._tree = tree
 
-    def add_item(self, parent_id: str | None, domain_data: MTItemDomainDTO, ui_state_data: MTItemUIStateDTO, index: int = -1) -> str | None:
+    def add_item(self, item_dto: MTItemDTO, parent_id: str | None = None, index: int = -1) -> str | None:
         """
         트리에 아이템을 추가합니다.
         Args:
+            item_dto (MTItemDTO): 새 아이템 DTO
             parent_id (str | None): 부모 아이템 ID 또는 None(루트)
-            domain_data (MTItemDomainDTO): 새 아이템의 도메인 데이터
-            ui_state_data (MTItemUIStateDTO): 새 아이템의 UI 상태 데이터
             index (int): 자식 목록에 삽입할 위치, -1이면 맨 뒤
         Returns:
             str | None: 생성된 아이템 ID 또는 실패 시 None
@@ -125,19 +120,16 @@ class _MTTreeModifiable:
             MTTreeItemNotFoundError: 부모 아이템이 존재하지 않을 때
         """
         item_id = str(uuid.uuid4())
-        
+        domain_data = item_dto.domain_data
+        ui_state_data = item_dto.ui_state_data
         new_item = MTTreeItem(item_id=item_id, domain_data=domain_data, ui_state_data=ui_state_data)
-
         actual_parent_id = parent_id
         if parent_id is None:
             actual_parent_id = self._tree._root_id
-
         if actual_parent_id is not None and actual_parent_id not in self._tree._items:
             return None
-        
         new_item.set_property("parent_id", actual_parent_id)
         self._tree._items[item_id] = new_item
-
         if actual_parent_id is not None:
             parent = self._tree._items[actual_parent_id]
             children_ids = parent.get_property("children_ids", [])
@@ -147,12 +139,9 @@ class _MTTreeModifiable:
                 else:
                     children_ids.insert(index, item_id)
             parent.set_property("children_ids", children_ids)
-
         self._tree._notify(MTTreeEvent.ITEM_ADDED, {"item_id": item_id, "parent_id": actual_parent_id})
-
         new_stage = self._tree.to_dict()
-        self._tree._notify(MTTreeEvent.TREE_CRUD, {"tree_data": new_stage}) 
-
+        self._tree._notify(MTTreeEvent.TREE_CRUD, {"tree_data": new_stage})
         return item_id
 
     def remove_item(self, item_id: str) -> bool:
@@ -347,7 +336,7 @@ class _MTTreeTraversable:
         """
         self._tree = tree
 
-    def traverse(self, visitor: Callable[[IMTTreeItem], None], node_id: Optional[str] = None) -> None:
+    def traverse(self, visitor: Callable[[IMTTreeItem], None], node_id: str | None = None) -> None:
         """
         BFS 방식으로 트리를 순회하며 각 노드에 visitor 함수를 적용합니다.
         Args:
@@ -485,7 +474,7 @@ class _MTTreeSerializable:
             data = json.loads(json_str)
             return cls.dict_to_tree(data, event_manager)
         except json.JSONDecodeError as e:
-            print(f"JSON 파싱 실패: {e}")
+            print(f"JSON 파싱 실패: {e}") # This print statement seems like an original, potentially useful debug log.
             return MTTree("", "Error Tree", event_manager)
 
 class _MTTreeCommon:
@@ -511,9 +500,9 @@ class _MTTreeCommon:
         # 만약 event_manager가 deepcopy 불가능한 객체라면 문제가 될 수 있음.
         # 가장 안전한 방법은 to_dict()로 상태를 가져오고, from_dict()로 새 객체를 만드는 것.
         # 이 때, event_manager는 clone된 객체에 어떻게 전달할 것인가? 원본의 것을 그대로 사용할 것인가, 아니면 None으로 할 것인가?
-        # 여기서는 원본의 event_manager를 그대로 사용한다고 가정.
+        # 여기서는 event_manager=None을 전달하여 복제본을 기본적으로 독립적으로 만듭니다.
         cloned_tree_data = self._tree.to_dict() # 현재 상태를 dict로
-        cloned_tree = MTTree.from_dict(cloned_tree_data, event_manager=self._tree._event_manager)
+        cloned_tree = MTTree.from_dict(cloned_tree_data, event_manager=None) # Pass event_manager=None
         return cloned_tree
 
 # MTTree: 역할별 구현체를 컴포지션(위임)으로 합침
@@ -545,7 +534,7 @@ class MTTree:
         # MTTreeItem 생성자는 (id, data_dict)를 받음.
         dummy_root_item = MTTreeItem(MTTree.DUMMY_ROOT_ID, dummy_root_data)
         self._items[MTTree.DUMMY_ROOT_ID] = dummy_root_item
-        self._root_id: Optional[str] = MTTree.DUMMY_ROOT_ID
+        self._root_id: str | None = MTTree.DUMMY_ROOT_ID
         
         self._common = _MTTreeCommon(self)
         self._readable = _MTTreeReadable(self)
@@ -572,11 +561,11 @@ class MTTree:
         return self._readable.name
     
     @property
-    def root_id(self) -> Optional[str]:
+    def root_id(self) -> str | None:
         """
         루트 아이템의 ID를 반환합니다.
         Returns:
-            Optional[str]: 루트 아이템 ID
+            str | None: 루트 아이템 ID
         """
         return self._readable.root_id
     
@@ -609,19 +598,19 @@ class MTTree:
         """
         return self._readable.get_children(parent_id)
     
-    def add_item(self, parent_id: str | None, domain_data: MTItemDomainDTO, ui_state_data: MTItemUIStateDTO, index: int = -1) -> str | None:
+    def add_item(self, item_dto: MTItemDTO, parent_id: str | None = None, index: int = -1) -> str | None:
         """
-        트리에 새 아이템을 추가하고 생성된 아이템 ID를 반환합니다.
-        이 메서드는 _MTTreeModifiable.add_item을 호출합니다.
+        트리에 아이템을 추가합니다.
         Args:
-            parent_id (str | None): 부모 아이템 ID (루트에 추가하려면 None)
-            domain_data (MTItemDomainDTO): 아이템의 도메인 데이터.
-            ui_state_data (MTItemUIStateDTO): 아이템의 UI 상태 데이터.
-            index (int, optional): 부모의 자식 목록 내 위치. 기본값은 -1 (맨 뒤).
+            item_dto (MTItemDTO): 새 아이템 DTO
+            parent_id (str | None): 부모 아이템 ID 또는 None(루트)
+            index (int): 자식 목록에 삽입할 위치, -1이면 맨 뒤
         Returns:
-            str | None: 생성된 아이템의 ID. 실패 시 None.
+            str | None: 생성된 아이템 ID 또는 실패 시 None
+        Raises:
+            MTTreeItemNotFoundError: 부모 아이템이 존재하지 않을 때
         """
-        return self._modifiable.add_item(parent_id=parent_id, domain_data=domain_data, ui_state_data=ui_state_data, index=index)
+        return self._modifiable.add_item(item_dto=item_dto, parent_id=parent_id, index=index)
     
     
     def remove_item(self, item_id: str) -> bool:
@@ -664,12 +653,12 @@ class MTTree:
         self._modifiable.reset_tree()
     
     def traverse(self, visitor: Callable[[IMTTreeItem], None], 
-                node_id: Optional[str] = None) -> None:
+                node_id: str | None = None) -> None:
         """
         BFS 방식으로 트리를 순회하며 각 아이템에 방문자 함수를 적용합니다.
         Args:
             visitor (Callable[[IMTTreeItem], None]): 방문자 함수
-            node_id (Optional[str]): 시작 노드 ID(선택)
+            node_id (str | None): 시작 노드 ID(선택)
         """
         self._traversable.traverse(visitor, node_id)
     
@@ -696,9 +685,9 @@ class MTTree:
                 return True
             item = self._items.get(current_id)
             if item is None:
-                break
+                break 
             current_id = item.get_property("parent_id")
-            return False
+        return False
     
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -711,8 +700,6 @@ class MTTree:
     @classmethod
     def from_dict(cls, data: Dict[str, Any], event_manager: IMTTreeEventManager | None = None) -> IMTTree:
         tree = _MTTreeSerializable.dict_to_tree(data, event_manager)
-        if tree is None:
-            raise ValueError("from_dict: 트리 생성 실패")
         return tree
     
     def tree_to_json(self) -> str:
@@ -733,12 +720,8 @@ class MTTree:
         Returns:
             IMTTree: 생성된 트리 인스턴스
         """
-        try:
-            data = json.loads(json_str)
-            return _MTTreeSerializable.dict_to_tree(data, event_manager)
-        except json.JSONDecodeError as e:
-            print(f"JSON 파싱 실패: {e}")
-            return MTTree("", "Error Tree", event_manager)
+        data = json.loads(json_str) # Allow json.JSONDecodeError to propagate
+        return _MTTreeSerializable.dict_to_tree(data, event_manager)
 
     def dict_to_state(self, data: Dict[str, Any]) -> None:
         """

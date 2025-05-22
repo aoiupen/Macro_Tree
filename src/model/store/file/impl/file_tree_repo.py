@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, Optional, Any
+from typing import Dict, Any # Optional removed
 import uuid
 from core.interfaces.base_tree import IMTTree
 from core.impl.tree import MTTree
@@ -20,7 +20,7 @@ class MTFileTreeRepository(IMTStore):
     
     def _get_file_path(self, tree_id: str) -> str:
         """트리 ID로부터 파일 경로를 생성합니다."""
-        return os.path.join(self.storage_dir, f"{tree_id}.json")
+        return os.path.join(self.storage_dir, f"{tree_id}")
     
     def save(self, tree: IMTTree, tree_id: str | None = None) -> str:
         """트리를 파일로 저장합니다."""

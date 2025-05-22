@@ -101,20 +101,17 @@ class MTTreeItem(IMTTreeItem):
         Returns:
             Any: 속성 값 또는 기본값
         """
-        if hasattr(DK, key.upper()):
-            key = getattr(DK, key.upper())
-        elif hasattr(UK, key.upper()):
-            key = getattr(UK, key.upper())
+        # Direct key usage
         if hasattr(self._domain_data, key):
-            value = getattr(self._domain_data, key, default)
+            value = getattr(self._domain_data, key)
+            # Preserve special handling for "children_ids" which is a domain key
+            if key == DK.CHILDREN and value is None: # Using DK.CHILDREN for explicit check
+                return []
+            return value
         elif hasattr(self._ui_state_data, key):
-            value = getattr(self._ui_state_data, key, default)
+            return getattr(self._ui_state_data, key)
         else:
-            value = default
-        if key == DK.CHILDREN and (value is None):
-            return []
-        return value
-    
+            return default
     def set_property(self, key: str, value: Any) -> None:
         """
         아이템 데이터의 속성 값을 설정합니다.
@@ -122,14 +119,13 @@ class MTTreeItem(IMTTreeItem):
             key (str): 속성명
             value (Any): 설정할 값
         """
-        if hasattr(DK, key.upper()):
-            key = getattr(DK, key.upper())
-        elif hasattr(UK, key.upper()):
-            key = getattr(UK, key.upper())
+        # Direct key usage
         if hasattr(self._domain_data, key):
             setattr(self._domain_data, key, value)
         elif hasattr(self._ui_state_data, key):
             setattr(self._ui_state_data, key, value)
+        else:
+            raise AttributeError(f"Property '{key}' not found on domain or UI state data, cannot set value.")
     
     def clone(self) -> IMTTreeItem:
         """
@@ -139,9 +135,21 @@ class MTTreeItem(IMTTreeItem):
         """
         return MTTreeItem(self._id, copy.deepcopy(self._domain_data), copy.deepcopy(self._ui_state_data))
 
-    def to_itemdict(self) -> dict:
+    def to_dict(self) -> dict: # Renamed
         return {
             DK.ID: self._id,
             DK.DATA: self._domain_data.to_dict(),
-            UK.UI_STATE: self._ui_state_data.to_datadict()
+            UK.UI_STATE: self._ui_state_data.to_dict() # Changed to .to_dict()
         }
+
+    def to_dto(self) -> MTItemDTO:
+        """
+        이 아이템을 MTItemDTO로 변환합니다.
+        Returns:
+            MTItemDTO: 변환된 DTO
+        """
+        return MTItemDTO(
+            id=self.id,
+            domain_data=copy.deepcopy(self._domain_data),
+            ui_state_data=copy.deepcopy(self._ui_state_data)
+        )

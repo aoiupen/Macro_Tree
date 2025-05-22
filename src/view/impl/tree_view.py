@@ -4,12 +4,13 @@ from PyQt6.QtGui import QIcon, QFontMetrics
 from PyQt6.QtCore import Qt, QSize
 from viewmodel.impl.tree_viewmodel import MTTreeViewModel
 from view.impl.tree_widget import MTTreeWidget
-from core.interfaces.base_item_data import MTNodeType, MTItemDTO
+from core.interfaces.base_item_data import MTNodeType, MTItemDTO, MTItemDomainDTO, MTItemUIStateDTO
 from model.events.interfaces.base_tree_event_mgr import MTTreeEvent
 from typing import Any
 import os
 import random
 import logging
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -161,9 +162,30 @@ class TreeView(QWidget):
         selected_item_id = self.get_selected_item_id()
         item_name = f"New Item {random.randint(100, 999)}"
         item_type = MTNodeType.INSTRUCTION
-        new_item_id = self._viewmodel.add_item(name=item_name, 
-                                               new_item_node_type=item_type,
-                                               selected_potential_parent_id=selected_item_id)
+
+        # 1. 도메인/상태 DTO 생성
+        domain_data = MTItemDomainDTO(
+            name=item_name,
+            node_type=item_type,
+            # 필요시 parent_id, children_ids 등도 지정 가능
+        )
+        ui_state_data = MTItemUIStateDTO(
+            is_selected=False,
+            is_expanded=False
+        )
+
+        # 2. MTItemDTO 생성 (id는 새로 생성)
+        item_dto = MTItemDTO(
+            id=str(uuid.uuid4()),
+            domain_data=domain_data,
+            ui_state_data=ui_state_data
+        )
+
+        # 3. ViewModel에 추가
+        new_item_id = self._viewmodel.add_item(
+            item_dto=item_dto,
+            selected_potential_parent_id=selected_item_id
+        )
 
     def on_del_item(self):
         selected_item_id = self.get_selected_item_id()
@@ -211,7 +233,7 @@ class TreeView(QWidget):
             item_id = data.get('item_id')
             parent_id = data.get('parent_id')
             if item_id:
-                item_dto = self._viewmodel.get_item_dto(item_id)
+                item_dto: MTItemDTO | None = self._viewmodel.get_item_dto(item_id)
                 if item_dto:
                     self.tree_widget.handle_item_added(item_dto, parent_id)
                 else:

@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Protocol, Any, List, TypedDict, TypeVar, Generic, Optional
+from typing import Protocol, Any, List, TypedDict, TypeVar, Generic # Optional removed
 from core.interfaces.base_types import IMTPoint
 from dataclasses import dataclass, field
 import dataclasses
@@ -101,7 +101,13 @@ class MTItemDomainDTO:
     action: IMTAction | None = None
     action_data: IMTActionData | None = None
     def to_dict(self) -> dict:
-        return dataclasses.asdict(self)
+        d = dataclasses.asdict(self)
+        if self.node_type is not None:
+            if isinstance(self.node_type, MTNodeType):
+                d["node_type"] = self.node_type.value
+            else:
+                d["node_type"] = self.node_type  # 이미 문자열이면 그대로
+        return d
 
     @classmethod
     def from_dict(cls, data: dict) -> 'MTItemDomainDTO':
@@ -127,7 +133,7 @@ class MTItemUIStateDTO:
 
 @dataclass
 class MTItemDTO: # MTTreeItemSnapshotDTO 대신 MTItemDTO 사용
-    """MTTreeItem의 상태(도메인 데이터와 UI 상태)를 포함하는 DTO입니다. ID는 제외됩니다."""
+    """MTTreeItem의 ID와 상태(도메인 데이터와 UI 상태)를 포함하는 DTO입니다."""
     id: str  # ID 필드 추가
     domain_data: MTItemDomainDTO
     ui_state_data: MTItemUIStateDTO
@@ -143,11 +149,7 @@ class MTItemDTO: # MTTreeItemSnapshotDTO 대신 MTItemDTO 사용
     def from_dict(cls, data: dict) -> 'MTItemDTO':
         item_id = data.get("id")
         if item_id is None:
-            # ID가 없는 경우에 대한 처리 (예: UUID 자동 생성 또는 예외 발생)
-            # 여기서는 UUID를 새로 생성하거나, 예외를 발생시킬 수 있습니다.
-            # 현재 요구사항에 따라 ID가 항상 있어야 한다면 예외 발생이 적절할 수 있습니다.
-            # raise ValueError("ID is required for MTItemDTO")
-            item_id = str(uuid.uuid4()) # 또는 기본값으로 UUID 생성
+            raise ValueError("ID is required in the input dictionary for MTItemDTO.from_dict")
 
         domain_dto = MTItemDomainDTO.from_dict(data.get("domain_data", {}))
         ui_state_dto = MTItemUIStateDTO.from_dict(data.get("ui_state_data", {}))

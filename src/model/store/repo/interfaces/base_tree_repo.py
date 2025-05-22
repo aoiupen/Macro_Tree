@@ -16,7 +16,7 @@ class IMTStore(Protocol):
         """
         ...
     
-    def load(self, tree_id: str) -> IMTTree | None:
+    def load(self, file_path: str) -> IMTTree | None:
         """ID로 트리를 로드합니다.
         
         Args:
