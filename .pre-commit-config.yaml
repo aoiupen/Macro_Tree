@@ -1,0 +1,6 @@
+repos:
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        # args: []  # .flake8 파일이 있으면 생략 가능 

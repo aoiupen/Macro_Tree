@@ -1,23 +1,21 @@
-from typing import Any, Dict, TypeVar, cast
+from typing import Any
 import copy
-import dataclasses
-from enum import Enum
 import uuid
-from dataclasses import asdict, dataclass, field
 from core.interfaces.base_item import IMTItem
 from core.interfaces.base_item_keys import DomainKeys as DK, UIStateKeys as UK
-from core.interfaces.base_item_data import MTItemDomainDTO, MTItemUIStateDTO, MTNodeType, MTItemDTO
+from core.interfaces.base_item_data import MTItemDomainDTO, MTItemUIStateDTO, MTItemDTO
 
 """
 이 모듈은 매크로 트리의 아이템(MTItem) 구현을 제공합니다.
 """
+
 
 class MTItem(IMTItem):
     """
     매크로 트리 아이템 구현 클래스입니다.
     각 아이템의 ID와 데이터를 관리하며, 속성 접근 및 복제 기능을 제공합니다.
     """
-    
+
     def __init__(
         self,
         item_id: str,
@@ -46,7 +44,7 @@ class MTItem(IMTItem):
             self._ui_state_data = ui_state_data
         else:
             self._ui_state_data = MTItemUIStateDTO()
-    
+
     @property
     def id(self) -> str:
         """
@@ -55,7 +53,7 @@ class MTItem(IMTItem):
             str: 아이템 ID
         """
         return self._id
-    
+
     # RF : 가변 객체의 불변성 보장에는 deepcopy 사용
     # RF : 대신 deepcopy는 속도 저하 가능성. 추구 캡슐화 예정
     # RF : 그러므로 불변 객체는 딕셔너리에 저장하고, 가변 객체는 캡슐화,불변 래퍼로 처리하면 얕은 복사로도 불변 보장
@@ -67,15 +65,15 @@ class MTItem(IMTItem):
             MTItemDomainDTO: 아이템 데이터
         """
         return copy.deepcopy(self._domain_data)
-    
+
     @data.setter
     def data(self, value: MTItemDomainDTO) -> None:
         if isinstance(value, MTItemDomainDTO):
-            self._domain_data = copy.deepcopy(value) # DTO로 직접 할당
+            self._domain_data = copy.deepcopy(value)  # DTO로 직접 할당
         else:
             # 또는 여기서 에러를 발생시키거나, dict인 경우 변환 시도
             raise TypeError("data must be an instance of MTItemDomainDTO")
-    
+
     @property
     def ui_state(self) -> 'MTItemUIStateDTO':
         """
@@ -84,14 +82,14 @@ class MTItem(IMTItem):
             MTItemUIStateDTO: UI 상태 데이터
         """
         return copy.deepcopy(self._ui_state_data)
-    
+
     @ui_state.setter
     def ui_state(self, value: 'MTItemUIStateDTO') -> None:
         if isinstance(value, MTItemUIStateDTO):
-            self._ui_state_data = copy.deepcopy(value) # DTO로 직접 할당
+            self._ui_state_data = copy.deepcopy(value)  # DTO로 직접 할당
         else:
             raise TypeError("ui_state must be an instance of MTItemUIStateDTO")
-    
+
     def get_property(self, key: str, default: Any = None) -> Any:
         """
         아이템 데이터에서 속성 값을 반환합니다.
@@ -105,13 +103,14 @@ class MTItem(IMTItem):
         if hasattr(self._domain_data, key):
             value = getattr(self._domain_data, key)
             # Preserve special handling for "children_ids" which is a domain key
-            if key == DK.CHILDREN and value is None: # Using DK.CHILDREN for explicit check
+            if key == DK.CHILDREN and value is None:
                 return []
             return value
         elif hasattr(self._ui_state_data, key):
             return getattr(self._ui_state_data, key)
         else:
             return default
+
     def set_property(self, key: str, value: Any) -> None:
         """
         아이템 데이터의 속성 값을 설정합니다.
@@ -125,21 +124,27 @@ class MTItem(IMTItem):
         elif hasattr(self._ui_state_data, key):
             setattr(self._ui_state_data, key, value)
         else:
-            raise AttributeError(f"Property '{key}' not found on domain or UI state data, cannot set value.")
-    
+            raise AttributeError(
+                f"Property '{key}' not found on domain or UI state data, cannot set value."
+            )
+
     def clone(self) -> IMTItem:
         """
         아이템의 복제본을 생성합니다.
         Returns:
             IMTItem: 복제된 아이템
         """
-        return MTItem(self._id, copy.deepcopy(self._domain_data), copy.deepcopy(self._ui_state_data))
+        return MTItem(
+            self._id,
+            copy.deepcopy(self._domain_data),
+            copy.deepcopy(self._ui_state_data)
+        )
 
-    def to_dict(self) -> dict: # Renamed
+    def to_dict(self) -> dict:
         return {
             DK.ID: self._id,
             DK.DATA: self._domain_data.to_dict(),
-            UK.UI_STATE: self._ui_state_data.to_dict() # Changed to .to_dict()
+            UK.UI_STATE: self._ui_state_data.to_dict()
         }
 
     def to_dto(self) -> MTItemDTO:
@@ -151,5 +156,14 @@ class MTItem(IMTItem):
         return MTItemDTO(
             item_id=self.id,
             domain_data=copy.deepcopy(self._domain_data),
-            ui_state_data=copy.deepcopy(self._ui_state_data)
+            ui_state_data=copy.deepcopy(self._ui_state_data),
         )
+
+    def set_tree_items(self, tree_items):
+        self._tree_items = tree_items
+
+    @property
+    def children(self):
+        if self._tree_items is None:
+            raise ValueError("tree_items를 먼저 주입해야 합니다.")
+        return [item for item in self._tree_items if item.parent_id == self.id]

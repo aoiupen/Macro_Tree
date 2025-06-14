@@ -9,6 +9,15 @@
 - **변수**: snake_case 사용 (예: `tree_state`, `node_id`)
 - **상수**: UPPER_CASE 사용 (예: `MAX_SNAPSHOTS`, `DEFAULT_PORT`)
 
+### 메서드 네이밍 일관성
+
+- **Public 메서드**: 간결하고 명확한 동작 표현
+  - `get_item()`, `add_item()`, `remove_item()`
+- **Private 메서드**: 언더스코어 prefix 사용
+  - `_notify_event()`, `_check_circular_reference()`
+- **Helper 메서드**: 목적을 명확히 표현
+  - `_add_to_parent()`, `_remove_from_parent()`
+
 ## 데이터/트리 구조 네이밍 및 타입 가이드라인
 
 - **트리/아이템 ID**
@@ -56,11 +65,53 @@
 - 콤마 뒤에 공백 추가 (예: `func(a, b, c)`)
 - 함수 정의와 호출 시 괄호 앞에 공백 없음 (예: `def func():`, `func()`)
 
-## 주석
+## 주석 및 문서화
 
-- 모든 모듈, 클래스, 함수에 문서 문자열(docstring) 추가
-- 문서 문자열은 한글로 작성
-- 복잡한 로직에는 인라인 주석 추가
+### Docstring 스타일
+- **간결성 우선**: 한 줄로 핵심 기능을 명확히 표현
+- **자연스러운 표현**: AI 스타일의 과도한 Args/Returns 문서 지양
+- **한글 사용**: 모든 docstring은 한글로 작성
+- **원칙**: 모든 함수/메서드는 한 줄 요약 docstring만 작성 (예외는 아래 참고)
+- **예외**: 복잡한 함수(파라미터 4개 이상, 반환값이 복잡, 부작용/예외가 중요한 경우)나 공개 API에 한해 한 줄 요약 + 한두 줄 추가 설명 허용
+- **공개 API/라이브러리**: 외부 문서화가 중요한 경우에만 Sphinx 스타일(Args/Returns/Raises) 부분 허용
+
+#### 권장 스타일
+```python
+# 좋은 예시
+def add_item(self, item_dto: MTItemDTO) -> str | None:
+    """아이템을 트리에 추가하고 ID를 반환합니다."""
+
+def get_children(self, parent_id: str | None) -> List[IMTItem]:
+    """부모의 자식 아이템들을 가져옵니다."""
+
+# 복잡한 로직/공개 API인 경우만 추가 설명
+def move_item(self, item_id: str, new_parent_id: str | None = None) -> bool:
+    """아이템을 다른 부모로 이동시킵니다.
+    
+    순환 참조를 검사하고 부모-자식 관계를 업데이트합니다.
+    """
+```
+
+#### 지양해야 할 스타일
+```python
+# 과도한 AI 스타일 - 지양
+def add_item(self, item_dto: MTItemDTO, index: int = -1) -> str | None:
+    """
+    트리에 아이템을 추가합니다.
+    Args:
+        item_dto (MTItemDTO): 새 아이템 DTO (domain_data.parent_id로 부모 지정)
+        index (int): 자식 목록에 삽입할 위치, -1이면 맨 뒤
+    Returns:
+        str | None: 생성된 아이템 ID 또는 실패 시 None
+    Raises:
+        MTItemNotFoundError: 부모 아이템이 존재하지 않을 때
+    """
+```
+
+### 인라인 주석
+- 복잡한 로직에만 필요시 추가
+- 코드가 명확하면 주석 생략
+- 변수명과 메서드명이 의미를 충분히 전달하도록 네이밍에 집중
 
 ## 임포트
 
