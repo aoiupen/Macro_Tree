@@ -1,7 +1,7 @@
 """인터페이스 정의 패키지"""
 
 # * import 대신 명시적 import로 수정
-from core.interfaces.base_item import IMTTreeItem, IMTBaseItem
+from core.interfaces.base_item import IMTItem, IMTBaseItem
 from core.interfaces.base_tree import IMTTree, IMTTreeReadable , IMTTreeModifiable, IMTTreeTraversable
 
 # 이동된 모듈 참조

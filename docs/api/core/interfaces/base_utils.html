@@ -45,7 +45,7 @@ el.replaceWith(d);
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="core.interfaces.base_utils.to_tree_item_data"><code class="name flex">
-<span>def <span class="ident">to_tree_item_data</span></span>(<span>item: <a title="core.interfaces.base_item.IMTTreeItem" href="base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a>,<br>parent_id: str | None,<br>selected: bool = False) ‑> <a title="core.interfaces.base_item_data.MTTreeItemData" href="base_item_data.html#core.interfaces.base_item_data.MTTreeItemData">MTTreeItemData</a></span>
+<span>def <span class="ident">to_tree_item_data</span></span>(<span>item: <a title="core.interfaces.base_item.IMTItem" href="base_item.html#core.interfaces.base_item.IMTItem">IMTItem</a>,<br>parent_id: str | None,<br>selected: bool = False) ‑> <a title="core.interfaces.base_item_data.MTItemData" href="base_item_data.html#core.interfaces.base_item_data.MTItemData">MTItemData</a></span>
 </code></dt>
 <dd>
 <details class="source">
@@ -53,17 +53,17 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def to_tree_item_data(
-    item: IMTTreeItem,
+    item: IMTItem,
     parent_id: Optional[str],
     selected: bool = False
-) -&gt; MTTreeItemData:
+) -&gt; MTItemData:
     &#34;&#34;&#34;
-    IMTTreeItem 객체와 parent_id, selected 정보를 받아 MTTreeItemData로 변환하는 함수의 인터페이스입니다.
+    IMTItem 객체와 parent_id, selected 정보를 받아 MTItemData로 변환하는 함수의 인터페이스입니다.
     &#34;&#34;&#34;
     # RF : 클래스 밖에 있는 함수는 인터페이스여도 pass나 ... 대신 raise NotImplementedError 을 추가해야 mypy 정적 검사 통과
     raise NotImplementedError</code></pre>
 </details>
-<div class="desc"><p>IMTTreeItem 객체와 parent_id, selected 정보를 받아 MTTreeItemData로 변환하는 함수의 인터페이스입니다.</p></div>
+<div class="desc"><p>IMTItem 객체와 parent_id, selected 정보를 받아 MTItemData로 변환하는 함수의 인터페이스입니다.</p></div>
 </dd>
 </dl>
 </section>

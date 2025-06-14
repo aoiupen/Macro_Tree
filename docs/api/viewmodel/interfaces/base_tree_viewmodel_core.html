@@ -63,7 +63,7 @@ el.replaceWith(d);
         ...
 
     # 1. 데이터 접근/조회
-    def get_tree_items(self) -&gt; dict[str, IMTTreeItem]: ...
+    def get_tree_items(self) -&gt; dict[str, IMTItem]: ...
 
     # 2. CRUD/비즈니스 로직
     def add_item(self, name: str, parent_id: str | None = None) -&gt; str | None: ...
@@ -96,14 +96,14 @@ el.replaceWith(d);
 <div class="desc"></div>
 </dd>
 <dt id="viewmodel.interfaces.base_tree_viewmodel_core.IMTTreeViewModelCore.get_tree_items"><code class="name flex">
-<span>def <span class="ident">get_tree_items</span></span>(<span>self) ‑> dict[str, <a title="core.interfaces.base_item.IMTTreeItem" href="../../core/interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a>]</span>
+<span>def <span class="ident">get_tree_items</span></span>(<span>self) ‑> dict[str, <a title="core.interfaces.base_item.IMTItem" href="../../core/interfaces/base_item.html#core.interfaces.base_item.IMTItem">IMTItem</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_tree_items(self) -&gt; dict[str, IMTTreeItem]: ...</code></pre>
+<pre><code class="python">def get_tree_items(self) -&gt; dict[str, IMTItem]: ...</code></pre>
 </details>
 <div class="desc"></div>
 </dd>

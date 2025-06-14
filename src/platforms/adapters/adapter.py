@@ -1,4 +1,4 @@
-from typing import Protocol, Dict, Any, List, Type, Optional
+from typing import Protocol, Dict, Any, List, Type # Optional removed
 from platforms.interfaces.ui_element import IMTUIElement
 from view.interfaces.base_tree_view import IMTTreeView
 

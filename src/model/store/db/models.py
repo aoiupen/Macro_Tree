@@ -2,7 +2,7 @@ from sqlalchemy import Column, String, ForeignKey, JSON, Integer, Index
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 
-Base = declarative_base()
+Base = declarative_base()  # type: ignore
 
 DUMMY_ROOT_ID = "__DUMMY_ROOT_ID__"
 # PostgreSQL의 경우, AUTOINCREMENT 기본 키에 Integer를 사용하는 것이 일반적입니다.

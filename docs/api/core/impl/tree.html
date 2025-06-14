@@ -71,7 +71,7 @@ el.replaceWith(d);
         &#34;&#34;&#34;
         self._id = tree_id
         self._name = name
-        self._items: Dict[str, IMTTreeItem] = {}
+        self._items: Dict[str, IMTItem] = {}
         self._root_id: Optional[str] = None
         self._event_manager = event_manager
         # RF : 인터페이스 (내부) 위임 : 내부에서 큰 덩어리로 생성하여 변수로 할당 
@@ -98,17 +98,17 @@ el.replaceWith(d);
         return self._readable.root_id
     
     # RF : Wrapper 함수 (내부 함수와 동일한 이름이어도 무관)
-    def get_all_items(self) -&gt; Dict[str, IMTTreeItem]:
+    def get_all_items(self) -&gt; Dict[str, IMTItem]:
         &#34;&#34;&#34;
         트리 내의 모든 아이템(노드)을 반환합니다.
         &#34;&#34;&#34;
         return self._readable.get_all_items()
     
-    def get_item(self, item_id: str) -&gt; IMTTreeItem | None:
+    def get_item(self, item_id: str) -&gt; IMTItem | None:
         &#34;&#34;&#34;ID로 아이템을 찾습니다.&#34;&#34;&#34;
         return self._readable.get_item(item_id)
     
-    def get_children(self, parent_id: str | None) -&gt; List[IMTTreeItem]:
+    def get_children(self, parent_id: str | None) -&gt; List[IMTItem]:
         &#34;&#34;&#34;지정된 부모의 모든 자식 아이템을 반환합니다.
         
         Args:
@@ -120,7 +120,7 @@ el.replaceWith(d);
         return self._readable.get_children(parent_id)
     
     # 수정 인터페이스 위임
-    def add_item(self, item: IMTTreeItem, parent_id: str | None) -&gt; bool:
+    def add_item(self, item: IMTItem, parent_id: str | None) -&gt; bool:
         &#34;&#34;&#34;아이템을 트리에 추가합니다.
         
         Args:
@@ -184,7 +184,7 @@ el.replaceWith(d);
         self._modifiable.reset_tree()
     
     # 순회 인터페이스 위임
-    def traverse(self, visitor: Callable[[IMTTreeItem], None], 
+    def traverse(self, visitor: Callable[[IMTItem], None], 
                 node_id: Optional[str] = None) -&gt; None:
         &#34;&#34;&#34;트리를 BFS로 순회하면서 각 아이템에 방문자 함수를 적용합니다.
         
@@ -313,14 +313,14 @@ def root_id(self) -&gt; Optional[str]:
 <h3>Methods</h3>
 <dl>
 <dt id="core.impl.tree.MTTree.add_item"><code class="name flex">
-<span>def <span class="ident">add_item</span></span>(<span>self,<br>item: <a title="core.interfaces.base_item.IMTTreeItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a>,<br>parent_id: str | None) ‑> bool</span>
+<span>def <span class="ident">add_item</span></span>(<span>self,<br>item: <a title="core.interfaces.base_item.IMTItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTItem">IMTItem</a>,<br>parent_id: str | None) ‑> bool</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def add_item(self, item: IMTTreeItem, parent_id: str | None) -&gt; bool:
+<pre><code class="python">def add_item(self, item: IMTItem, parent_id: str | None) -&gt; bool:
     &#34;&#34;&#34;아이템을 트리에 추가합니다.
     
     Args:
@@ -365,14 +365,14 @@ def root_id(self) -&gt; Optional[str]:
 <div class="desc"></div>
 </dd>
 <dt id="core.impl.tree.MTTree.get_all_items"><code class="name flex">
-<span>def <span class="ident">get_all_items</span></span>(<span>self) ‑> Dict[str, <a title="core.interfaces.base_item.IMTTreeItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a>]</span>
+<span>def <span class="ident">get_all_items</span></span>(<span>self) ‑> Dict[str, <a title="core.interfaces.base_item.IMTItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTItem">IMTItem</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_all_items(self) -&gt; Dict[str, IMTTreeItem]:
+<pre><code class="python">def get_all_items(self) -&gt; Dict[str, IMTItem]:
     &#34;&#34;&#34;
     트리 내의 모든 아이템(노드)을 반환합니다.
     &#34;&#34;&#34;
@@ -381,14 +381,14 @@ def root_id(self) -&gt; Optional[str]:
 <div class="desc"><p>트리 내의 모든 아이템(노드)을 반환합니다.</p></div>
 </dd>
 <dt id="core.impl.tree.MTTree.get_children"><code class="name flex">
-<span>def <span class="ident">get_children</span></span>(<span>self, parent_id: str | None) ‑> List[<a title="core.interfaces.base_item.IMTTreeItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a>]</span>
+<span>def <span class="ident">get_children</span></span>(<span>self, parent_id: str | None) ‑> List[<a title="core.interfaces.base_item.IMTItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTItem">IMTItem</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_children(self, parent_id: str | None) -&gt; List[IMTTreeItem]:
+<pre><code class="python">def get_children(self, parent_id: str | None) -&gt; List[IMTItem]:
     &#34;&#34;&#34;지정된 부모의 모든 자식 아이템을 반환합니다.
     
     Args:
@@ -409,14 +409,14 @@ def root_id(self) -&gt; Optional[str]:
 <p>자식 아이템 목록</p></div>
 </dd>
 <dt id="core.impl.tree.MTTree.get_item"><code class="name flex">
-<span>def <span class="ident">get_item</span></span>(<span>self, item_id: str) ‑> <a title="core.interfaces.base_item.IMTTreeItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a> | None</span>
+<span>def <span class="ident">get_item</span></span>(<span>self, item_id: str) ‑> <a title="core.interfaces.base_item.IMTItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTItem">IMTItem</a> | None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_item(self, item_id: str) -&gt; IMTTreeItem | None:
+<pre><code class="python">def get_item(self, item_id: str) -&gt; IMTItem | None:
     &#34;&#34;&#34;ID로 아이템을 찾습니다.&#34;&#34;&#34;
     return self._readable.get_item(item_id)</code></pre>
 </details>
@@ -585,14 +585,14 @@ def root_id(self) -&gt; Optional[str]:
 <p>JSON 문자열</p></div>
 </dd>
 <dt id="core.impl.tree.MTTree.traverse"><code class="name flex">
-<span>def <span class="ident">traverse</span></span>(<span>self,<br>visitor: Callable[[<a title="core.interfaces.base_item.IMTTreeItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a>], None],<br>node_id: str | None = None) ‑> None</span>
+<span>def <span class="ident">traverse</span></span>(<span>self,<br>visitor: Callable[[<a title="core.interfaces.base_item.IMTItem" href="../interfaces/base_item.html#core.interfaces.base_item.IMTItem">IMTItem</a>], None],<br>node_id: str | None = None) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def traverse(self, visitor: Callable[[IMTTreeItem], None], 
+<pre><code class="python">def traverse(self, visitor: Callable[[IMTItem], None], 
             node_id: Optional[str] = None) -&gt; None:
     &#34;&#34;&#34;트리를 BFS로 순회하면서 각 아이템에 방문자 함수를 적용합니다.
     

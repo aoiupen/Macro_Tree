@@ -61,7 +61,7 @@ el.replaceWith(d);
         self._selected_items = selected_items if selected_items is not None else set()
         self._notify_change = notify_change if notify_change is not None else lambda: None
 
-    def get_items(self) -&gt; list[MTTreeItemData]:
+    def get_items(self) -&gt; list[MTItemData]:
         &#34;&#34;&#34;UI에 표시할 아이템 목록을 반환합니다. (DFS 순회)&#34;&#34;&#34;
         tree = self.get_current_tree()
         if not tree:
@@ -69,7 +69,7 @@ el.replaceWith(d);
         result = []
         # DFS(깊이 우선 탐색) 순회로 트리 아이템을 방문
         # RF : nested func. 여기서만 공유. Result 확인 용이. 깔끔한 코드
-        def dfs(item: IMTTreeItem):
+        def dfs(item: IMTItem):
             parent_id = item.get_property(&#34;parent_id&#34;)
             if not (isinstance(parent_id, str) or parent_id is None):
                 parent_id = None
@@ -121,7 +121,7 @@ el.replaceWith(d);
     def get_current_tree(self) -&gt; IMTTree | None:
         return self._tree
 
-    def get_item(self, item_id: str) -&gt; IMTTreeItem | None:
+    def get_item(self, item_id: str) -&gt; IMTItem | None:
         tree = self.get_current_tree()
         if tree:
             return tree.get_item(item_id)
@@ -130,7 +130,7 @@ el.replaceWith(d);
     def get_selected_items(self) -&gt; list[str]:
         return list(self._selected_items)
 
-    def get_item_children(self, parent_id: str | None = None) -&gt; list[MTTreeItemData]:
+    def get_item_children(self, parent_id: str | None = None) -&gt; list[MTItemData]:
         tree = self.get_current_tree()
         if not tree:
             return []
@@ -205,14 +205,14 @@ Protocol classes can be generic, they are defined as::</p>
 <div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel_view.MTTreeViewModelView.get_item"><code class="name flex">
-<span>def <span class="ident">get_item</span></span>(<span>self, item_id: str) ‑> <a title="core.interfaces.base_item.IMTTreeItem" href="../../core/interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a> | None</span>
+<span>def <span class="ident">get_item</span></span>(<span>self, item_id: str) ‑> <a title="core.interfaces.base_item.IMTItem" href="../../core/interfaces/base_item.html#core.interfaces.base_item.IMTItem">IMTItem</a> | None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_item(self, item_id: str) -&gt; IMTTreeItem | None:
+<pre><code class="python">def get_item(self, item_id: str) -&gt; IMTItem | None:
     tree = self.get_current_tree()
     if tree:
         return tree.get_item(item_id)
@@ -221,14 +221,14 @@ Protocol classes can be generic, they are defined as::</p>
 <div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel_view.MTTreeViewModelView.get_item_children"><code class="name flex">
-<span>def <span class="ident">get_item_children</span></span>(<span>self, parent_id: str | None = None) ‑> list[<a title="core.interfaces.base_item_data.MTTreeItemData" href="../../core/interfaces/base_item_data.html#core.interfaces.base_item_data.MTTreeItemData">MTTreeItemData</a>]</span>
+<span>def <span class="ident">get_item_children</span></span>(<span>self, parent_id: str | None = None) ‑> list[<a title="core.interfaces.base_item_data.MTItemData" href="../../core/interfaces/base_item_data.html#core.interfaces.base_item_data.MTItemData">MTItemData</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_item_children(self, parent_id: str | None = None) -&gt; list[MTTreeItemData]:
+<pre><code class="python">def get_item_children(self, parent_id: str | None = None) -&gt; list[MTItemData]:
     tree = self.get_current_tree()
     if not tree:
         return []
@@ -246,14 +246,14 @@ Protocol classes can be generic, they are defined as::</p>
 <div class="desc"></div>
 </dd>
 <dt id="viewmodel.impl.tree_viewmodel_view.MTTreeViewModelView.get_items"><code class="name flex">
-<span>def <span class="ident">get_items</span></span>(<span>self) ‑> list[<a title="core.interfaces.base_item_data.MTTreeItemData" href="../../core/interfaces/base_item_data.html#core.interfaces.base_item_data.MTTreeItemData">MTTreeItemData</a>]</span>
+<span>def <span class="ident">get_items</span></span>(<span>self) ‑> list[<a title="core.interfaces.base_item_data.MTItemData" href="../../core/interfaces/base_item_data.html#core.interfaces.base_item_data.MTItemData">MTItemData</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_items(self) -&gt; list[MTTreeItemData]:
+<pre><code class="python">def get_items(self) -&gt; list[MTItemData]:
     &#34;&#34;&#34;UI에 표시할 아이템 목록을 반환합니다. (DFS 순회)&#34;&#34;&#34;
     tree = self.get_current_tree()
     if not tree:
@@ -261,7 +261,7 @@ Protocol classes can be generic, they are defined as::</p>
     result = []
     # DFS(깊이 우선 탐색) 순회로 트리 아이템을 방문
     # RF : nested func. 여기서만 공유. Result 확인 용이. 깔끔한 코드
-    def dfs(item: IMTTreeItem):
+    def dfs(item: IMTItem):
         parent_id = item.get_property(&#34;parent_id&#34;)
         if not (isinstance(parent_id, str) or parent_id is None):
             parent_id = None

@@ -1,13 +1,13 @@
 import pytest
-from core.impl.tree import MTTree, MTTreeItem
+from core.impl.tree import MTTree, MTItem
 
 @pytest.fixture
 def tree():
     tree = MTTree(tree_id="root", name="Root Tree")
-    root_item = MTTreeItem("root", {"name": "Root", "parent_id": None})
-    group1 = MTTreeItem("group1", {"name": "Group 1", "parent_id": "root"})
-    group2 = MTTreeItem("group2", {"name": "Group 2", "parent_id": "root"})
-    subgroup2 = MTTreeItem("subgroup2", {"name": "Sub Group 2", "parent_id": "group2"})
+    root_item = MTItem("root", {"name": "Root", "parent_id": None})
+    group1 = MTItem("group1", {"name": "Group 1", "parent_id": "root"})
+    group2 = MTItem("group2", {"name": "Group 2", "parent_id": "root"})
+    subgroup2 = MTItem("subgroup2", {"name": "Sub Group 2", "parent_id": "group2"})
     tree.add_item(root_item, None)
     tree.add_item(group1, "root")
     tree.add_item(group2, "root")
@@ -15,7 +15,7 @@ def tree():
     # group2의 하위 항목 4개 중 2개는 group2, 2개는 subgroup2에 추가
     group2_items = []
     for i in range(4):
-        item = MTTreeItem(f"item-g2-{i}", {"name": f"Item {i} in Group 2", "parent_id": None})
+        item = MTItem(f"item-g2-{i}", {"name": f"Item {i} in Group 2", "parent_id": None})
         group2_items.append(item)
     for i, item in enumerate(group2_items):
         if i < 2:
@@ -26,10 +26,10 @@ def tree():
             tree.add_item(item, "subgroup2")
     # 서브 아이템도 추가
     for i in range(2):
-        sub_item = MTTreeItem(f"item-g2-{i}-sub", {"name": f"Sub-item of {i}", "parent_id": "group2"})
+        sub_item = MTItem(f"item-g2-{i}-sub", {"name": f"Sub-item of {i}", "parent_id": "group2"})
         tree.add_item(sub_item, "group2")
     for i in range(2, 4):
-        sub_item = MTTreeItem(f"item-g2-{i}-sub", {"name": f"Sub-item of {i}", "parent_id": "subgroup2"})
+        sub_item = MTItem(f"item-g2-{i}-sub", {"name": f"Sub-item of {i}", "parent_id": "subgroup2"})
         tree.add_item(sub_item, "subgroup2")
     return tree
 

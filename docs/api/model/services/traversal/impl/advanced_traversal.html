@@ -65,7 +65,7 @@ el.replaceWith(d);
         &#34;&#34;&#34;
         self._items_provider = items_provider
     
-    def traverse_filtered(self, predicate: Callable[[IMTTreeItem], bool]) -&gt; Iterator[IMTTreeItem]:
+    def traverse_filtered(self, predicate: Callable[[IMTItem], bool]) -&gt; Iterator[IMTItem]:
         &#34;&#34;&#34;트리를 순회하며 조건에 맞는 아이템을 선택합니다.
         
         Args:
@@ -87,14 +87,14 @@ el.replaceWith(d);
 <h3>Methods</h3>
 <dl>
 <dt id="model.services.traversal.impl.advanced_traversal.AdvancedTreeTraversal.traverse_filtered"><code class="name flex">
-<span>def <span class="ident">traverse_filtered</span></span>(<span>self,<br>predicate: Callable[[<a title="core.interfaces.base_item.IMTTreeItem" href="../../../../core/interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a>], bool]) ‑> Iterator[<a title="core.interfaces.base_item.IMTTreeItem" href="../../../../core/interfaces/base_item.html#core.interfaces.base_item.IMTTreeItem">IMTTreeItem</a>]</span>
+<span>def <span class="ident">traverse_filtered</span></span>(<span>self,<br>predicate: Callable[[<a title="core.interfaces.base_item.IMTItem" href="../../../../core/interfaces/base_item.html#core.interfaces.base_item.IMTItem">IMTItem</a>], bool]) ‑> Iterator[<a title="core.interfaces.base_item.IMTItem" href="../../../../core/interfaces/base_item.html#core.interfaces.base_item.IMTItem">IMTItem</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def traverse_filtered(self, predicate: Callable[[IMTTreeItem], bool]) -&gt; Iterator[IMTTreeItem]:
+<pre><code class="python">def traverse_filtered(self, predicate: Callable[[IMTItem], bool]) -&gt; Iterator[IMTItem]:
     &#34;&#34;&#34;트리를 순회하며 조건에 맞는 아이템을 선택합니다.
     
     Args:

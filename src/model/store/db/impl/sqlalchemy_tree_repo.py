@@ -96,43 +96,26 @@ class SQLAlchemyTreeRepo(IMTStore):
         )
         return (max_order + 1) if max_order is not None else 0
 
-    def add_item(self, 
-                 name: str, 
-                 parent_id: Optional[str], 
-                 item_order: Optional[int] = None, # item_order는 필수로 받거나, None이면 자동계산
-                 data: Optional[Dict[str, Any]] = None, 
-                 specific_id: Optional[str] = None) -> MTItem:
-        
+    def add_item(self, item_dto: MTItemDTO, parent_id: Optional[str], item_order: Optional[int] = None, specific_id: Optional[str] = None) -> MTItem:
         actual_parent_id = parent_id if parent_id is not None else DUMMY_ROOT_ID
-        
         with get_db_session() as db:
             try:
-                # 부모가 DUMMY_ROOT_ID가 아니고, 실제 존재하는지 확인 (옵션)
                 if actual_parent_id != DUMMY_ROOT_ID:
                     parent_item = db.query(MTItem.id).filter(MTItem.id == actual_parent_id).first()
                     if not parent_item:
                         raise exc.ParentItemNotFoundError(f"Parent item with id '{actual_parent_id}' not found.")
-
                 item_id = specific_id if specific_id else self._generate_id()
-
-                # item_order 처리: 명시적 제공 시 사용, 아니면 자동 계산
                 if item_order is None:
                     order_to_use = self._get_next_order(db, actual_parent_id)
                 else:
-                    # 만약 item_order가 제공되면, 해당 순서에 이미 아이템이 있는지,
-                    # 있다면 기존 아이템들의 순서를 조정할지 등을 결정해야 합니다.
-                    # 여기서는 우선 제공된 값을 사용하고, 필요시 순서 조정 로직 추가.
-                    # 여기서는 일단 중복을 허용하지 않고, 뒤로 밀어내는 로직을 가정해봅니다.
-                    # (실제로는 더 복잡한 순서 관리 로직이 필요할 수 있음)
                     self._shift_items_for_insert(db, actual_parent_id, item_order)
                     order_to_use = item_order
-
                 new_item = MTItem(
                     id=item_id,
-                    name=name,
+                    name=item_dto.domain_data.name,
                     parent_id=actual_parent_id,
                     item_order=order_to_use,
-                    data=data
+                    data=item_dto.domain_data.to_dict()
                 )
                 db.add(new_item)
                 db.commit()
@@ -140,9 +123,9 @@ class SQLAlchemyTreeRepo(IMTStore):
                 return new_item
             except SQLAlchemyError as e:
                 db.rollback()
-                logger.error(f"Error adding item '{name}': {e}")
-                raise exc.RepositoryError(f"Failed to add item '{name}': {e}")
-    
+                logger.error(f"Error adding item '{item_dto.domain_data.name}': {e}")
+                raise exc.RepositoryError(f"Failed to add item '{item_dto.domain_data.name}': {e}")
+
     def _shift_items_for_insert(self, db: Session, parent_id: Optional[str], start_order: int):
         """새 아이템 삽입을 위해 기존 아이템들의 순서를 뒤로 한 칸씩 민다."""
         db.query(MTItem).filter(
@@ -157,43 +140,28 @@ class SQLAlchemyTreeRepo(IMTStore):
             MTItem.item_order > deleted_order
         ).update({MTItem.item_order: MTItem.item_order - 1}, synchronize_session=False)
 
-    def update_item(self, 
-                    item_id: str, 
-                    name: Optional[str] = None, 
-                    data: Optional[Dict[str, Any]] = None,
-                    item_order: Optional[int] = None # 순서 변경은 move_item을 통하는 것을 권장
-                    ) -> Optional[MTItem]:
-        if not item_id or item_id == DUMMY_ROOT_ID: # 더미 루트는 수정 불가
+    def update_item(self, item_id: str, item_dto: MTItemDTO, item_order: Optional[int] = None) -> Optional[MTItem]:
+        if not item_id or item_id == DUMMY_ROOT_ID:
             return None
-            
         with get_db_session() as db:
             try:
                 item = db.query(MTItem).filter(MTItem.id == item_id).first()
                 if not item:
-                    # raise exc.ItemNotFoundError(f"Item with id '{item_id}' not found for update.")
                     return None
-
                 updated = False
-                if name is not None:
-                    item.name = name
+                if item_dto.domain_data.name is not None:
+                    item.name = item_dto.domain_data.name
                     updated = True
-                if data is not None: # data 필드가 None으로 설정될 수도 있으므로 명시적 체크
-                    item.data = data
+                if item_dto.domain_data is not None:
+                    item.data = item_dto.domain_data.to_dict()
                     updated = True
-                
-                # item_order 변경은 복잡성을 야기하므로 별도 move_item 메서드에서 처리하는 것이 좋음.
-                # 만약 여기서 순서 변경을 허용한다면, 기존 아이템들과의 순서 조정 로직 필요.
                 if item_order is not None and item.item_order != item_order:
-                    # 이 경우, 기존 위치에서 아이템을 제거하고 새 위치로 삽입하는 것과 유사한 처리 필요
-                    # (현재 부모 내에서 순서만 변경하는 경우)
                     old_parent_id = item.parent_id
                     old_order = item.item_order
-                    
                     self._shift_items_for_delete(db, old_parent_id, old_order)
                     self._shift_items_for_insert(db, old_parent_id, item_order)
                     item.item_order = item_order
                     updated = True
-
                 if updated:
                     db.commit()
                     db.refresh(item)

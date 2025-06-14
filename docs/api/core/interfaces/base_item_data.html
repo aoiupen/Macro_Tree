@@ -481,8 +481,8 @@ def position(self) -&gt; IMTPoint: ...</code></pre>
 </dd>
 </dl>
 </dd>
-<dt id="core.interfaces.base_item_data.MTTreeItemData"><code class="flex name class">
-<span>class <span class="ident">MTTreeItemData</span></span>
+<dt id="core.interfaces.base_item_data.MTItemData"><code class="flex name class">
+<span>class <span class="ident">MTItemData</span></span>
 <span>(</span><span>id: str = '',<br>name: str = '',<br>parent_id: str | None = None,<br>children_ids: List[str] = &lt;factory&gt;,<br>node_type: <a title="core.interfaces.base_item_data.MTNodeType" href="#core.interfaces.base_item_data.MTNodeType">MTNodeType</a> | None = None,<br>device: <a title="core.interfaces.base_item_data.MTDevice" href="#core.interfaces.base_item_data.MTDevice">MTDevice</a> | None = None,<br>action: <a title="core.interfaces.base_item_data.IMTAction" href="#core.interfaces.base_item_data.IMTAction">IMTAction</a> | None = None,<br>action_data: <a title="core.interfaces.base_item_data.IMTActionData" href="#core.interfaces.base_item_data.IMTActionData">IMTActionData</a> | None = None)</span>
 </code></dt>
 <dd>
@@ -491,7 +491,7 @@ def position(self) -&gt; IMTPoint: ...</code></pre>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
-class MTTreeItemData:
+class MTItemData:
     id: str = &#34;&#34;
     name: str = &#34;&#34;
     parent_id: str | None = None
@@ -502,38 +502,38 @@ class MTTreeItemData:
     action_data: IMTActionData | None = None
     # 기타 UI/확장 속성은 필요에 따라 추가</code></pre>
 </details>
-<div class="desc"><p>MTTreeItemData(id: str = '', name: str = '', parent_id: str | None = None, children_ids: List[str] = <factory>, node_type: core.interfaces.base_item_data.MTNodeType | None = None, device: core.interfaces.base_item_data.MTDevice | None = None, action: core.interfaces.base_item_data.IMTAction | None = None, action_data: core.interfaces.base_item_data.IMTActionData | None = None)</p></div>
+<div class="desc"><p>MTItemData(id: str = '', name: str = '', parent_id: str | None = None, children_ids: List[str] = <factory>, node_type: core.interfaces.base_item_data.MTNodeType | None = None, device: core.interfaces.base_item_data.MTDevice | None = None, action: core.interfaces.base_item_data.IMTAction | None = None, action_data: core.interfaces.base_item_data.IMTActionData | None = None)</p></div>
 <h3>Instance variables</h3>
 <dl>
-<dt id="core.interfaces.base_item_data.MTTreeItemData.action"><code class="name">var <span class="ident">action</span> : <a title="core.interfaces.base_item_data.IMTAction" href="#core.interfaces.base_item_data.IMTAction">IMTAction</a> | None</code></dt>
+<dt id="core.interfaces.base_item_data.MTItemData.action"><code class="name">var <span class="ident">action</span> : <a title="core.interfaces.base_item_data.IMTAction" href="#core.interfaces.base_item_data.IMTAction">IMTAction</a> | None</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="core.interfaces.base_item_data.MTTreeItemData.action_data"><code class="name">var <span class="ident">action_data</span> : <a title="core.interfaces.base_item_data.IMTActionData" href="#core.interfaces.base_item_data.IMTActionData">IMTActionData</a> | None</code></dt>
+<dt id="core.interfaces.base_item_data.MTItemData.action_data"><code class="name">var <span class="ident">action_data</span> : <a title="core.interfaces.base_item_data.IMTActionData" href="#core.interfaces.base_item_data.IMTActionData">IMTActionData</a> | None</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="core.interfaces.base_item_data.MTTreeItemData.children_ids"><code class="name">var <span class="ident">children_ids</span> : List[str]</code></dt>
+<dt id="core.interfaces.base_item_data.MTItemData.children_ids"><code class="name">var <span class="ident">children_ids</span> : List[str]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="core.interfaces.base_item_data.MTTreeItemData.device"><code class="name">var <span class="ident">device</span> : <a title="core.interfaces.base_item_data.MTDevice" href="#core.interfaces.base_item_data.MTDevice">MTDevice</a> | None</code></dt>
+<dt id="core.interfaces.base_item_data.MTItemData.device"><code class="name">var <span class="ident">device</span> : <a title="core.interfaces.base_item_data.MTDevice" href="#core.interfaces.base_item_data.MTDevice">MTDevice</a> | None</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="core.interfaces.base_item_data.MTTreeItemData.id"><code class="name">var <span class="ident">id</span> : str</code></dt>
+<dt id="core.interfaces.base_item_data.MTItemData.id"><code class="name">var <span class="ident">id</span> : str</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="core.interfaces.base_item_data.MTTreeItemData.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
+<dt id="core.interfaces.base_item_data.MTItemData.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="core.interfaces.base_item_data.MTTreeItemData.node_type"><code class="name">var <span class="ident">node_type</span> : <a title="core.interfaces.base_item_data.MTNodeType" href="#core.interfaces.base_item_data.MTNodeType">MTNodeType</a> | None</code></dt>
+<dt id="core.interfaces.base_item_data.MTItemData.node_type"><code class="name">var <span class="ident">node_type</span> : <a title="core.interfaces.base_item_data.MTNodeType" href="#core.interfaces.base_item_data.MTNodeType">MTNodeType</a> | None</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="core.interfaces.base_item_data.MTTreeItemData.parent_id"><code class="name">var <span class="ident">parent_id</span> : str | None</code></dt>
+<dt id="core.interfaces.base_item_data.MTItemData.parent_id"><code class="name">var <span class="ident">parent_id</span> : str | None</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -682,16 +682,16 @@ class MTTreeItemData:
 </ul>
 </li>
 <li>
-<h4><code><a title="core.interfaces.base_item_data.MTTreeItemData" href="#core.interfaces.base_item_data.MTTreeItemData">MTTreeItemData</a></code></h4>
+<h4><code><a title="core.interfaces.base_item_data.MTItemData" href="#core.interfaces.base_item_data.MTItemData">MTItemData</a></code></h4>
 <ul class="two-column">
-<li><code><a title="core.interfaces.base_item_data.MTTreeItemData.action" href="#core.interfaces.base_item_data.MTTreeItemData.action">action</a></code></li>
-<li><code><a title="core.interfaces.base_item_data.MTTreeItemData.action_data" href="#core.interfaces.base_item_data.MTTreeItemData.action_data">action_data</a></code></li>
-<li><code><a title="core.interfaces.base_item_data.MTTreeItemData.children_ids" href="#core.interfaces.base_item_data.MTTreeItemData.children_ids">children_ids</a></code></li>
-<li><code><a title="core.interfaces.base_item_data.MTTreeItemData.device" href="#core.interfaces.base_item_data.MTTreeItemData.device">device</a></code></li>
-<li><code><a title="core.interfaces.base_item_data.MTTreeItemData.id" href="#core.interfaces.base_item_data.MTTreeItemData.id">id</a></code></li>
-<li><code><a title="core.interfaces.base_item_data.MTTreeItemData.name" href="#core.interfaces.base_item_data.MTTreeItemData.name">name</a></code></li>
-<li><code><a title="core.interfaces.base_item_data.MTTreeItemData.node_type" href="#core.interfaces.base_item_data.MTTreeItemData.node_type">node_type</a></code></li>
-<li><code><a title="core.interfaces.base_item_data.MTTreeItemData.parent_id" href="#core.interfaces.base_item_data.MTTreeItemData.parent_id">parent_id</a></code></li>
+<li><code><a title="core.interfaces.base_item_data.MTItemData.action" href="#core.interfaces.base_item_data.MTItemData.action">action</a></code></li>
+<li><code><a title="core.interfaces.base_item_data.MTItemData.action_data" href="#core.interfaces.base_item_data.MTItemData.action_data">action_data</a></code></li>
+<li><code><a title="core.interfaces.base_item_data.MTItemData.children_ids" href="#core.interfaces.base_item_data.MTItemData.children_ids">children_ids</a></code></li>
+<li><code><a title="core.interfaces.base_item_data.MTItemData.device" href="#core.interfaces.base_item_data.MTItemData.device">device</a></code></li>
+<li><code><a title="core.interfaces.base_item_data.MTItemData.id" href="#core.interfaces.base_item_data.MTItemData.id">id</a></code></li>
+<li><code><a title="core.interfaces.base_item_data.MTItemData.name" href="#core.interfaces.base_item_data.MTItemData.name">name</a></code></li>
+<li><code><a title="core.interfaces.base_item_data.MTItemData.node_type" href="#core.interfaces.base_item_data.MTItemData.node_type">node_type</a></code></li>
+<li><code><a title="core.interfaces.base_item_data.MTItemData.parent_id" href="#core.interfaces.base_item_data.MTItemData.parent_id">parent_id</a></code></li>
 </ul>
 </li>
 <li>

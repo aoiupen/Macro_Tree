@@ -1,8 +1,9 @@
 """
 이 모듈은 매크로 트리의 트리 인터페이스(읽기, 수정, 순회, 직렬화, 복제 등)를 정의합니다.
 """
-from typing import Any, Callable, Dict, List, Protocol, Optional
-from core.interfaces.base_item import IMTTreeItem
+from typing import Any, Callable, Dict, List, Protocol
+from core.interfaces.base_item import IMTItem
+from core.interfaces.base_item_data import MTItemDTO
 from abc import ABC, abstractmethod
 
 class IMTTreeReadable (Protocol):
@@ -18,17 +19,17 @@ class IMTTreeReadable (Protocol):
     def root_id(self) -> str | None: ...
 
     @property
-    def items(self) -> dict[str, IMTTreeItem]: ...
+    def items(self) -> dict[str, IMTItem]: ...
 
-    def get_item(self, item_id: str) -> IMTTreeItem | None: ...
+    def get_item(self, item_id: str) -> IMTItem | None: ...
     
-    def get_children(self, parent_id: str | None) -> List[IMTTreeItem]: ...
+    def get_children(self, parent_id: str | None) -> List[IMTItem]: ...
 
 # 트리 수정 작업 인터페이스
 class IMTTreeModifiable(Protocol):
     """트리 수정 작업 인터페이스"""
     
-    def add_item(self, item: IMTTreeItem, parent_id: str | None = None, index: int = -1) -> bool:
+    def add_item(self, item_dto: MTItemDTO, parent_id: str | None = None, index: int = -1) -> bool:
         """아이템을 트리에 추가합니다. Raises: ValueError-아이템 ID 중복 시"""
         ...
     
@@ -40,7 +41,7 @@ class IMTTreeModifiable(Protocol):
         """아이템을 새 부모로 이동합니다. Raises: ValueError-유효하지 않은 아이템/부모 ID"""
         ...
     
-    def modify_item(self, item_id: str, changes: Dict[str, Any]) -> bool:
+    def modify_item(self, item_id: str, item_dto: MTItemDTO) -> bool:
         """아이템의 속성을 변경합니다."""
         ...
     
@@ -52,7 +53,7 @@ class IMTTreeModifiable(Protocol):
 class IMTTreeTraversable(Protocol):
     """트리 순회 인터페이스"""
     
-    def traverse(self, visitor: Callable[[IMTTreeItem], None], 
+    def traverse(self, visitor: Callable[[IMTItem], None], 
                 node_id: str | None = None) -> None:
         """트리를 BFS로 순회하면서 각 아이템에 방문자 함수를 적용합니다."""
         ...
@@ -76,10 +77,10 @@ class IMTTreeSerializable(Protocol):
         """
         ...
     @classmethod
-    def dict_to_tree(cls, data: Dict[str, Any], event_manager: Any = None) -> Any:
+    def dict_to_tree(cls, data: Dict[str, Any], event_manager: Any = None) -> 'IMTTree':
         ...
     @classmethod
-    def json_to_tree(cls, json_str: str, event_manager: Any = None) -> Any:
+    def json_to_tree(cls, json_str: str, event_manager: Any = None) -> 'IMTTree':
         ...
 
 class IMTTreeClonable(Protocol):

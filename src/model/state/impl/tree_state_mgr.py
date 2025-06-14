@@ -16,13 +16,14 @@ class History:
         self._max_history = max_history
         self._undo_stack: List[Dict[str, Any]] = []
         self._redo_stack: List[Dict[str, Any]] = []
-        self._stage = {}
+        self._stage: Dict[str, Any] = {}
         self.set_initial_state(tree)
 
     def set_initial_state(self, tree: IMTTree) -> None:
         self._undo_stack = []
         self._redo_stack = []
         self._stage = tree.to_dict()
+        return None
 
     def can_undo(self) -> bool:
         return len(self._undo_stack) > 0

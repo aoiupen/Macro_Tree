@@ -1,13 +1,13 @@
 import pytest
 import copy
-from src.core.impl.item import MTTreeItem
+from src.core.impl.item import MTItem
 from src.core.interfaces.base_item_keys import DomainKeys as DK, UIStateKeys as UK
 from src.core.interfaces.base_item_data import MTItemDomainDTO, MTNodeType
 
 def test_item_create_and_basic_properties():
     # 1. initial_data가 dict일 때
     initial_dict_data = {DK.NAME: "Test Item Dict", DK.NODE_TYPE: MTNodeType.GROUP, DK.CHILDREN: ["child1"]}
-    item1 = MTTreeItem("item1", initial_dict_data)
+    item1 = MTItem("item1", initial_dict_data)
     assert item1.id == "item1"
     
     item1_data = item1.data
@@ -18,20 +18,20 @@ def test_item_create_and_basic_properties():
 
     # 2. initial_data가 MTItemDomainDTO 객체일 때
     initial_obj_data = MTItemDomainDTO(name="Test Item Obj", node_type=MTNodeType.INSTRUCTION)
-    item2 = MTTreeItem("item2_item_id", initial_obj_data)
+    item2 = MTItem("item2_item_id", initial_obj_data)
     assert item2.id == "item2_item_id"
     item2_data = item2.data
     assert item2_data.name == "Test Item Obj"
     assert item2_data.node_type == MTNodeType.INSTRUCTION
 
     # 3. initial_data가 None일 때
-    item3 = MTTreeItem("item3", None)
+    item3 = MTItem("item3", None)
     assert item3.id == "item3"
     item3_data = item3.data
     assert item3_data.name == ""
     assert item3_data.node_type is None
 
-class TestMTTreeItem:
+class TestMTItem:
 
     @pytest.fixture
     def sample_item_data_dict(self):
@@ -39,7 +39,7 @@ class TestMTTreeItem:
 
     @pytest.fixture
     def sample_item(self, sample_item_data_dict):
-        return MTTreeItem("sample1", sample_item_data_dict)
+        return MTItem("sample1", sample_item_data_dict)
 
     def test_id_property(self, sample_item):
         assert sample_item.id == "sample1"
@@ -61,7 +61,7 @@ class TestMTTreeItem:
         assert sample_item.get_property("non_existent_key") is None
         assert sample_item.get_property("non_existent_key", "default_val") == "default_val"
         
-        item_no_children_ids_field = MTTreeItem("item_no_children", {"name": "Test"})
+        item_no_children_ids_field = MTItem("item_no_children", {"name": "Test"})
         item_no_children_ids_field._data.children_ids = None
         assert item_no_children_ids_field.get_property("children_ids") == []
 
